@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma Client is a JavaScript/TypeScript library that Prisma generates for us
+// TypeScript to SQL
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  enrollments Enrollment[]
+  // A User has many Enrollments, The [] means: Array,Many,List
+}
+
+
+// @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
+
+
+model Course{
+  id            Int       @id  @default(autoincrement()) 
+  title         String
+  description   String
+  price         Float
+  createdAt     DateTime  @default(now())
+
+  //No enrollments column,It tells Prisma: A User can have many Enrollments
+  // do NOT appear as columns anywhere.
+  // Many students can enroll in the same course.
+  enrollments Enrollment[]
+  lessons     Lesson[]
+  // One Course has many Lessons.
+}
+
+
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+
+  userId    Int
+  courseId  Int
+
+// Because Prisma wants to know: userId points to which table?
+// These are NOT columns, These are Prisma relation fields, They help Prisma understand: How tables are connected
+
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+
+// Each Lesson belongs to one Course.
+// courseId (foreign key)
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+
+// One-to-Many relationship
+// Course (1) ──────< Lesson (Many)
+// Foreign key lives on the "Many" side.
