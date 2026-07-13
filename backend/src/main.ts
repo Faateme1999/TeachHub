@@ -13,6 +13,16 @@ async function bootstrap() {
     }),
   );
 
+  // CORS = Cross-Origin Resource Sharing.
+  // The browser blocks requests from one origin (our React app on :5173)
+  // to a different origin (this API on :3000) unless the server says
+  // "I allow that origin". enableCors() adds those permission headers.
+  // Without this, every fetch/axios call from the frontend fails in the browser.
+  app.enableCors({
+    origin: 'http://localhost:5173', // the Vite dev server (our frontend)
+    credentials: true,
+  });
+
   await app.listen(3000);
 
   console.log('🚀 TeachHub is running on http://localhost:3000');

@@ -1,0 +1,140 @@
+/* Styles for the "domain" components (course cards, lesson items, forms) and
+   for the pages. Kept separate from the generic ui/ styles. */
+
+/* --- Course grid + card --- */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.course-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+.course-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  border-color: var(--accent-soft);
+  text-decoration: none;
+}
+.course-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.course-card__title {
+  font-size: 1.1rem;
+  font-weight: 650;
+  color: var(--text);
+  margin: 0;
+}
+.course-card__desc {
+  color: var(--text-muted);
+  margin: 0;
+  /* Clamp long descriptions to 3 lines for a tidy grid. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.course-card__meta {
+  margin-top: auto;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* --- Page header (title + action button on the right) --- */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+.page-header__title { margin: 0; }
+.page-header__subtitle { color: var(--text-muted); margin: 4px 0 0; }
+
+/* --- Course detail --- */
+.detail__price { font-size: 1.1rem; }
+.detail__section { margin-top: var(--space-6); }
+.detail__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+/* --- Lesson list --- */
+.lesson-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.lesson-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.lesson-item__body { flex: 1; }
+.lesson-item__title { font-weight: 600; margin: 0 0 4px; }
+.lesson-item__content { color: var(--text-muted); margin: 0; white-space: pre-wrap; }
+.lesson-item__actions { display: flex; gap: var(--space-1); flex-shrink: 0; }
+
+/* --- Forms --- */
+.form { display: flex; flex-direction: column; gap: var(--space-4); }
+.form__row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.form__actions { display: flex; gap: var(--space-3); justify-content: flex-end; }
+.form__error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  font-size: 0.9rem;
+}
+
+/* --- Auth pages (centered card) --- */
+.auth {
+  max-width: 400px;
+  margin: var(--space-8) auto;
+}
+.auth__title { text-align: center; }
+.auth__subtitle { text-align: center; color: var(--text-muted); margin-bottom: var(--space-5); }
+.auth__switch { text-align: center; margin-top: var(--space-4); color: var(--text-muted); font-size: 0.9rem; }
+
+/* --- Landing hero (top of Courses page) --- */
+.hero {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  margin-bottom: var(--space-6);
+}
+.hero h1 { color: #fff; font-size: 2.2rem; }
+.hero p { color: rgba(255, 255, 255, 0.9); max-width: 520px; margin: 0; }
+
+/* --- User list --- */
+.user-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+}
+.user-row:hover { background: var(--surface-2); text-decoration: none; }
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.user-row__name { font-weight: 600; color: var(--text); }
+.user-row__email { color: var(--text-muted); font-size: 0.85rem; }
+
+/* --- Profile header --- */
+.profile-header { display: flex; align-items: center; gap: var(--space-4); }
+.profile-header .avatar { width: 64px; height: 64px; font-size: 1.5rem; }

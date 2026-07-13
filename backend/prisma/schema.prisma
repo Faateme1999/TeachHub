@@ -70,6 +70,19 @@ model Lesson {
   courseId  Int
   course    Course   @relation(fields: [courseId], references: [id])
 
+  // TODO(junior) — US-014 (cascade delete): by default the database REFUSES to
+  // delete a Course that still has Lessons (that's why deleting such a course
+  // errors). To make deleting a course automatically delete its lessons too,
+  // change the relation above to:
+  //
+  //   course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  //
+  // Do the SAME on the `course` relation in the Enrollment model above.
+  // Then create a migration so the database is updated:
+  //   npx prisma migrate dev --name cascade_delete
+  //
+  // (Alternatively, delete children in code — see courses.service.ts remove().)
+
   createdAt DateTime @default(now())
 }
 

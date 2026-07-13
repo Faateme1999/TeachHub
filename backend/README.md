@@ -1,98 +1,120 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# TeachHub — Backend (NestJS + Prisma)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The API for TeachHub, a small learning platform where users register, log in,
+create courses, add lessons, browse users, and enroll in courses.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Tech: **NestJS 11**, **Prisma 6** (PostgreSQL), **JWT auth** (Passport), **bcrypt**.
 
-## Description
+> New to the project? After you get it running, open
+> [`../docs/junior-dev-tasks.md`](../docs/junior-dev-tasks.md) — it's an ordered,
+> beginner-friendly checklist that walks you through finishing the `TODO(junior)`
+> items left in the code.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 1. Prerequisites
+
+- Node.js 18+ and npm
+- **Docker** (for the database — see below). No need to install PostgreSQL yourself.
+
+## 2. Setup
+
+**Step 1 — install dependencies:**
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+**Step 2 — create your `.env`** (Prisma reads `DATABASE_URL` from it). Just copy
+the example — the defaults already match the Docker database:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+**Step 3 — start the database with Docker.** This runs PostgreSQL in a container
+so you don't have to install it. It listens on host port **5433**:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run db:up        # = docker compose up -d
 ```
 
-## Deployment
+> Useful DB commands: `npm run db:down` stops it, `npm run db:reset` stops it and
+> **deletes all data**. See `docker-compose.yml` for details.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**Step 4 — create the tables** (and generate the Prisma client):
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run prisma:migrate   # = prisma migrate dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 3. Run
 
-## Resources
+```bash
+npm run start:dev      # watch mode, restarts on file changes
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+The API starts on **http://localhost:3000** and prints:
+`🚀 TeachHub is running on http://localhost:3000`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+CORS is enabled for the frontend dev server at **http://localhost:5173**.
 
-## Support
+## 4. Handy commands
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run start:dev          # dev server (watch mode)
+npm run build              # compile to dist/
+npm run start:prod         # run the compiled build
+npm run lint               # eslint --fix
+npm test                   # unit tests
 
-## Stay in touch
+npm run db:up              # start the Postgres database (Docker)
+npm run db:down            # stop the database
+npm run db:reset           # stop + delete all database data
+npm run prisma:migrate     # create/apply a migration after editing schema.prisma
+npm run prisma:studio      # visual database browser (great for beginners)
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 5. API endpoints
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Method | Endpoint | Auth | What it does |
+|--------|----------|------|--------------|
+| POST | `/auth/register` | Public | Create an account (name, email, password) |
+| POST | `/auth/login` | Public | Log in → returns `accessToken` + `user` |
+| GET | `/users` | Public\* | List all users |
+| GET | `/users/my-profile` | JWT | The logged-in user's profile |
+| GET | `/users/me/courses` | JWT | The logged-in user's enrolled courses |
+| GET | `/users/:id` | Public | A user's public profile |
+| GET | `/users/:id/courses` | Public | A user's enrolled courses — **stub (501)**, see tasks doc |
+| GET | `/courses` | Public | List all courses |
+| GET | `/courses/:id` | Public | One course's details |
+| POST | `/courses` | JWT | Create a course |
+| PATCH | `/courses/:id` | JWT | Update a course |
+| DELETE | `/courses/:id` | JWT | Delete a course |
+| POST | `/courses/:id/enroll` | JWT | Enroll the logged-in user in a course |
+| GET | `/courses/:courseId/lessons` | Public | List a course's lessons |
+| POST | `/courses/:courseId/lessons` | JWT | Add a lesson to a course |
+| GET | `/lessons/:id` | Public | One lesson's details |
+| PATCH | `/lessons/:id` | JWT | Update a lesson |
+| DELETE | `/lessons/:id` | JWT | Delete a lesson |
+
+\* Marked as a `TODO(junior)` to require JWT per the features doc.
+
+**Auth:** send `Authorization: Bearer <accessToken>` (from `/auth/login`) on any
+JWT route.
+
+---
+
+## 6. Unfinished work (on purpose!)
+
+Some behavior is intentionally left as `TODO(junior)` stubs so you can implement
+it as a learning exercise. Search the code for `TODO(junior)` or follow the
+step-by-step list in [`../docs/junior-dev-tasks.md`](../docs/junior-dev-tasks.md):
+
+- `GET /users/:id/courses` currently returns **501 Not Implemented**.
+- Course detail doesn't include its lessons yet (`include: { lessons: true }`).
+- Deleting a course with lessons/enrollments fails (needs cascade or cleanup).
+- Missing records return `null`/500 instead of a clean **404**.
+- The JWT secret is hardcoded — move it to `.env`.

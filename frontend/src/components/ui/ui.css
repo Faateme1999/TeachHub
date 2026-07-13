@@ -1,0 +1,181 @@
+/* =========================================================================
+   Shared styles for the reusable UI components (Button, Input, Card, ...).
+   Each component imports this file. Class names are prefixed by their component
+   (e.g. .btn, .input, .card) so they don't collide.
+   ========================================================================= */
+
+/* --- Button --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease,
+    transform 0.05s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+.btn--primary:hover:not(:disabled) { background: var(--accent-strong); }
+
+.btn--secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn--secondary:hover:not(:disabled) { background: var(--surface-2); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+.btn--ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+
+.btn--danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn--danger:hover:not(:disabled) { background: var(--danger-strong); }
+
+.btn--block { width: 100%; }
+.btn--sm { padding: 6px 12px; font-size: 0.875rem; }
+
+/* --- Input / Textarea + Field label --- */
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+.field__label { font-weight: 600; font-size: 0.9rem; }
+.field__error { color: var(--danger); font-size: 0.85rem; }
+.field__hint { color: var(--text-muted); font-size: 0.85rem; }
+
+.input,
+.textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  width: 100%;
+}
+.input:focus,
+.textarea:focus { border-color: var(--accent); }
+.input--invalid,
+.textarea--invalid { border-color: var(--danger); }
+.textarea { resize: vertical; min-height: 120px; }
+
+/* --- Card --- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+}
+
+/* --- Badge --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge--success { background: var(--success-bg); color: var(--success); }
+
+/* --- Spinner --- */
+.spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.spinner--center {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Empty / Error states --- */
+.state {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--text-muted);
+}
+.state__icon { font-size: 2.5rem; margin-bottom: var(--space-2); }
+.state__title { color: var(--text); font-weight: 650; margin-bottom: var(--space-1); }
+.state--error .state__title { color: var(--danger); }
+
+/* --- Modal / Dialog --- */
+.modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 100;
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-5);
+}
+.modal__title { margin-bottom: var(--space-3); }
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+/* --- Toast --- */
+.toast-viewport {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 200;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-3) var(--space-4);
+  min-width: 240px;
+  max-width: 360px;
+  animation: toast-in 0.2s ease;
+}
+.toast--success { border-left-color: var(--success); }
+.toast--error { border-left-color: var(--danger); }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
