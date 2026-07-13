@@ -45,23 +45,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function login(email: string, password: string) {
     const { data } = await apiClient.post<LoginResponse>('/auth/login', {
-      email,
+      // Normalize the email so a stray space or capital letter (common with
+      // autofill / phone keyboards) doesn't cause a false "invalid credentials".
+      email: email.trim().toLowerCase(),
       password,
     })
     persistSession(data.accessToken, data.user)
   }
 
   async function register(name: string, email: string, password: string) {
+    // Normalize the email the same way login does, so the account is stored with
+    // a consistent lowercased email and the auto-login below matches it.
+    const normalizedEmail = email.trim().toLowerCase()
+
     // Step 1: create the account. NOTE: the backend's register does NOT return a
     // token, only the new user. So we can't log in from its response alone.
-    await apiClient.post('/auth/register', { name, email, password })
+    await apiClient.post('/auth/register', {
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+    })
 
     // Step 2: "auto-login" — immediately log in with the same email/password to
     // get a token, so the user lands straight in the app after signing up.
     //
     // We reuse the plaintext password from the form here (that's the only place
     // it exists — the register response never contains it).
-    await login(email, password)
+    await login(normalizedEmail, password)
   }
 
   function logout() {
