@@ -5,10 +5,17 @@
 // NOTE: because this project uses `verbatimModuleSyntax`, other files must import
 // these with `import type { ... }` (they're types, not runtime values).
 
+// A user's role. Mirrors the backend Prisma `Role` enum.
+// NOTE: this is a string-union type, NOT a TS `enum` — this project has
+// `erasableSyntaxOnly` on, which forbids enums. Compare with string literals:
+// `user.role === 'ADMIN'`.
+export type Role = 'STUDENT' | 'ADMIN'
+
 export interface User {
   id: number
   name: string
   email: string
+  role: Role
   createdAt: string
 }
 
@@ -55,4 +62,12 @@ export interface CourseInput {
 export interface LessonInput {
   title: string
   content: string
+}
+
+// What we send to POST /auth/admins to create another admin. Same fields as
+// sign-up — the role is decided by the backend (always ADMIN), never sent here.
+export interface CreateAdminInput {
+  name: string
+  email: string
+  password: string
 }

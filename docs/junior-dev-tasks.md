@@ -4,6 +4,11 @@ Welcome! 👋 The app is **complete and runnable today**, but a few backend piec
 were left as small, well-marked exercises for you to finish. This is your ordered,
 step-by-step checklist.
 
+> **New:** TeachHub now has **two roles — STUDENT and ADMIN**. Most of the wiring is
+> done (schema, guards, an `/admin` section, a seed admin), but two pieces are left
+> as exercises: the **RolesGuard** logic and the **create-admin** service method.
+> See **Section 1.5 — Roles & Admin** below.
+
 **How to use this list**
 - Work top to bottom. Each task says **what**, **where** (a file link), **why**,
   a **hint** (a little code to try — not the whole answer), and **how to verify**.
@@ -183,6 +188,117 @@ small.
 
 ---
 
+## Section 1.5 — Roles & Admin (finish the RBAC stubs)
+
+TeachHub has two roles: **STUDENT** (default, self sign-up) and **ADMIN** (manages
+content, created by the seed or another admin). The schema, guards, seed admin, and a
+separate `/admin` section are already in place. Two pieces are left for you.
+
+> **First, apply the database change and seed the admin** (needed before anything role-
+> related works):
+> ```bash
+> cd backend
+> npx prisma migrate dev --name add_user_role   # adds the Role enum + role column
+> npm run db:seed                                # creates admin@teachhub.dev (password123)
+> ```
+> Open `npm run prisma:studio` and confirm the `User` table has a `role` column and an
+> admin row.
+
+### Task 1.8 — Implement the RolesGuard (US-034)
+
+- [ ] **What:** Make admin-only routes actually check the user's role. Right now the
+      guard is a stub that **denies every** guarded route.
+- **Where:** [`../backend/src/auth/guards/roles.guard.ts`](../backend/src/auth/guards/roles.guard.ts)
+  → `canActivate()`.
+- **Why:** `@Roles(Role.ADMIN)` is already on the 6 course/lesson mutation routes and on
+  `POST /auth/admins`, but the guard's decision logic isn't written yet, so those routes
+  are unusable. Finishing this turns the whole admin system on.
+- **Concept:** A guard returns `true` (allow) or throws (deny). `Reflector` reads the roles
+  that `@Roles(...)` attached; `JwtAuthGuard` (which runs first) already put the user on
+  `req.user`, and `req.user.role` is available because `users.service.ts` `findById` selects
+  it.
+- **Hint:**
+  ```ts
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
+    if (!requiredRoles || requiredRoles.length === 0) return true // no role required
+    const { user } = context.switchToHttp().getRequest()
+    if (user && requiredRoles.includes(user.role)) return true
+    throw new ForbiddenException('Admins only')
+  }
+  ```
+  (Delete the two `void ...` lines and the `throw` stub that are there now.)
+- **Verify:** Log in as a **student** and try to create a course from an API client:
+  ```bash
+  curl -i -X POST http://localhost:3000/courses \
+    -H "Authorization: Bearer <STUDENT_TOKEN>" \
+    -H "Content-Type: application/json" \
+    -d '{"title":"x","description":"y","price":0}'
+  ```
+  Expect **403 Forbidden**. With an **admin** token, expect **201**. In the app, the
+  student never sees the create/edit/delete buttons; the admin does (in `/admin`).
+
+### Task 1.9 — Implement create-admin (US-039)
+
+- [ ] **What:** Make `POST /auth/admins` actually create a new ADMIN. It currently
+      returns **501 Not Implemented**.
+- **Where:** [`../backend/src/auth/auth.service.ts`](../backend/src/auth/auth.service.ts)
+  → `createAdmin()`.
+- **Why:** Only admins can create other admins (the route is guarded by Task 1.8). The
+  frontend "Create admin" page and the `useCreateAdmin()` hook are already wired to this
+  endpoint — they just need the backend to do the work.
+- **Concept:** It's almost identical to `register()` right above it — the only difference
+  is the role.
+- **Hint:**
+  ```ts
+  async createAdmin(dto: CreateAdminDto) {
+    const existing = await this.usersService.findByEmail(dto.email)
+    if (existing) throw new BadRequestException('Email already exists')
+    const hashedPassword = await bcrypt.hash(dto.password, 10)
+    const user = await this.usersService.create({
+      name: dto.name, email: dto.email, password: hashedPassword, role: Role.ADMIN,
+    })
+    const { password, ...safeUser } = user
+    return { message: 'Admin created', user: safeUser }
+  }
+  ```
+- **Verify:** As an **admin**, `POST /auth/admins` with a new name/email/password returns
+  the created admin. Log in as that new account → you land in the `/admin` section. In the
+  app, use the admin section's **Create admin** page.
+
+### Task 1.10 (optional) — Require admin to list users (US-025)
+
+- [ ] **What:** `GET /users` is still **public**. Tighten it to admins only.
+- **Where:** [`../backend/src/users/users.controller.ts`](../backend/src/users/users.controller.ts)
+  → `findAll()`.
+- **Hint:** add the same guards the admin routes use:
+  ```ts
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get()
+  findAll() { ... }
+  ```
+- **Verify:** `curl -i http://localhost:3000/users` with no token → **401**; with a student
+  token → **403**; with an admin token → the list.
+
+### Task 1.11 — Frontend admin pages (build the real UI)
+
+- [ ] The admin section renders, but two pages are placeholders. Fill them in — each file
+      has a `TODO(junior)` naming the exact hooks:
+  - **Manage courses** — `frontend/src/pages/admin/AdminCoursesPage.tsx` (reuse
+    `useCourses` / `useCreateCourse` / `useUpdateCourse` / `useDeleteCourse` and the lesson
+    hooks + `CourseForm` / `LessonForm`).
+  - **Create admin** — `frontend/src/pages/admin/CreateAdminPage.tsx` (a name/email/password
+    form → `useCreateAdmin()`; copy the form from `RegisterPage.tsx`).
+  - (`AdminUsersPage` already reuses `UsersPage`; optionally add a role badge per row.)
+- **Verify:** Log in as the seed admin, open **/admin**, and create/edit/delete a course
+  and create a new admin — all from the admin UI.
+
+---
+
 ## Section 2 — Frontend tasks (extend the SPA)
 
 The app already covers every core feature. These are guided exercises to learn the
@@ -251,6 +367,17 @@ running app.
 - [ ] Enrolling twice shows "already enrolled" (US-031)
 - [ ] Enrolling shows a success confirmation (US-032)
 
+**Roles & Admin**
+- [ ] Signing up creates a **student** (check the role in Prisma Studio) (US-033)
+- [ ] The seed admin (`admin@teachhub.dev`) can log in and reaches `/admin` (US-035, 036)
+- [ ] A **student** does NOT see create/edit/delete buttons, and visiting `/admin` redirects
+      them to `/courses`
+- [ ] A **student**'s direct API call to `POST /courses` returns **403** (US-034 → Task 1.8)
+- [ ] An **admin** can create/edit/delete courses and lessons from `/admin` (Task 1.8, 1.11)
+- [ ] An **admin** can create another admin (US-039 → Task 1.9, 1.11)
+- [ ] `POST /auth/register` with `"role":"ADMIN"` in the body returns **400** (can't
+      self-promote)
+
 ---
 
 ## Glossary (quick beginner definitions)
@@ -259,6 +386,14 @@ running app.
   it back on future requests to prove who you are.
 - **Guard (NestJS):** code that runs before a route and can block the request
   (e.g. `JwtAuthGuard` blocks requests without a valid token → 401).
+- **Role / RBAC (Role-Based Access Control):** each user has a role (STUDENT or
+  ADMIN); some routes are allowed only for certain roles. "RBAC" is the general
+  name for this pattern.
+- **Roles guard (`RolesGuard`):** runs *after* `JwtAuthGuard` and checks
+  `req.user.role` against the roles listed by the `@Roles(...)` decorator. Returns
+  403 Forbidden if the role doesn't match.
+- **Seed admin:** a pre-defined admin account created by `prisma/seed.ts`
+  (`admin@teachhub.dev`) so the app always has someone who can administer it.
 - **DTO (Data Transfer Object):** a class describing the shape of incoming request
   data, with validation rules (e.g. `CreateCourseDto`).
 - **Migration:** a versioned change to the database structure. `prisma migrate dev`

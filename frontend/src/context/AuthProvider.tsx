@@ -87,6 +87,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     token,
     isAuthenticated: Boolean(token),
+    // Derived from the stored user's role. persistSession already saves the whole
+    // `user` (including `role`) to localStorage, so this survives a page refresh.
+    isAdmin: user?.role === 'ADMIN',
     login,
     register,
     logout,

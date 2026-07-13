@@ -8,25 +8,31 @@ Comparison of documented features in [features.md](./features.md) against the cu
 
 ## API Endpoint Reference
 
+**Auth levels:** *Public* · *JWT* (any logged-in user) · *JWT + ADMIN* (admin only, via `RolesGuard` + `@Roles(ADMIN)`).
+
 | Method | Endpoint | Auth | Controller |
 |--------|----------|------|------------|
-| `POST` | `/auth/register` | Public | `AuthController` |
+| `POST` | `/auth/register` | Public | `AuthController` (always creates a STUDENT) |
 | `POST` | `/auth/login` | Public | `AuthController` |
-| `GET` | `/users` | Public | `UsersController` |
+| `POST` | `/auth/admins` | **JWT + ADMIN** | `AuthController` (create another admin) |
+| `GET` | `/users` | Public\* | `UsersController` |
 | `GET` | `/users/my-profile` | JWT | `UsersController` |
 | `GET` | `/users/me/courses` | JWT | `UsersController` |
 | `GET` | `/users/:id` | Public | `UsersController` |
 | `GET` | `/courses` | Public | `CoursesController` |
 | `GET` | `/courses/:id` | Public | `CoursesController` |
-| `POST` | `/courses` | JWT | `CoursesController` |
-| `PATCH` | `/courses/:id` | JWT | `CoursesController` |
-| `DELETE` | `/courses/:id` | JWT | `CoursesController` |
-| `POST` | `/courses/:id/enroll` | JWT | `CoursesController` |
+| `POST` | `/courses` | **JWT + ADMIN** | `CoursesController` |
+| `PATCH` | `/courses/:id` | **JWT + ADMIN** | `CoursesController` |
+| `DELETE` | `/courses/:id` | **JWT + ADMIN** | `CoursesController` |
+| `POST` | `/courses/:id/enroll` | JWT | `CoursesController` (student action) |
 | `GET` | `/courses/:courseId/lessons` | Public | `LessonsController` |
-| `POST` | `/courses/:courseId/lessons` | Public | `LessonsController` |
+| `POST` | `/courses/:courseId/lessons` | **JWT + ADMIN** | `LessonsController` |
 | `GET` | `/lessons/:id` | Public | `LessonsController` |
-| `PATCH` | `/lessons/:id` | Public | `LessonsController` |
-| `DELETE` | `/lessons/:id` | Public | `LessonsController` |
+| `PATCH` | `/lessons/:id` | **JWT + ADMIN** | `LessonsController` |
+| `DELETE` | `/lessons/:id` | **JWT + ADMIN** | `LessonsController` |
+
+\* `GET /users` is still public in code (a `TODO(junior)` from the original task list). The
+frontend only reaches it from the admin section, and it should be tightened to `JWT + ADMIN`.
 
 ---
 
@@ -49,13 +55,13 @@ Comparison of documented features in [features.md](./features.md) against the cu
 
 | Feature | User Story | Endpoint | Status | Notes |
 |---------|------------|----------|--------|-------|
-| Create Course | US-007 | `POST /courses` | ✅ | Requires JWT; accepts title, description, price |
+| Create Course | US-007 | `POST /courses` | ⚠️ | Admin-only: guarded by `JwtAuthGuard, RolesGuard` + `@Roles(ADMIN)`. **RolesGuard logic is a `TODO(junior)` stub** (currently denies all — see roles.guard.ts) |
 | Field validation | US-008 | `POST /courses` | ✅ | `CreateCourseDto` validates required fields and `@Min(0)` on price |
 | View All Courses | US-009 | `GET /courses` | ✅ | Public endpoint |
 | Course list fields | US-010 | `GET /courses` | ✅ | Returns title, description, price, createdAt |
-| Update Course | US-011 | `PATCH /courses/:id` | ✅ | Requires JWT |
+| Update Course | US-011 | `PATCH /courses/:id` | ⚠️ | Admin-only (RolesGuard stub, as above) |
 | Update confirmation | US-012 | `PATCH /courses/:id` | ✅ | Returns updated course object |
-| Delete Course | US-013 | `DELETE /courses/:id` | ✅ | Requires JWT |
+| Delete Course | US-013 | `DELETE /courses/:id` | ⚠️ | Admin-only (RolesGuard stub, as above) |
 | Cascade on delete | US-014 | `DELETE /courses/:id` | ⚠️ | No `onDelete: Cascade` in Prisma schema — delete may fail if lessons or enrollments exist |
 | View Course Details | US-015 | `GET /courses/:id` | ✅ | Returns course fields only |
 | Course includes lessons | US-016 | `GET /courses/:id` | ⚠️ | Course detail does **not** include lessons; use `GET /courses/:courseId/lessons` separately |
@@ -68,16 +74,16 @@ Comparison of documented features in [features.md](./features.md) against the cu
 
 | Feature | User Story | Endpoint | Status | Notes |
 |---------|------------|----------|--------|-------|
-| Create Lesson | US-017 | `POST /courses/:courseId/lessons` | ⚠️ | Endpoint exists; **no JWT guard** (docs expect logged-in user) |
+| Create Lesson | US-017 | `POST /courses/:courseId/lessons` | ⚠️ | Now admin-guarded (`JwtAuthGuard, RolesGuard` + `@Roles(ADMIN)`); RolesGuard logic is a `TODO(junior)` stub |
 | Lesson linked to course | US-018 | `POST /courses/:courseId/lessons` | ✅ | `courseId` from URL is stored on the lesson |
 | View Lessons in Course | US-019 | `GET /courses/:courseId/lessons` | ✅ | Public endpoint |
 | View Lesson Details | US-020 | `GET /lessons/:id` | ✅ | Returns title, content, courseId, createdAt |
-| Update Lesson | US-021 | `PATCH /lessons/:id` | ⚠️ | Endpoint exists; **no JWT guard** |
+| Update Lesson | US-021 | `PATCH /lessons/:id` | ⚠️ | Admin-guarded (RolesGuard stub) |
 | Lesson stays linked | US-022 | `PATCH /lessons/:id` | ✅ | Update DTO does not change `courseId` |
-| Delete Lesson | US-023 | `DELETE /lessons/:id` | ⚠️ | Endpoint exists; **no JWT guard** |
+| Delete Lesson | US-023 | `DELETE /lessons/:id` | ⚠️ | Admin-guarded (RolesGuard stub) |
 | Delete confirmation | US-024 | `DELETE /lessons/:id` | ✅ | Returns deleted lesson object |
 
-**Coverage: 5 / 8 fully implemented · 3 partial (missing auth)**
+**Coverage: 5 / 8 fully implemented · 3 partial (admin guard wired; guard logic is a junior stub)**
 
 ---
 
@@ -107,6 +113,19 @@ Comparison of documented features in [features.md](./features.md) against the cu
 
 ---
 
+## 6. Roles & Admin
+
+| Feature | User Story | Endpoint | Status | Notes |
+|---------|------------|----------|--------|-------|
+| Sign-up is student-only | US-033 | `POST /auth/register` | ✅ | `AuthService.register` hard-codes `role: STUDENT`; `role` is not a field on `CreateUserDto`, and `forbidNonWhitelisted` rejects a smuggled one |
+| Non-admins blocked (403) | US-034 | course/lesson mutation routes | ⚠️ | Guards + `@Roles(ADMIN)` are wired on all 6 routes; the `RolesGuard` decision logic is a `TODO(junior)` stub (currently denies everyone) |
+| Seed admin exists | US-035 | — (seed) | ✅ | `prisma/seed.ts` upserts `admin@teachhub.dev` with `role: ADMIN` |
+| Create another admin | US-039 | `POST /auth/admins` | ⚠️ | Route + `CreateAdminDto` exist and are admin-guarded; `AuthService.createAdmin` is a `TODO(junior)` stub (returns 501) |
+
+**Coverage: 2 / 4 fully implemented · 2 partial (junior stubs)**
+
+---
+
 ## Overall Summary
 
 | Area | Stories | ✅ | ⚠️ | ❌ |
@@ -116,9 +135,12 @@ Comparison of documented features in [features.md](./features.md) against the cu
 | Lesson Management | 8 | 5 | 3 | 0 |
 | User Management | 5 | 3 | 1 | 1 |
 | Course Enrollment | 3 | 3 | 0 | 0 |
-| **Total** | **32** | **25** | **6** | **1** |
+| Roles & Admin | 4 | 2 | 2 | 0 |
+| **Total** | **36** | **27** | **8** | **1** |
 
-**Backend coverage: ~78% fully implemented · ~19% partial · ~3% missing**
+**Backend coverage: ~75% fully implemented · ~22% partial · ~3% missing.** The two-role split
+is scaffolded end to end; the remaining "partial" items are the intentional `TODO(junior)`
+stubs (RolesGuard logic + createAdmin).
 
 ---
 
@@ -127,11 +149,14 @@ Comparison of documented features in [features.md](./features.md) against the cu
 ### Missing endpoint
 1. **`GET /users/:id/courses`** — View enrolled courses for any user (US-028)
 
-### Auth not enforced (docs say logged-in user required)
-2. **`GET /users`** — Should require JWT (US-025)
-3. **`POST /courses/:courseId/lessons`** — Should require JWT (US-017)
-4. **`PATCH /lessons/:id`** — Should require JWT (US-021)
-5. **`DELETE /lessons/:id`** — Should require JWT (US-023)
+### Role checks (guards wired, logic is a junior stub)
+2. **`RolesGuard`** — the 6 course/lesson mutation routes + `POST /auth/admins` are decorated
+   with `@Roles(ADMIN)`, but `roles.guard.ts` is a `TODO(junior)` stub that denies everything.
+   Implement the role comparison so admins pass and others get 403 (US-034).
+3. **`AuthService.createAdmin`** — `POST /auth/admins` exists and is admin-guarded, but the
+   service method is a `TODO(junior)` stub (501). Implement it like `register()` with
+   `role: ADMIN` (US-039).
+4. **`GET /users`** — Should be tightened to `JWT + ADMIN` (still public in code; US-025).
 
 ### Data / behavior gaps
 6. **`GET /courses/:id`** — Does not include nested lessons (US-016); clients must call `/courses/:courseId/lessons` separately, or backend should add `include: { lessons: true }`
@@ -146,20 +171,21 @@ Comparison of documented features in [features.md](./features.md) against the cu
 ## User Journey vs API Flow
 
 ```
-Register          → POST /auth/register                          ✅
-Login             → POST /auth/login                             ✅
-Create Course     → POST /courses                                ✅
+Register (student)→ POST /auth/register                          ✅ role forced to STUDENT
+Login             → POST /auth/login                             ✅ role in token
+Create Course     → POST /courses                    [ADMIN]     ⚠️ RolesGuard stub
 View Course List  → GET /courses                                 ✅
-Update Course     → PATCH /courses/:id                           ✅
-Delete Course     → DELETE /courses/:id                          ⚠️ cascade
-Create Lesson     → POST /courses/:courseId/lessons              ⚠️ no auth
+Update Course     → PATCH /courses/:id               [ADMIN]     ⚠️ RolesGuard stub
+Delete Course     → DELETE /courses/:id              [ADMIN]     ⚠️ RolesGuard stub / cascade
+Create Lesson     → POST /courses/:courseId/lessons  [ADMIN]     ⚠️ RolesGuard stub
 View Course + Lessons → GET /courses/:id + GET /courses/:id/lessons  ⚠️ two calls
-Update Lesson     → PATCH /lessons/:id                           ⚠️ no auth
-Delete Lesson     → DELETE /lessons/:id                          ⚠️ no auth
-View All Users    → GET /users                                   ⚠️ no auth
+Update Lesson     → PATCH /lessons/:id               [ADMIN]     ⚠️ RolesGuard stub
+Delete Lesson     → DELETE /lessons/:id              [ADMIN]     ⚠️ RolesGuard stub
+View All Users    → GET /users                                   ⚠️ should be [ADMIN]
 User Profile      → GET /users/:id                               ✅
 My Profile        → GET /users/my-profile                        ✅
 Enrolled Courses  → GET /users/me/courses                        ✅
 Other User Courses → GET /users/:id/courses                      ❌
-Enroll in Course  → POST /courses/:id/enroll                     ✅
+Enroll in Course  → POST /courses/:id/enroll                     ✅ student action
+Create Admin      → POST /auth/admins               [ADMIN]      ⚠️ createAdmin stub (501)
 ```

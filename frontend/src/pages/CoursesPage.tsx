@@ -9,9 +9,9 @@ import { EmptyState, ErrorState } from '../components/ui/States'
 import '../components/components.css'
 
 // The main landing page: a welcome hero + a grid of every course.
-// Logged-in users also get a "New course" button.
+// Admins also get a "New course" button (students only browse + enroll).
 export function CoursesPage() {
-  const { isAuthenticated } = useAuth()
+  const { isAdmin } = useAuth()
   const { data: courses, isLoading, isError, error } = useCourses()
 
   return (
@@ -31,7 +31,7 @@ export function CoursesPage() {
             {courses ? `${courses.length} available` : 'Discover what to learn next'}
           </p>
         </div>
-        {isAuthenticated && (
+        {isAdmin && (
           <Link to="/courses/new">
             <Button>+ New course</Button>
           </Link>
@@ -49,12 +49,12 @@ export function CoursesPage() {
           icon="📚"
           title="No courses yet"
           message={
-            isAuthenticated
-              ? 'Be the first to create one!'
-              : 'Log in to create the first course.'
+            isAdmin
+              ? 'Create the first course to get things started.'
+              : 'Check back soon — an admin will add courses.'
           }
           action={
-            isAuthenticated ? (
+            isAdmin ? (
               <Link to="/courses/new">
                 <Button>Create a course</Button>
               </Link>

@@ -1,7 +1,8 @@
 # TeachHub — Frontend (React + Vite)
 
-The single-page app (SPA) for TeachHub. Users register/log in, browse and create
-courses, add lessons, enroll, and view profiles.
+The single-page app (SPA) for TeachHub. **Students** register/log in, browse
+courses, enroll, and view their learning. **Admins** get a separate **`/admin`**
+section to manage courses, lessons, and other admins.
 
 Tech: **React 19**, **TypeScript**, **Vite**, **React Router**, **TanStack Query**
 (server data + caching), **axios** (HTTP), plain **CSS** with CSS-variable theming
@@ -49,24 +50,38 @@ src/
     api.ts            TypeScript shapes of backend data (User, Course, Lesson).
 
   context/            App-wide state
-    auth-context.ts   The auth context + useAuth() hook.
-    AuthProvider.tsx  Holds who's logged in; login/register/logout.
+    auth-context.ts   The auth context + useAuth() hook (exposes isAdmin).
+    AuthProvider.tsx  Holds who's logged in (incl. role); login/register/logout.
 
   hooks/              Data hooks (built on React Query)
     useCourses.ts     List/detail/create/update/delete/enroll.
     useLessons.ts     Lessons for a course + create/update/delete.
-    useUsers.ts       Users list, profiles, my profile, my courses.
+    useUsers.ts       Users list, profiles, my profile, my courses, useCreateAdmin.
 
   components/
     ui/               Reusable building blocks: Button, Input, Card, Modal,
                       ConfirmDialog, Spinner, Badge, Toast, empty/error states.
-    layout/           Navbar, Layout (page frame), footer.
+    layout/           Navbar, Layout (student frame), AdminLayout (admin frame).
     ProtectedRoute    Redirects to /login if you're not signed in.
     PublicOnlyRoute   Redirects logged-in users away from login/register.
+    AdminRoute        Redirects non-admins away from the /admin section.
     CourseCard, CourseForm, LessonForm
 
   pages/              One file per screen (Courses, CourseDetail, Login, ...).
+    admin/            The admin section: AdminDashboardPage, AdminCoursesPage,
+                      AdminUsersPage, CreateAdminPage (some are TODO(junior) stubs).
 ```
+
+### Roles (student vs admin)
+
+- The `User` type has a `role` (`'STUDENT' | 'ADMIN'`). `useAuth()` exposes
+  `isAdmin` — use it to show/hide admin-only UI (e.g. the create/edit/delete course
+  buttons) and to gate routes with `<AdminRoute>`.
+- The whole `/admin/*` area renders inside `AdminLayout` and sits behind
+  `<AdminRoute>`. Hiding UI is convenience only — the real enforcement is the
+  backend's `RolesGuard`.
+- A few admin pages are `TODO(junior)` stubs — see
+  [`../docs/junior-dev-tasks.md`](../docs/junior-dev-tasks.md) Section 1.5.
 
 ### Beginner concepts used here
 

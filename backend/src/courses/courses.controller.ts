@@ -14,6 +14,9 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import { EnrollmentsService } from 'src/enrollments/enrollments.service';
 import { Request } from '@nestjs/common';
 
@@ -24,7 +27,10 @@ export class CoursesController {
     private readonly enrollmentsService: EnrollmentsService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  // Creating a course is an ADMIN-only action. JwtAuthGuard runs first (verifies
+  // the token and sets req.user), then RolesGuard checks req.user.role === ADMIN.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post()
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
@@ -40,7 +46,9 @@ export class CoursesController {
     return this.coursesService.findById(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Editing a course is ADMIN-only.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -49,12 +57,16 @@ export class CoursesController {
     return this.coursesService.update(id, updateCourseDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Deleting a course is ADMIN-only.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.coursesService.remove(id);
   }
 
+  // Enrolling is a STUDENT action — keep it open to ANY logged-in user.
+  // (Only JwtAuthGuard here — deliberately NO RolesGuard/@Roles.)
   @UseGuards(JwtAuthGuard)
   @Post(':id/enroll')
   enroll(@Param('id', ParseIntPipe) courseId: number, @Request() req: any) {

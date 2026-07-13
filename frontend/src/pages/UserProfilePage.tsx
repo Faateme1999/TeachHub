@@ -29,7 +29,9 @@ export function UserProfilePage() {
 
   return (
     <div>
-      <Link to="/users" className="navbar__link" style={{ paddingLeft: 0 }}>
+      {/* This page now lives inside the admin section (/admin/users/:id), so the
+          back-link points to the admin user list. */}
+      <Link to="/admin/users" className="navbar__link" style={{ paddingLeft: 0 }}>
         ← All users
       </Link>
 

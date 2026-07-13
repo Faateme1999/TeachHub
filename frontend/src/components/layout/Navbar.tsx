@@ -10,7 +10,7 @@ import './layout.css'
 // - Right: the logged-in user's name + Logout, OR Login/Sign up buttons.
 // On small screens the center links collapse behind a ☰ button.
 export function Navbar() {
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, isAdmin, user, logout } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -41,14 +41,16 @@ export function Navbar() {
             Courses
           </NavLink>
           {isAuthenticated && (
-            <>
-              <NavLink to="/users" className={linkClass}>
-                Users
-              </NavLink>
-              <NavLink to="/me" className={linkClass}>
-                My Learning
-              </NavLink>
-            </>
+            <NavLink to="/me" className={linkClass}>
+              My Learning
+            </NavLink>
+          )}
+          {/* Admins get a link into the separate admin section. The old public
+              "Users" link moved there (it's now /admin/users). */}
+          {isAdmin && (
+            <NavLink to="/admin" className={linkClass}>
+              Admin
+            </NavLink>
           )}
         </nav>
 

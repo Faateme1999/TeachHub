@@ -1,8 +1,14 @@
 # TeachHub
 
-A small learning platform. Users register, log in, create courses and lessons,
-enroll in courses, and browse other users. Built as a teaching project for
-practicing **NestJS** (backend) and **React** (frontend).
+A small learning platform with **two kinds of user**:
+
+- **Students** register themselves, browse courses, and enroll.
+- **Admins** manage courses and lessons (and can create other admins) from a
+  separate **`/admin`** section. The app ships with one pre-defined admin; only an
+  admin can create more.
+
+Built as a teaching project for practicing **NestJS** (backend) and **React**
+(frontend).
 
 - **`backend/`** — NestJS 11 + Prisma 6 + PostgreSQL API
 - **`frontend/`** — React 19 + Vite SPA (React Router, TanStack Query, axios)
@@ -52,20 +58,28 @@ frontend proxies `/api/*` calls to it.
 ## Seed users
 
 `npm run db:seed` (in `backend/`) fills the database with demo data so the app
-isn't empty. It creates three accounts — **all share the same password:**
+isn't empty. It creates four accounts — **all share the same password:**
 
-| Name | Email | Password |
-|------|-------|----------|
-| Ada Lovelace | `ada@teachhub.dev` | `password123` |
-| Alan Turing | `alan@teachhub.dev` | `password123` |
-| Grace Hopper | `grace@teachhub.dev` | `password123` |
+| Name | Email | Role | Password |
+|------|-------|------|----------|
+| Admin | `admin@teachhub.dev` | **ADMIN** | `password123` |
+| Ada Lovelace | `ada@teachhub.dev` | Student | `password123` |
+| Alan Turing | `alan@teachhub.dev` | Student | `password123` |
+| Grace Hopper | `grace@teachhub.dev` | Student | `password123` |
 
 It also creates two demo courses ("Intro to NestJS", "React for Beginners") with
 lessons, and enrolls Ada in the NestJS course so her **My Learning** page has
 content.
 
-Log in with any of the above, or click **Sign up** to make your own account
+Log in as **`admin@teachhub.dev`** to reach the **`/admin`** section (manage
+courses/lessons, create admins), or as a student to browse and enroll. Click
+**Sign up** to make your own account — sign-up always creates a **student**
 (you'll be logged in automatically after registering).
+
+> Note: the two-role system is scaffolded with a couple of `TODO(junior)` stubs
+> (the roles guard and create-admin logic), so admin actions light up fully once
+> those are finished — see [docs/junior-dev-tasks.md](docs/junior-dev-tasks.md)
+> **Section 1.5**.
 
 The seed script (`backend/prisma/seed.ts`) is safe to run more than once: it
 won't duplicate users or courses.

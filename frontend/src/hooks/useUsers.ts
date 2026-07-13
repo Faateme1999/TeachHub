@@ -1,7 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../lib/apiClient'
 import { queryKeys } from '../lib/queryKeys'
-import type { Course, User } from '../types/api'
+import type {
+  Course,
+  CreateAdminInput,
+  RegisterResponse,
+  User,
+} from '../types/api'
 
 // Hooks for reading users and their enrolled courses.
 
@@ -64,6 +69,29 @@ export function useMyCourses() {
     queryFn: async () => {
       const { data } = await apiClient.get<Course[]>('/users/me/courses')
       return data
+    },
+  })
+}
+
+// POST /auth/admins — create another admin. ADMIN-only on the backend (guarded by
+// @Roles(ADMIN)); the UI only exposes it inside the admin section.
+//
+// TODO(junior) — US-039 (create admin): this hook is ready to use as-is. Call it
+// from CreateAdminPage:
+//   const createAdmin = useCreateAdmin()
+//   createAdmin.mutate({ name, email, password }, { onSuccess, onError })
+// Note: the backend AuthService.createAdmin is itself a stub (returns 501) until
+// you implement it — so this call will 501 until then. See auth.service.ts.
+export function useCreateAdmin() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: CreateAdminInput) => {
+      const { data } = await apiClient.post<RegisterResponse>('/auth/admins', input)
+      return data
+    },
+    onSuccess: () => {
+      // The user list changed — refresh it so the new admin appears.
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
     },
   })
 }

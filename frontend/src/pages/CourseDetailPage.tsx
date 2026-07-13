@@ -23,18 +23,18 @@ import type { Lesson, LessonInput } from '../types/api'
 import '../components/components.css'
 
 // The course detail page. It shows:
-//  - the course info + Enroll button (for logged-in users)
-//  - edit / delete course actions (for logged-in users)
-//  - the list of lessons, with add / edit / delete (for logged-in users)
+//  - the course info + Enroll button (for any logged-in user / student)
+//  - edit / delete course actions (ADMINS only)
+//  - the list of lessons, with add / edit / delete (ADMINS only)
 //
-// NOTE: the backend has no "ownership" concept yet, so ANY logged-in user can
-// edit/delete any course or lesson. TODO(junior): once the backend adds a course
-// owner, only show these actions to the owner.
+// Course/lesson management is now admin-only, both here (UI hidden for
+// non-admins) and on the backend (routes guarded by @Roles(ADMIN)). Enrolling
+// stays open to any logged-in user.
 export function CourseDetailPage() {
   const { id } = useParams()
   const courseId = Number(id)
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
   const { showToast } = useToast()
 
   // Two separate queries: the course, and its lessons (backend doesn't nest them).
@@ -179,7 +179,7 @@ export function CourseDetailPage() {
               {enroll.isPending ? 'Enrolling…' : 'Enroll in this course'}
             </Button>
           )}
-          {isAuthenticated && (
+          {isAdmin && (
             <>
               <Link to={`/courses/${courseId}/edit`}>
                 <Button variant="secondary">Edit</Button>
@@ -201,7 +201,7 @@ export function CourseDetailPage() {
       <section className="detail__section">
         <div className="page-header">
           <h2 className="page-header__title">Lessons</h2>
-          {isAuthenticated && <Button onClick={openAddLesson}>+ Add lesson</Button>}
+          {isAdmin && <Button onClick={openAddLesson}>+ Add lesson</Button>}
         </div>
 
         {lessonsQuery.isLoading && <Spinner center />}
@@ -211,7 +211,7 @@ export function CourseDetailPage() {
           <EmptyState
             icon="📝"
             title="No lessons yet"
-            message={isAuthenticated ? 'Add the first lesson to this course.' : 'Check back later.'}
+            message={isAdmin ? 'Add the first lesson to this course.' : 'Check back later.'}
           />
         )}
 
@@ -225,7 +225,7 @@ export function CourseDetailPage() {
                   </p>
                   <p className="lesson-item__content">{lesson.content}</p>
                 </div>
-                {isAuthenticated && (
+                {isAdmin && (
                   <div className="lesson-item__actions">
                     <Button variant="ghost" size="sm" onClick={() => openEditLesson(lesson)}>
                       Edit

@@ -8,7 +8,12 @@ import { EmptyState, ErrorState } from '../components/ui/States'
 import '../components/components.css'
 
 // Lists everyone registered on the platform. Each row links to that user's
-// profile page. ProtectedRoute (login required).
+// profile page.
+//
+// NOTE: this page is no longer routed directly — the users list moved into the
+// admin section. It's kept as a ready-made starting point: AdminUsersPage
+// (pages/admin/AdminUsersPage.tsx) should reuse this layout. Links point at the
+// admin path (/admin/users/:id) accordingly.
 export function UsersPage() {
   const { data: users, isLoading, isError, error } = useUsers()
 
@@ -31,7 +36,7 @@ export function UsersPage() {
         <Card>
           <div className="user-list">
             {users.map((user) => (
-              <Link key={user.id} to={`/users/${user.id}`} className="user-row">
+              <Link key={user.id} to={`/admin/users/${user.id}`} className="user-row">
                 <span className="avatar" aria-hidden="true">
                   {getInitials(user.name)}
                 </span>

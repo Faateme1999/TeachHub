@@ -14,6 +14,9 @@ export interface AuthContextValue {
   token: string | null
   // true only when we have a valid token
   isAuthenticated: boolean
+  // true when the logged-in user is an admin. Use this to show/hide admin-only
+  // UI and to guard the /admin section (see AdminRoute).
+  isAdmin: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void

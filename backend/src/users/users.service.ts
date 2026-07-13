@@ -43,6 +43,10 @@ export class UsersService {
         id: true,
         name: true,
         email: true,
+        // role is REQUIRED here: JwtStrategy.validate() returns this object as
+        // `req.user`, and RolesGuard reads `req.user.role`. If you remove `role`
+        // from this select, the guard sees `undefined` and admin checks break.
+        role: true,
         createdAt: true,
       },
     });
@@ -54,6 +58,8 @@ export class UsersService {
         id: true,
         name: true,
         email: true,
+        // Expose role so the frontend can show/hide admin-only UI in user lists.
+        role: true,
         createdAt: true,
       },
     });
