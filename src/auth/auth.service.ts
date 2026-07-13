@@ -9,14 +9,12 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
-import { EnrollmentsService } from 'src/enrollments/enrollments.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly enrollmentsService: EnrollmentsService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
