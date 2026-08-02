@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class CoursesService {
@@ -38,14 +39,22 @@ export class CoursesService {
     //
     // (The frontend currently fetches lessons via GET /courses/:courseId/lessons,
     //  so this is an optional improvement — but a good one to learn `include`.)
-    return this.prisma.course.findUnique({
-      where: {
-        id,
+
+    const course = await this.prisma.course.findUnique({
+      where: { id },
+      include: {
+        lessons: true,
       },
     });
+
+    if (!course) {
+      throw new NotFoundException(`Course ${id} not found`);
+    }
+    return course;
   }
 
   async update(id: number, updateCourseDto: UpdateCourseDto) {
+    await this.findById(id);
     return this.prisma.course.update({
       where: {
         id,
@@ -59,6 +68,7 @@ export class CoursesService {
   // WHERE id = 1;
 
   async remove(id: number) {
+    await this.findById(id);
     // TODO(junior) — US-014: handle deleting a course that has lessons/enrollments.
     // Problem: the database uses "ON DELETE RESTRICT", so if this course still has
     // lessons or enrollments, this delete throws a foreign-key error (→ 500).
@@ -76,11 +86,27 @@ export class CoursesService {
     //        ]);
     //
     // Bonus: throw a NotFoundException if the course id doesn't exist (see below).
-    return this.prisma.course.delete({
-      where: {
-        id,
-      },
-    });
+
+    // Delete all children before deleting the parent.
+    return this.prisma.$transaction([
+      this.prisma.lesson.deleteMany({
+        where: {
+          courseId: id,
+        },
+      }),
+
+      this.prisma.enrollment.deleteMany({
+        where: {
+          courseId: id,
+        },
+      }),
+
+      this.prisma.course.delete({
+        where: {
+          id,
+        },
+      }),
+    ]);
   }
 
   // DELETE FROM "Course"
@@ -94,4 +120,13 @@ export class CoursesService {
   //   const course = await this.prisma.course.findUnique({ where: { id } });
   //   if (!course) throw new NotFoundException(`Course ${id} not found`);
   //   return course;
+
+  // with cascade
+  // async remove(id: number) {
+  // return this.prisma.course.delete({
+  //   where: {
+  //     id,
+  //   },
+  // });
+  // npx prisma migrate dev --name cascade_delete
 }
