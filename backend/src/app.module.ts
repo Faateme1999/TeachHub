@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { ConfigModule } from '@nestjs/config';
 
 // TODO(junior) — housekeeping: AppController/AppService (the "GET /" and
 // "GET /about" routes) are NOT registered here, so those routes don't work and
@@ -20,6 +21,11 @@ import { LessonsModule } from './lessons/lessons.module';
     CoursesModule,
     EnrollmentsModule,
     LessonsModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    // Using isGlobal: true means every module can access ConfigService without importing ConfigModule again.
+    // Create one ConfigService and make it available everywhere.
   ],
 })
 export class AppModule {}

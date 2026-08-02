@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-
+import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
 
 @Injectable()
@@ -10,7 +10,10 @@ import { UsersService } from '../../users/users.service';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   // A strategy defines: How do we authenticate the user?
   // The guard asks the strategy to verify the user.
-  constructor(private readonly usersService: UsersService) {
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
+  ) {
     // it must initialize the parent class. (by super)
     super({
       // "Where should I look for the JWT token?"
@@ -19,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       // It's the secret password used to sign and verify JWT tokens
       // Think of it as a password that only the server knows.
-      secretOrKey: 'my-super-secret-key',
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
