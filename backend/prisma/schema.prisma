@@ -71,6 +71,7 @@ model Enrollment {
 
   user      User     @relation(fields: [userId], references: [id])
   course    Course   @relation(fields: [courseId], references: [id])
+  //course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
@@ -84,6 +85,8 @@ model Lesson {
 // courseId (foreign key)
   courseId  Int
   course    Course   @relation(fields: [courseId], references: [id])
+
+  //course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   // TODO(junior) — US-014 (cascade delete): by default the database REFUSES to
   // delete a Course that still has Lessons (that's why deleting such a course
