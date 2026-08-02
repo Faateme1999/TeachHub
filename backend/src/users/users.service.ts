@@ -1,4 +1,4 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserData } from './types/create-user.type';
 import { EnrollmentsService } from 'src/enrollments/enrollments.service';
@@ -35,7 +35,7 @@ export class UsersService {
   //   });
   // }
   async findById(id: number) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         id,
       },
@@ -50,6 +50,12 @@ export class UsersService {
         createdAt: true,
       },
     });
+
+    if (!user) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
+
+    return user;
   }
 
   async findAll() {
@@ -72,6 +78,7 @@ export class UsersService {
   // }
 
   async findUserCourses(userId: number) {
+    await this.findById(userId);
     return this.enrollmentsService.findUserCourses(userId);
   }
 
@@ -87,10 +94,9 @@ export class UsersService {
   //
   // Verify: `GET /users/1/courses` should return an array of that user's courses
   //         (instead of a 501 error).
+
   async findCoursesByUserId(userId: number) {
-    throw new NotImplementedException(
-      'TODO(junior): implement findCoursesByUserId — see the comment above.',
-    );
-    // return this.enrollmentsService.findUserCourses(userId);
+    await this.findById(userId);
+    return this.enrollmentsService.findUserCourses(userId);
   }
 }
