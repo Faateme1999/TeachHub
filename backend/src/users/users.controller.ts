@@ -18,6 +18,7 @@ export class UsersController {
   //   @UseGuards(JwtAuthGuard)
   // It's left public for now so the list keeps working while you learn the token
   // flow — the frontend only calls it from authenticated pages anyway.
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
