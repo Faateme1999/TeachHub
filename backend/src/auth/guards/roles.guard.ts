@@ -21,6 +21,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 // available everywhere — this guard needs NO extra module wiring.
 @Injectable()
 export class RolesGuard implements CanActivate {
+  // CanActivate tells TypeScript:"This class is a Guard."
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -28,9 +29,31 @@ export class RolesGuard implements CanActivate {
     //    first, then the controller class. If no @Roles is present, requiredRoles
     //    is undefined and the route is open to any authenticated user.
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      // That decorator stores metadata using a key.
+      // The Reflector needs that key to know which metadata to read.
       context.getHandler(),
+      // همین تابعی که الان قرار است اجرا شود.
+      // متد از کلاس نزدیک‌تر است یا اولویت بیشتری دارد.
       context.getClass(),
+      // تابع داخل چه کلاسی است؟
     ]);
+
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+      // return true means: "The guard allows the request to continue."
+    }
+
+    const { user } = context.switchToHttp().getRequest();
+    // Think of context as a box containing information about the current request./ "Information about the current execution."
+    // .switchToHttp(): "I'm handling an HTTP request, so give me the HTTP context."/ you're saying:"Go to the HTTP branch."
+    // .getRequest():"Give me the Express request object."/ This is the same req you've already seen in controllers.
+    // Now you have access to: user.role
+
+    if (user && requiredRoles.includes(user.role)) {
+      return true;
+    }
+
+    throw new ForbiddenException('Admins only');
 
     // TODO(junior) — US-034 (roles guard): finish this method. Steps:
     //   1. If `requiredRoles` is undefined/empty, return true (no role required).
@@ -42,10 +65,5 @@ export class RolesGuard implements CanActivate {
     // Until you implement it, this guard DENIES every guarded route so we don't
     // accidentally ship an admin route that lets everyone in. Replace the throw
     // below with the real logic above.
-    void requiredRoles; // (silences "unused var" until you use it — delete this line)
-    void ForbiddenException; // (imported for you to use in step 4 — delete this line)
-    throw new ForbiddenException(
-      'TODO(junior): RolesGuard is not implemented yet — see roles.guard.ts',
-    );
   }
 }
