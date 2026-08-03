@@ -73,11 +73,32 @@ export class AuthService {
   //   3. Create the user with role: Role.ADMIN.
   //   4. Strip the password and return { message, user: safeUser }.
   // Delete the throw below once you've written it.
+
   async createAdmin(createAdminDto: CreateAdminDto) {
-    void createAdminDto; // (unused until you implement — delete this line)
-    throw new NotImplementedException(
-      'TODO(junior): implement createAdmin — see auth.service.ts',
+    // createAdminDto: This is the data coming from the HTTP request.
+    const existingUser = await this.usersService.findByEmail(
+      createAdminDto.email,
     );
+
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
+
+    const user = await this.usersService.create({
+      name: createAdminDto.name,
+      email: createAdminDto.email,
+      password: hashedPassword,
+      role: Role.ADMIN,
+    });
+
+    const { password, ...safeUser } = user;
+
+    return {
+      message: 'Admin created',
+      user: safeUser,
+    };
   }
 
   async login(loginDto: LoginDto) {
