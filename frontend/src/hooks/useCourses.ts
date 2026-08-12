@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/apiClient";
 import { queryKeys } from "../lib/queryKeys";
-import type { Course, CourseInput } from "../types/api";
+import type { Course, CourseInput, PaginatedCourses } from "../types/api";
 
 // This file wraps the "courses" API calls in TanStack Query hooks.
 // - useQuery  = read data (with caching, loading & error states for free)
@@ -10,11 +10,14 @@ import type { Course, CourseInput } from "../types/api";
 // Components never call axios directly for courses — they use these hooks.
 
 // GET /courses — list every course.
-export function useCourses() {
+export function useCourses(page: number) {
   return useQuery({
-    queryKey: queryKeys.courses.all,
+    queryKey: [...queryKeys.courses.all, page],
     queryFn: async () => {
-      const { data } = await apiClient.get<Course[]>("/courses");
+      const { data } = await apiClient.get<PaginatedCourses>(
+        `/courses?page=${page}`,
+      );
+
       return data;
     },
   });
