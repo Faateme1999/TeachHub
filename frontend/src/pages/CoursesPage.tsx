@@ -4,11 +4,11 @@ import { useAuth } from "../context/auth-context";
 import { getApiErrorMessage } from "../lib/apiClient";
 import { CourseCard } from "../components/CourseCard";
 import { Button } from "../components/ui/Button";
-import { Spinner } from "../components/ui/Spinner";
 import { EmptyState, ErrorState } from "../components/ui/States";
 import { useState } from "react";
 import { Input } from "../components/ui/Input";
 import "../components/components.css";
+import { CourseCardSkeleton } from "../components/ui/CourseCardSkeleton";
 
 // The main landing page: a welcome hero + a grid of every course.
 // Admins also get a "New course" button (students only browse + enroll).
@@ -56,7 +56,13 @@ export function CoursesPage() {
         />
       </div>
 
-      {isLoading && <Spinner center />}
+      {isLoading && (
+        <div className="course-grid">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <CourseCardSkeleton key={index} />
+          ))}
+        </div>
+      )}
 
       {isError && (
         <ErrorState
