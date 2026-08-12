@@ -27,6 +27,25 @@ export class EnrollmentsService {
     });
   }
 
+  async unenroll(userId: number, courseId: number) {
+    const enrollment = await this.prisma.enrollment.findFirst({
+      where: {
+        userId,
+        courseId,
+      },
+    });
+
+    if (!enrollment) {
+      throw new BadRequestException('User is not enrolled in this course');
+    }
+
+    return this.prisma.enrollment.delete({
+      where: {
+        id: enrollment.id,
+      },
+    });
+  }
+
   async findUserCourses(userId: number) {
     const enrollments = await this.prisma.enrollment.findMany({
       where: {

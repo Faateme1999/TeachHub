@@ -72,6 +72,12 @@ export class CoursesController {
   enroll(@Param('id', ParseIntPipe) courseId: number, @Request() req: any) {
     return this.enrollmentsService.enroll(req.user.id, courseId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/enroll')
+  unenroll(@Param('id', ParseIntPipe) courseId: number, @Request() req: any) {
+    return this.enrollmentsService.unenroll(req.user.id, courseId);
+  }
   //   That request contains lots of information:
   //   {
   //   headers: {...},
