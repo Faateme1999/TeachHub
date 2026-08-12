@@ -22,8 +22,39 @@ export class CoursesService {
   //   }
   // });
 
-  async findAll() {
-    return this.prisma.course.findMany();
+  // async findAll() {
+  //   return this.prisma.course.findMany();
+  // }
+  async findAll(page = '1') {
+    //  Math.max(..., 1): This guarantees the page number is at least 1.
+    const pageNumber = Math.max(Number(page) || 1, 1);
+    // Each page can contain 6 courses.
+    const pageSize = 6;
+
+    // How many records should I skip before returning results?
+    const skip = (pageNumber - 1) * pageSize;
+
+    // Instead of waiting for one and then starting the other, we can run them together: Promise.all
+    const [courses, total] = await Promise.all([
+      this.prisma.course.findMany({
+        skip,
+        take: pageSize,
+        // Return at most 6 courses.
+      }),
+
+      // How many courses exist in total?
+      this.prisma.course.count(),
+    ]);
+
+    // Math.ceil() means: Round upward.
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      courses,
+      page: pageNumber,
+      totalPages,
+      total,
+    };
   }
 
   async findById(id: number) {

@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -36,9 +37,14 @@ export class CoursesController {
     return this.coursesService.create(createCourseDto);
   }
 
+  // @Query() tells NestJS:"Get something from the URL's query parameters."
+  // GET /courses?page=2
+  // The part after ? is the query string:
+  // ?page=2
+  // NestJS receives query parameters as strings.
   @Get()
-  findAll() {
-    return this.coursesService.findAll();
+  findAll(@Query('page') page?: string) {
+    return this.coursesService.findAll(page);
   }
 
   @Get(':id')
