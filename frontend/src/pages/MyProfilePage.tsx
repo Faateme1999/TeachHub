@@ -1,24 +1,26 @@
-import { Link } from 'react-router-dom'
-import { useMyProfile, useMyCourses } from '../hooks/useUsers'
-import { useAuth } from '../context/auth-context'
-import { getInitials, formatDate } from '../lib/format'
-import { CourseCard } from '../components/CourseCard'
-import { Button } from '../components/ui/Button'
-import { Card } from '../components/ui/Card'
-import { Spinner } from '../components/ui/Spinner'
-import { EmptyState, ErrorState } from '../components/ui/States'
-import '../components/components.css'
+import { Link } from "react-router-dom";
+import { useMyProfile, useMyCourses } from "../hooks/useUsers";
+import { useUnenroll } from "../hooks/useCourses";
+import { useAuth } from "../context/auth-context";
+import { getInitials, formatDate } from "../lib/format";
+import { CourseCard } from "../components/CourseCard";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Spinner } from "../components/ui/Spinner";
+import { EmptyState, ErrorState } from "../components/ui/States";
+import "../components/components.css";
 
 // The logged-in user's own profile + the courses they've enrolled in.
 // Unlike UserProfilePage, "my courses" uses GET /users/me/courses which IS
 // implemented, so it works fully. ProtectedRoute (login required).
 export function MyProfilePage() {
-  const { user } = useAuth()
-  const profileQuery = useMyProfile()
-  const coursesQuery = useMyCourses()
+  const { user } = useAuth();
+  const profileQuery = useMyProfile();
+  const coursesQuery = useMyCourses();
+  const unenroll = useUnenroll();
 
   // Prefer the freshly-fetched profile, fall back to the user stored at login.
-  const profile = profileQuery.data ?? user
+  const profile = profileQuery.data ?? user;
 
   return (
     <div>
@@ -49,7 +51,9 @@ export function MyProfilePage() {
         <h2>My courses</h2>
 
         {coursesQuery.isLoading && <Spinner center />}
-        {coursesQuery.isError && <ErrorState message="Could not load your courses." />}
+        {coursesQuery.isError && (
+          <ErrorState message="Could not load your courses." />
+        )}
 
         {coursesQuery.data && coursesQuery.data.length === 0 && (
           <EmptyState
@@ -67,11 +71,21 @@ export function MyProfilePage() {
         {coursesQuery.data && coursesQuery.data.length > 0 && (
           <div className="course-grid">
             {coursesQuery.data.map((course) => (
-              <CourseCard key={course.id} course={course} />
+              <div key={course.id}>
+                <CourseCard course={course} />
+
+                <Button
+                  variant="danger"
+                  onClick={() => unenroll.mutate(course.id)}
+                  disabled={unenroll.isPending}
+                >
+                  {unenroll.isPending ? "Unenrolling…" : "Unenroll"}
+                </Button>
+              </div>
             ))}
           </div>
         )}
       </section>
     </div>
-  )
+  );
 }
