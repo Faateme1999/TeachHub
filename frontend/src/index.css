@@ -229,3 +229,20 @@ code {
     opacity: 1;
   }
 }
+
+.my-course-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.my-course-card__action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.my-course-card__action button {
+  width: auto;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+}

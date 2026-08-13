@@ -71,16 +71,18 @@ export function MyProfilePage() {
         {coursesQuery.data && coursesQuery.data.length > 0 && (
           <div className="course-grid">
             {coursesQuery.data.map((course) => (
-              <div key={course.id}>
+              <div key={course.id} className="my-course-card">
                 <CourseCard course={course} />
 
-                <Button
-                  variant="danger"
-                  onClick={() => unenroll.mutate(course.id)}
-                  disabled={unenroll.isPending}
-                >
-                  {unenroll.isPending ? "Unenrolling…" : "Unenroll"}
-                </Button>
+                <div className="my-course-card__action">
+                  <Button
+                    variant="danger"
+                    onClick={() => unenroll.mutate(course.id)}
+                    disabled={unenroll.isPending}
+                  >
+                    {unenroll.isPending ? "Unenrolling…" : "Unenroll"}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
