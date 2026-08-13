@@ -38,7 +38,7 @@ export function AdminCoursesPage() {
   // Courses
   // -------------------------
 
-  const coursesQuery = useCourses();
+  const coursesQuery = useCourses(1);
   const createCourse = useCreateCourse();
   const deleteCourse = useDeleteCourse();
 
@@ -227,7 +227,7 @@ export function AdminCoursesPage() {
     );
   }
 
-  const courses = coursesQuery.data ?? [];
+  const courses = coursesQuery.data?.courses ?? [];
   const savingLesson = createLesson.isPending || updateLesson.isPending;
 
   return (
