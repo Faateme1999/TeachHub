@@ -16,11 +16,6 @@ import { Role } from '@prisma/client';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // TODO(junior) — US-025: the features doc says viewing all users should require
-  // a logged-in user. To enforce that, add the guard here (same as the routes below):
-  //   @UseGuards(JwtAuthGuard)
-  // It's left public for now so the list keeps working while you learn the token
-  // flow — the frontend only calls it from authenticated pages anyway.
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Get()
@@ -41,12 +36,9 @@ export class UsersController {
     return this.usersService.findUserCourses(req.user.id);
   }
 
-  // US-028: view the courses a SPECIFIC user (by id) is enrolled in.
   // NOTE: this must be declared BEFORE `@Get(':id')` in NestJS route order is not
   // an issue here because the path suffix ('/courses') is different — but keeping
   // related routes together makes the file easier to read.
-  // The service method it calls is a STUB (returns 501) — see users.service.ts
-  // and docs/junior-dev-tasks.md for how to finish it.
   @Get(':id/courses')
   userCourses(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findCoursesByUserId(id);

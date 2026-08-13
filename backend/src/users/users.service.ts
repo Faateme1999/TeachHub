@@ -82,19 +82,6 @@ export class UsersService {
     return this.enrollmentsService.findUserCourses(userId);
   }
 
-  // TODO(junior) — US-028: return the courses that ANY user (by id) is enrolled in.
-  // This is a STUB. It currently throws 501 (Not Implemented) so the app doesn't
-  // pretend to work. The good news: the logic already exists! `findUserCourses`
-  // right above uses `enrollmentsService.findUserCourses(...)`, which does exactly
-  // what we need — it just takes a userId. So finishing this is a one-liner:
-  //
-  //   1. Delete the `throw` line below.
-  //   2. Uncomment the return line.
-  //   3. (Optional) first check the user exists and throw NotFoundException if not.
-  //
-  // Verify: `GET /users/1/courses` should return an array of that user's courses
-  //         (instead of a 501 error).
-
   async findCoursesByUserId(userId: number) {
     await this.findById(userId);
     return this.enrollmentsService.findUserCourses(userId);

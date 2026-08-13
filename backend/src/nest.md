@@ -224,3 +224,7 @@ const createUserDto = {
 
 - MVP (minimum viable product)
 - Schema changed → Prisma Client must be regenerated (That's why migrate dev automatically runs generate.)
+
+- Reflector is a NestJS utility that reads metadata added by decorators like @Roles().
+  - It doesn't know anything about users, JWTs, or admins. It simply answers questions like:
+  - "What roles are required for this route?"

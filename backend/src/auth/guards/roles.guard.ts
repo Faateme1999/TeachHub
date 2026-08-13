@@ -28,7 +28,7 @@ export class RolesGuard implements CanActivate {
     // 1. Read the roles required by @Roles(...) — checks the handler (method)
     //    first, then the controller class. If no @Roles is present, requiredRoles
     //    is undefined and the route is open to any authenticated user.
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [ 
       // That decorator stores metadata using a key.
       // The Reflector needs that key to know which metadata to read.
       context.getHandler(),

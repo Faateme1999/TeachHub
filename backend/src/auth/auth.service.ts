@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  NotImplementedException,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -65,14 +64,6 @@ export class AuthService {
   // Create a new ADMIN. This is called by POST /users/admins, which is guarded so
   // ONLY an existing admin can reach it (see UsersController). The role is
   // hard-coded ADMIN here — it is never taken from the request body.
-  //
-  // TODO(junior) — US-035 (create admin): implement this method. It's almost
-  // identical to register() above:
-  //   1. Reject if the email already exists (usersService.findByEmail → 400).
-  //   2. Hash the password with bcrypt (same as register: bcrypt.hash(pw, 10)).
-  //   3. Create the user with role: Role.ADMIN.
-  //   4. Strip the password and return { message, user: safeUser }.
-  // Delete the throw below once you've written it.
 
   async createAdmin(createAdminDto: CreateAdminDto) {
     // createAdminDto: This is the data coming from the HTTP request.
