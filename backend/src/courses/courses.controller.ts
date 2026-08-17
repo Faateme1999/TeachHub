@@ -73,13 +73,15 @@ export class CoursesController {
 
   // Enrolling is a STUDENT action — keep it open to ANY logged-in user.
   // (Only JwtAuthGuard here — deliberately NO RolesGuard/@Roles.)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
   @Post(':id/enroll')
   enroll(@Param('id', ParseIntPipe) courseId: number, @Request() req: any) {
     return this.enrollmentsService.enroll(req.user.id, courseId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STUDENT)
   @Delete(':id/enroll')
   unenroll(@Param('id', ParseIntPipe) courseId: number, @Request() req: any) {
     return this.enrollmentsService.unenroll(req.user.id, courseId);

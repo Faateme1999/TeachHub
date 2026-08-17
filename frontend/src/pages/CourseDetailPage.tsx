@@ -1,26 +1,26 @@
-import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useCourse, useDeleteCourse, useEnroll } from '../hooks/useCourses'
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useCourse, useDeleteCourse, useEnroll } from "../hooks/useCourses";
 import {
   useLessons,
   useCreateLesson,
   useUpdateLesson,
   useDeleteLesson,
-} from '../hooks/useLessons'
-import { useAuth } from '../context/auth-context'
-import { getApiErrorMessage } from '../lib/apiClient'
-import { formatDate, formatPrice } from '../lib/format'
-import { useToast } from '../components/ui/toast-context'
-import { Card } from '../components/ui/Card'
-import { Badge } from '../components/ui/Badge'
-import { Button } from '../components/ui/Button'
-import { Spinner } from '../components/ui/Spinner'
-import { EmptyState, ErrorState } from '../components/ui/States'
-import { Modal } from '../components/ui/Modal'
-import { ConfirmDialog } from '../components/ui/ConfirmDialog'
-import { LessonForm } from '../components/LessonForm'
-import type { Lesson, LessonInput } from '../types/api'
-import '../components/components.css'
+} from "../hooks/useLessons";
+import { useAuth } from "../context/auth-context";
+import { getApiErrorMessage } from "../lib/apiClient";
+import { formatDate, formatPrice } from "../lib/format";
+import { useToast } from "../components/ui/toast-context";
+import { Card } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
+import { Spinner } from "../components/ui/Spinner";
+import { EmptyState, ErrorState } from "../components/ui/States";
+import { Modal } from "../components/ui/Modal";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import { LessonForm } from "../components/LessonForm";
+import type { Lesson, LessonInput } from "../types/api";
+import "../components/components.css";
 
 // The course detail page. It shows:
 //  - the course info + Enroll button (for any logged-in user / student)
@@ -31,30 +31,30 @@ import '../components/components.css'
 // non-admins) and on the backend (routes guarded by @Roles(ADMIN)). Enrolling
 // stays open to any logged-in user.
 export function CourseDetailPage() {
-  const { id } = useParams()
-  const courseId = Number(id)
-  const navigate = useNavigate()
-  const { isAuthenticated, isAdmin } = useAuth()
-  const { showToast } = useToast()
+  const { id } = useParams();
+  const courseId = Number(id);
+  const navigate = useNavigate();
+  const { isAuthenticated, isAdmin } = useAuth();
+  const { showToast } = useToast();
 
   // Two separate queries: the course, and its lessons (backend doesn't nest them).
-  const courseQuery = useCourse(courseId)
-  const lessonsQuery = useLessons(courseId)
+  const courseQuery = useCourse(courseId);
+  const lessonsQuery = useLessons(courseId);
 
-  const enroll = useEnroll()
-  const deleteCourse = useDeleteCourse()
-  const createLesson = useCreateLesson(courseId)
-  const updateLesson = useUpdateLesson(courseId)
-  const deleteLesson = useDeleteLesson(courseId)
+  const enroll = useEnroll();
+  const deleteCourse = useDeleteCourse();
+  const createLesson = useCreateLesson(courseId);
+  const updateLesson = useUpdateLesson(courseId);
+  const deleteLesson = useDeleteLesson(courseId);
 
   // Local UI state for the modals/dialogs on this page.
-  const [lessonModalOpen, setLessonModalOpen] = useState(false)
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
-  const [lessonError, setLessonError] = useState('')
-  const [confirmDeleteCourse, setConfirmDeleteCourse] = useState(false)
-  const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null)
+  const [lessonModalOpen, setLessonModalOpen] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [lessonError, setLessonError] = useState("");
+  const [confirmDeleteCourse, setConfirmDeleteCourse] = useState(false);
+  const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
 
-  if (courseQuery.isLoading) return <Spinner center />
+  if (courseQuery.isLoading) return <Spinner center />;
   if (courseQuery.isError || !courseQuery.data) {
     return (
       <ErrorState
@@ -66,93 +66,97 @@ export function CourseDetailPage() {
           </Link>
         }
       />
-    )
+    );
   }
 
-  const course = courseQuery.data
+  const course = courseQuery.data;
 
   // --- Handlers ---
   function handleEnroll() {
     enroll.mutate(courseId, {
-      onSuccess: () => showToast('You are enrolled! 🎉', 'success'),
+      onSuccess: () => showToast("You are enrolled! 🎉", "success"),
       // The backend returns 400 "already enrolled" — show it as a friendly toast.
-      onError: (err) => showToast(getApiErrorMessage(err, 'Could not enroll'), 'error'),
-    })
+      onError: (err) =>
+        showToast(getApiErrorMessage(err, "Could not enroll"), "error"),
+    });
   }
 
   function handleDeleteCourse() {
     deleteCourse.mutate(courseId, {
       onSuccess: () => {
-        showToast('Course deleted', 'success')
-        navigate('/courses')
+        showToast("Course deleted", "success");
+        navigate("/courses");
       },
       onError: (err) => {
         // Deleting a course with lessons/enrollments currently fails on the
         // backend (cascade delete is a junior TODO) — explain that.
         showToast(
-          getApiErrorMessage(err, 'Could not delete. It may still have lessons or enrollments.'),
-          'error',
-        )
-        setConfirmDeleteCourse(false)
+          getApiErrorMessage(
+            err,
+            "Could not delete. It may still have lessons or enrollments.",
+          ),
+          "error",
+        );
+        setConfirmDeleteCourse(false);
       },
-    })
+    });
   }
 
   function openAddLesson() {
-    setEditingLesson(null)
-    setLessonError('')
-    setLessonModalOpen(true)
+    setEditingLesson(null);
+    setLessonError("");
+    setLessonModalOpen(true);
   }
 
   function openEditLesson(lesson: Lesson) {
-    setEditingLesson(lesson)
-    setLessonError('')
-    setLessonModalOpen(true)
+    setEditingLesson(lesson);
+    setLessonError("");
+    setLessonModalOpen(true);
   }
 
   function handleLessonSubmit(values: LessonInput) {
-    setLessonError('')
+    setLessonError("");
     const onError = (err: unknown) =>
-      setLessonError(getApiErrorMessage(err, 'Could not save lesson'))
+      setLessonError(getApiErrorMessage(err, "Could not save lesson"));
 
     if (editingLesson) {
       updateLesson.mutate(
         { id: editingLesson.id, input: values },
         {
           onSuccess: () => {
-            showToast('Lesson updated', 'success')
-            setLessonModalOpen(false)
+            showToast("Lesson updated", "success");
+            setLessonModalOpen(false);
           },
           onError,
         },
-      )
+      );
     } else {
       createLesson.mutate(values, {
         onSuccess: () => {
-          showToast('Lesson added', 'success')
-          setLessonModalOpen(false)
+          showToast("Lesson added", "success");
+          setLessonModalOpen(false);
         },
         onError,
-      })
+      });
     }
   }
 
   function handleDeleteLesson() {
-    if (!lessonToDelete) return
+    if (!lessonToDelete) return;
     deleteLesson.mutate(lessonToDelete.id, {
       onSuccess: () => {
-        showToast('Lesson deleted', 'success')
-        setLessonToDelete(null)
+        showToast("Lesson deleted", "success");
+        setLessonToDelete(null);
       },
       onError: (err) => {
-        showToast(getApiErrorMessage(err, 'Could not delete lesson'), 'error')
-        setLessonToDelete(null)
+        showToast(getApiErrorMessage(err, "Could not delete lesson"), "error");
+        setLessonToDelete(null);
       },
-    })
+    });
   }
 
-  const lessons = lessonsQuery.data ?? []
-  const savingLesson = createLesson.isPending || updateLesson.isPending
+  const lessons = lessonsQuery.data ?? [];
+  const savingLesson = createLesson.isPending || updateLesson.isPending;
 
   return (
     <div>
@@ -161,8 +165,8 @@ export function CourseDetailPage() {
       </Link>
 
       {/* --- Course header card --- */}
-      <Card style={{ marginTop: 'var(--space-3)' }}>
-        <div className="page-header" style={{ marginBottom: 'var(--space-3)' }}>
+      <Card style={{ marginTop: "var(--space-3)" }}>
+        <div className="page-header" style={{ marginBottom: "var(--space-3)" }}>
           <div>
             <h1 className="page-header__title">{course.title}</h1>
             <p className="page-header__subtitle">
@@ -173,10 +177,13 @@ export function CourseDetailPage() {
         </div>
         <p>{course.description}</p>
 
-        <div className="detail__actions" style={{ marginTop: 'var(--space-4)' }}>
-          {isAuthenticated && (
+        <div
+          className="detail__actions"
+          style={{ marginTop: "var(--space-4)" }}
+        >
+          {isAuthenticated && !isAdmin && (
             <Button onClick={handleEnroll} disabled={enroll.isPending}>
-              {enroll.isPending ? 'Enrolling…' : 'Enroll in this course'}
+              {enroll.isPending ? "Enrolling…" : "Enroll in this course"}
             </Button>
           )}
           {isAdmin && (
@@ -184,7 +191,10 @@ export function CourseDetailPage() {
               <Link to={`/courses/${courseId}/edit`}>
                 <Button variant="secondary">Edit</Button>
               </Link>
-              <Button variant="danger" onClick={() => setConfirmDeleteCourse(true)}>
+              <Button
+                variant="danger"
+                onClick={() => setConfirmDeleteCourse(true)}
+              >
                 Delete
               </Button>
             </>
@@ -205,13 +215,19 @@ export function CourseDetailPage() {
         </div>
 
         {lessonsQuery.isLoading && <Spinner center />}
-        {lessonsQuery.isError && <ErrorState message="Could not load lessons." />}
+        {lessonsQuery.isError && (
+          <ErrorState message="Could not load lessons." />
+        )}
 
         {lessonsQuery.data && lessons.length === 0 && (
           <EmptyState
             icon="📝"
             title="No lessons yet"
-            message={isAdmin ? 'Add the first lesson to this course.' : 'Check back later.'}
+            message={
+              isAdmin
+                ? "Add the first lesson to this course."
+                : "Check back later."
+            }
           />
         )}
 
@@ -227,10 +243,18 @@ export function CourseDetailPage() {
                 </div>
                 {isAdmin && (
                   <div className="lesson-item__actions">
-                    <Button variant="ghost" size="sm" onClick={() => openEditLesson(lesson)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEditLesson(lesson)}
+                    >
                       Edit
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setLessonToDelete(lesson)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setLessonToDelete(lesson)}
+                    >
                       Delete
                     </Button>
                   </div>
@@ -245,7 +269,7 @@ export function CourseDetailPage() {
       <Modal
         open={lessonModalOpen}
         onClose={() => setLessonModalOpen(false)}
-        title={editingLesson ? 'Edit lesson' : 'Add lesson'}
+        title={editingLesson ? "Edit lesson" : "Add lesson"}
       >
         <LessonForm
           initialValue={
@@ -253,7 +277,7 @@ export function CourseDetailPage() {
               ? { title: editingLesson.title, content: editingLesson.content }
               : undefined
           }
-          submitLabel={editingLesson ? 'Save changes' : 'Add lesson'}
+          submitLabel={editingLesson ? "Save changes" : "Add lesson"}
           submitting={savingLesson}
           serverError={lessonError}
           onSubmit={handleLessonSubmit}
@@ -281,5 +305,5 @@ export function CourseDetailPage() {
         onCancel={() => setLessonToDelete(null)}
       />
     </div>
-  )
+  );
 }
