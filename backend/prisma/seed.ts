@@ -7,10 +7,10 @@
 // It is written to be safe to run more than once: it "upserts" users (create if
 // missing, otherwise leave them), and only adds demo courses if there are none.
 
-import { PrismaClient, type User } from '@prisma/client'
-import * as bcrypt from 'bcrypt'
+import { PrismaClient, type User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 // The demo STUDENT accounts. Every one uses the password: password123
 // (No `role` set here → Prisma applies the schema default, STUDENT.)
@@ -18,22 +18,22 @@ const SEED_USERS = [
   { name: 'Ada Lovelace', email: 'ada@teachhub.dev' },
   { name: 'Alan Turing', email: 'alan@teachhub.dev' },
   { name: 'Grace Hopper', email: 'grace@teachhub.dev' },
-]
+];
 
 // The pre-defined ADMIN account. This is the ONLY admin the app ships with; she
 // can create more admins from the /admin section once that flow is implemented.
-const SEED_ADMIN = { name: 'Admin', email: 'admin@teachhub.dev' }
+const SEED_ADMIN = { name: 'Admin', email: 'admin@teachhub.dev' };
 
-const SEED_PASSWORD = 'password123'
+const SEED_PASSWORD = 'password123';
 
 async function main() {
-  console.log('🌱 Seeding database…')
+  console.log('🌱 Seeding database…');
 
   // Hash the shared demo password once (bcrypt is the same lib the app uses).
-  const hashedPassword = await bcrypt.hash(SEED_PASSWORD, 10)
+  const hashedPassword = await bcrypt.hash(SEED_PASSWORD, 10);
 
   // Create each student user if they don't already exist.
-  const users: User[] = []
+  const users: User[] = [];
   for (const user of SEED_USERS) {
     const record = await prisma.user.upsert({
       where: { email: user.email },
@@ -44,9 +44,9 @@ async function main() {
         password: hashedPassword,
         role: 'STUDENT',
       },
-    })
-    users.push(record)
-    console.log(`  • student: ${record.email}`)
+    });
+    users.push(record);
+    console.log(`  • student: ${record.email}`);
   }
 
   // Create (or promote) the seed admin. NOTE: we set role: 'ADMIN' in BOTH the
@@ -62,14 +62,14 @@ async function main() {
       password: hashedPassword,
       role: 'ADMIN',
     },
-  })
-  console.log(`  • admin: ${admin.email}`)
+  });
+  console.log(`  • admin: ${admin.email}`);
 
   // Only add demo courses if the table is empty, so re-running doesn't pile up
   // duplicate courses.
-  const existingCourses = await prisma.course.count()
+  const existingCourses = await prisma.course.count();
   if (existingCourses === 0) {
-    const ada = users[0]
+    const ada = users[0];
 
     const nest = await prisma.course.create({
       data: {
@@ -85,12 +85,13 @@ async function main() {
             },
             {
               title: 'Your first controller',
-              content: 'Create a controller and return your first route response.',
+              content:
+                'Create a controller and return your first route response.',
             },
           ],
         },
       },
-    })
+    });
 
     const react = await prisma.course.create({
       data: {
@@ -107,34 +108,37 @@ async function main() {
           ],
         },
       },
-    })
+    });
 
     // Enroll Ada in the NestJS course so "My Learning" isn't empty for her.
     await prisma.enrollment.create({
       data: { userId: ada.id, courseId: nest.id },
-    })
+    });
 
-    console.log(`  • courses: "${nest.title}", "${react.title}" (with lessons)`)
-    console.log(`  • enrolled ${ada.email} in "${nest.title}"`)
+    console.log(
+      `  • courses: "${nest.title}", "${react.title}" (with lessons)`,
+    );
+    console.log(`  • enrolled ${ada.email} in "${nest.title}"`);
   } else {
-    console.log(`  • courses already exist (${existingCourses}) — skipping demo courses`)
+    console.log(
+      `  • courses already exist (${existingCourses}) — skipping demo courses`,
+    );
   }
 
   console.log(
     '✅ Seeding complete. Login → any seed email + password: ' +
       SEED_PASSWORD +
       ` (admin: ${SEED_ADMIN.email})`,
-  )
+  );
 }
 
 main()
   .catch((error) => {
-    console.error('❌ Seeding failed:', error)
-    process.exit(1)
+    console.error('❌ Seeding failed:', error);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });
 
-
-  // npm run db:seed
+// npm run db:seed

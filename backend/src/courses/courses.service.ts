@@ -33,6 +33,7 @@ export class CoursesService {
 
     // How many records should I skip before returning results?
     const skip = (pageNumber - 1) * pageSize;
+    // skip = (3-1)*6=12
 
     // Instead of waiting for one and then starting the other, we can run them together: Promise.all
     const [courses, total] = await Promise.all([
