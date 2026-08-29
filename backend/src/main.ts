@@ -18,8 +18,9 @@ async function bootstrap() {
   // to a different origin (this API on :3000) unless the server says
   // "I allow that origin". enableCors() adds those permission headers.
   // Without this, every fetch/axios call from the frontend fails in the browser.
+
   app.enableCors({
-    origin: 'http://localhost:5173', // the Vite dev server (our frontend)
+    origin: ['http://localhost:5173', 'https://teachhub-1udr.onrender.com'],
     credentials: true,
   });
 
