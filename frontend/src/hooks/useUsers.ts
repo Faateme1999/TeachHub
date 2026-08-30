@@ -1,12 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '../lib/apiClient'
-import { queryKeys } from '../lib/queryKeys'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../lib/apiClient";
+import { queryKeys } from "../lib/queryKeys";
 import type {
   Course,
   CreateAdminInput,
   RegisterResponse,
   User,
-} from '../types/api'
+} from "../types/api";
 
 // Hooks for reading users and their enrolled courses.
 
@@ -15,10 +15,39 @@ export function useUsers() {
   return useQuery({
     queryKey: queryKeys.users.all,
     queryFn: async () => {
-      const { data } = await apiClient.get<User[]>('/users')
-      return data
+      const { data } = await apiClient.get<User[]>("/users");
+      return data;
     },
-  })
+  });
+}
+
+// PATCH /users/:id/role — change a user's role.
+// ADMIN-only on the backend.
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      role,
+    }: {
+      userId: number;
+      role: User["role"];
+    }) => {
+      const { data } = await apiClient.patch<User>(`/users/${userId}/role`, {
+        role,
+      });
+
+      return data;
+    },
+
+    onSuccess: () => {
+      // The user's role changed, so refresh the admin user list.
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.all,
+      });
+    },
+  });
 }
 
 // GET /users/:id — one user's public profile.
@@ -26,11 +55,11 @@ export function useUser(id: number) {
   return useQuery({
     queryKey: queryKeys.users.detail(id),
     queryFn: async () => {
-      const { data } = await apiClient.get<User>(`/users/${id}`)
-      return data
+      const { data } = await apiClient.get<User>(`/users/${id}`);
+      return data;
     },
     enabled: Number.isFinite(id),
-  })
+  });
 }
 
 // GET /users/:id/courses — a specific user's enrolled courses.
@@ -43,12 +72,12 @@ export function useUserCourses(id: number) {
   return useQuery({
     queryKey: queryKeys.users.courses(id),
     queryFn: async () => {
-      const { data } = await apiClient.get<Course[]>(`/users/${id}/courses`)
-      return data
+      const { data } = await apiClient.get<Course[]>(`/users/${id}/courses`);
+      return data;
     },
     enabled: Number.isFinite(id),
     retry: false,
-  })
+  });
 }
 
 // GET /users/my-profile — the logged-in user's own profile.
@@ -56,10 +85,10 @@ export function useMyProfile() {
   return useQuery({
     queryKey: queryKeys.me.profile,
     queryFn: async () => {
-      const { data } = await apiClient.get<User>('/users/my-profile')
-      return data
+      const { data } = await apiClient.get<User>("/users/my-profile");
+      return data;
     },
-  })
+  });
 }
 
 // GET /users/me/courses — the logged-in user's enrolled courses.
@@ -67,10 +96,10 @@ export function useMyCourses() {
   return useQuery({
     queryKey: queryKeys.me.courses,
     queryFn: async () => {
-      const { data } = await apiClient.get<Course[]>('/users/me/courses')
-      return data
+      const { data } = await apiClient.get<Course[]>("/users/me/courses");
+      return data;
     },
-  })
+  });
 }
 
 // POST /auth/admins — create another admin. ADMIN-only on the backend (guarded by
@@ -83,15 +112,18 @@ export function useMyCourses() {
 // Note: the backend AuthService.createAdmin is itself a stub (returns 501) until
 // you implement it — so this call will 501 until then. See auth.service.ts.
 export function useCreateAdmin() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateAdminInput) => {
-      const { data } = await apiClient.post<RegisterResponse>('/auth/admins', input)
-      return data
+      const { data } = await apiClient.post<RegisterResponse>(
+        "/auth/admins",
+        input,
+      );
+      return data;
     },
     onSuccess: () => {
       // The user list changed — refresh it so the new admin appears.
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
     },
-  })
+  });
 }

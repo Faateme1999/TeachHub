@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserData } from './types/create-user.type';
 import { EnrollmentsService } from 'src/enrollments/enrollments.service';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -85,5 +86,20 @@ export class UsersService {
   async findCoursesByUserId(userId: number) {
     await this.findById(userId);
     return this.enrollmentsService.findUserCourses(userId);
+  }
+
+  async updateRole(id: number, role: Role) {
+    await this.findById(id);
+    return this.prisma.user.update({
+      where: { id },
+      data: { role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
   }
 }
