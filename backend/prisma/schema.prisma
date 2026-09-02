@@ -14,11 +14,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// The two kinds of user in TeachHub.
-// - STUDENT: the default. Can browse courses and enroll. Created by self sign-up.
-// - ADMIN:   manages courses/lessons and can create other admins. Never created by
-//            public sign-up — only the seed admin (see prisma/seed.ts) or an
-//            existing admin (via POST /users/admins) can make one.
+
 // NOTE: this is a Prisma enum. It becomes a real Postgres enum type in the DB and
 // a TypeScript `Role` union in the generated client — so you can write `Role.ADMIN`.
 enum Role {
@@ -31,8 +27,6 @@ model User {
   name      String
   email     String   @unique
   password  String
-  // Every user has a role. @default(STUDENT) means: existing rows and new sign-ups
-  // become STUDENT automatically, so nobody accidentally gets admin powers.
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now())
   enrollments Enrollment[]

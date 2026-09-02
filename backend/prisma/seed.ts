@@ -7,10 +7,17 @@
 // It is written to be safe to run more than once: it "upserts" users (create if
 // missing, otherwise leave them), and only adds demo courses if there are none.
 
+import 'dotenv/config';
+
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, type User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 // The demo STUDENT accounts. Every one uses the password: password123
 // (No `role` set here → Prisma applies the schema default, STUDENT.)

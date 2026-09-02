@@ -9,15 +9,15 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     PrismaModule,
     UsersModule,
     AuthModule,
     CoursesModule,
     EnrollmentsModule,
     LessonsModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     // Using isGlobal: true means every module can access ConfigService without importing ConfigModule again.
     // Create one ConfigService and make it available everywhere.
   ],
