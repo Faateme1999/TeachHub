@@ -228,3 +228,15 @@ const createUserDto = {
 - Reflector is a NestJS utility that reads metadata added by decorators like @Roles().
   - It doesn't know anything about users, JWTs, or admins. It simply answers questions like:
   - "What roles are required for this route?"
+
+- Controller
+  ↓
+  Service
+  ↓
+  Repository
+  ↓
+  PrismaService
+  ↓
+  PostgreSQL
+  ↓
+  Tables
