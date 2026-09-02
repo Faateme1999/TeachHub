@@ -1,78 +1,39 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { EnrollmentsRepository } from './enrollments.repository';
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly enrollmentsRepository: EnrollmentsRepository) {}
 
   async enroll(userId: number, courseId: number) {
     // Check if already enrolled
     // Returns the first matching row
-    const existingEnrollment = await this.prisma.enrollment.findFirst({
-      where: {
-        userId,
-        courseId,
-      },
-    });
+    const existingEnrollment =
+      await this.enrollmentsRepository.findExistingEnrollment(userId, courseId);
 
     if (existingEnrollment) {
       throw new BadRequestException('User is already enrolled in this course');
     }
 
-    return this.prisma.enrollment.create({
-      data: {
-        userId,
-        courseId,
-      },
-    });
+    return this.enrollmentsRepository.create(userId, courseId);
   }
 
   async unenroll(userId: number, courseId: number) {
-    const enrollment = await this.prisma.enrollment.findFirst({
-      where: {
-        userId,
-        courseId,
-      },
-    });
+    const enrollment = await this.enrollmentsRepository.findExistingEnrollment(
+      userId,
+      courseId,
+    );
 
     if (!enrollment) {
       throw new BadRequestException('User is not enrolled in this course');
     }
 
-    return this.prisma.enrollment.delete({
-      where: {
-        id: enrollment.id,
-      },
-    });
+    return this.enrollmentsRepository.delete(enrollment.id);
   }
 
   async findUserCourses(userId: number) {
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        course: true,
-      },
-      // Prisma automatically joins the Course table.
-      //       SELECT *
-      // FROM Enrollment e
-      // JOIN Course c
-      // ON e.courseId = c.id
-      // After finding the enrollments, also fetch the related course.
-      //      {
-      //   "id": 1,
-      //   "userId": 1,
-      //   "courseId": 1,
-
-      //   "course": {
-      //     "id": 1,
-      //     "title": "NestJS",
-      //     "description": "...",
-      //     "price": 50
-      //   }
-      // },
-    });
+    const enrollments =
+      await this.enrollmentsRepository.findUserCourses(userId);
 
     return enrollments.map((enrollment) => enrollment.course);
   }
