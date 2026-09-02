@@ -1,36 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
+import { LessonsRepository } from './lessons.repository';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly lessonsRepository: LessonsRepository) {}
 
   async create(courseId: number, createLessonDto: CreateLessonDto) {
-    return this.prisma.lesson.create({
-      data: {
-        title: createLessonDto.title,
-        content: createLessonDto.content,
-        courseId,
-      },
-    });
+    return this.lessonsRepository.create(courseId, createLessonDto);
   }
 
   async findAllByCourse(courseId: number) {
-    return this.prisma.lesson.findMany({
-      where: {
-        courseId,
-      },
-    });
+    return this.lessonsRepository.findAllByCourse(courseId);
   }
 
   async findOne(id: number) {
-    const lesson = await this.prisma.lesson.findUnique({
-      where: {
-        id,
-      },
-    });
+    const lesson = await this.lessonsRepository.findOne(id);
+
     if (!lesson) {
       throw new NotFoundException(`Lesson ${id} not found`);
     }
@@ -40,21 +27,14 @@ export class LessonsService {
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
     await this.findOne(id);
-    return this.prisma.lesson.update({
-      where: {
-        id,
-      },
-      data: updateLessonDto,
-    });
+
+    return this.lessonsRepository.update(id, updateLessonDto);
   }
 
   async remove(id: number) {
     // DRY principle ("Don't Repeat Yourself")
     await this.findOne(id);
-    return this.prisma.lesson.delete({
-      where: {
-        id,
-      },
-    });
+
+    return this.lessonsRepository.remove(id);
   }
 }
