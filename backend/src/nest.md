@@ -240,3 +240,6 @@ const createUserDto = {
   PostgreSQL
   ↓
   Tables
+
+- After changing the schema, the Prisma Client should be regenerated using:
+  npx prisma generate
