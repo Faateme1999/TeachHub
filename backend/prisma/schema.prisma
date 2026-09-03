@@ -85,9 +85,18 @@ model Lesson {
   //   npx prisma migrate dev --name cascade_delete
   
   createdAt DateTime @default(now())
+  outcomes Outcome[]
 }
 
 
 // One-to-Many relationship
 // Course (1) ──────< Lesson (Many)
 // Foreign key lives on the "Many" side.
+
+
+model Outcome{
+  id        Int     @id @default(autoincrement())
+  text      String
+  lessonId  Int
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
