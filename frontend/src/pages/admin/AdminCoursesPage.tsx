@@ -30,6 +30,7 @@ import { useToast } from "../../components/ui/toast-context";
 import type { Course, CourseInput, Lesson, LessonInput } from "../../types/api";
 
 import "../../components/components.css";
+import { LessonItem } from "../../components/LessonItem";
 
 export function AdminCoursesPage() {
   const { showToast } = useToast();
@@ -411,7 +412,7 @@ function CourseAdminCard({
           <p>No lessons yet.</p>
         )}
 
-        {lessons.map((lesson, index) => (
+        {/* {lessons.map((lesson, index) => (
           <div key={lesson.id} className="lesson-item">
             <div className="lesson-item__body">
               <p className="lesson-item__title">
@@ -439,6 +440,16 @@ function CourseAdminCard({
               </Button>
             </div>
           </div>
+        ))} */}
+        {lessons.map((lesson, index) => (
+          <LessonItem
+            key={lesson.id}
+            lesson={lesson}
+            index={index}
+            isAdmin={true}
+            onEdit={() => onEditLesson(course.id, lesson)}
+            onDelete={() => onDeleteLesson(lesson)}
+          />
         ))}
       </section>
     </Card>

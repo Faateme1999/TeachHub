@@ -64,6 +64,16 @@ export interface LessonInput {
   content: string;
 }
 
+export interface Outcome {
+  id: number;
+  text: string;
+  lessonId: number;
+}
+
+export interface OutcomeInput {
+  text: string;
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {

@@ -7,20 +7,21 @@
 
 export const queryKeys = {
   courses: {
-    all: ['courses'] as const,
-    detail: (id: number) => ['courses', id] as const,
-    lessons: (courseId: number) => ['courses', courseId, 'lessons'] as const,
+    all: ["courses"] as const,
+    detail: (id: number) => ["courses", id] as const,
+    lessons: (courseId: number) => ["courses", courseId, "lessons"] as const,
   },
   lessons: {
-    detail: (id: number) => ['lessons', id] as const,
+    detail: (id: number) => ["lessons", id] as const,
+    outcomes: (lessonId: number) => ["lessons", lessonId, "outcomes"] as const,
   },
   users: {
-    all: ['users'] as const,
-    detail: (id: number) => ['users', id] as const,
-    courses: (id: number) => ['users', id, 'courses'] as const,
+    all: ["users"] as const,
+    detail: (id: number) => ["users", id] as const,
+    courses: (id: number) => ["users", id, "courses"] as const,
   },
   me: {
-    profile: ['me', 'profile'] as const,
-    courses: ['me', 'courses'] as const,
+    profile: ["me", "profile"] as const,
+    courses: ["me", "courses"] as const,
   },
-}
+};

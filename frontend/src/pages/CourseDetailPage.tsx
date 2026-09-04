@@ -21,6 +21,7 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { LessonForm } from "../components/LessonForm";
 import type { Lesson, LessonInput } from "../types/api";
 import "../components/components.css";
+import { LessonItem } from "../components/LessonItem";
 
 // The course detail page. It shows:
 //  - the course info + Enroll button (for any logged-in user / student)
@@ -230,36 +231,17 @@ export function CourseDetailPage() {
             }
           />
         )}
-
         {lessons.length > 0 && (
           <div className="lesson-list">
             {lessons.map((lesson, index) => (
-              <Card key={lesson.id} className="lesson-item">
-                <div className="lesson-item__body">
-                  <p className="lesson-item__title">
-                    {index + 1}. {lesson.title}
-                  </p>
-                  <p className="lesson-item__content">{lesson.content}</p>
-                </div>
-                {isAdmin && (
-                  <div className="lesson-item__actions">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditLesson(lesson)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setLessonToDelete(lesson)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                )}
-              </Card>
+              <LessonItem
+                key={lesson.id}
+                lesson={lesson}
+                index={index}
+                isAdmin={isAdmin}
+                onEdit={openEditLesson}
+                onDelete={setLessonToDelete}
+              />
             ))}
           </div>
         )}
