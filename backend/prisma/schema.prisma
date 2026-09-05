@@ -31,6 +31,7 @@ model User {
   createdAt DateTime @default(now())
   enrollments Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
+  missionResults MissionResult[]
 }
 
 
@@ -99,4 +100,59 @@ model Outcome{
   text      String
   lessonId  Int
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  missions Mission[]
+}
+
+model  Mission{
+  id        Int      @id @default(autoincrement())
+  title     String
+  order     Int
+  passingScore   Int
+  maxAttempts   Int
+  outcomeId    Int
+  outcome   Outcome  @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  missionResults MissionResult[]
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+
+model Question{
+  id  Int  @id @default(autoincrement())
+  text String
+  type    QuestionType
+  order Int
+  missionId  Int
+  mission  Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  options Option[]
+}
+
+model Option{
+  id Int @id @default(autoincrement())
+  text String
+  isCorrect  Boolean
+  order Int
+  questionId Int
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model MissionResult{
+  id      Int       @id @default(autoincrement())
+  passed  Boolean   @default(false)
+  bestScore   Int   @default(0)
+  attemptsUsed Int  @default(0)
+  userId      Int
+  missionId   Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId])
+  // یک کاربر نمی‌تواند برای یک Mission بیشتر از یک MissionResult داشته باشد.
 }
