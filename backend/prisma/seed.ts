@@ -33,6 +33,312 @@ const SEED_ADMIN = { name: 'Admin', email: 'admin@teachhub.dev' };
 
 const SEED_PASSWORD = 'password123';
 
+async function seedAssessments() {
+  console.log('📝 Seeding assessments...');
+
+  // We intentionally use the existing Outcome.
+  // This Outcome already exists in the database.
+  const outcome = await prisma.outcome.findUnique({
+    where: { id: 5 },
+  });
+
+  if (!outcome) {
+    throw new Error('Outcome with id=5 was not found.');
+  }
+
+  const missions = [
+    {
+      title: 'Present Perfect - Mission 1',
+      order: 1,
+      passingScore: 70,
+      maxAttempts: 2,
+    },
+    {
+      title: 'Present Perfect - Mission 2',
+      order: 2,
+      passingScore: 70,
+      maxAttempts: 2,
+    },
+  ];
+
+  const questions = [
+    // -------------------------
+    // Mission 1
+    // -------------------------
+    [
+      {
+        text: 'Which sentence is correct?',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'I have finished my homework.', isCorrect: true },
+          { text: 'I has finished my homework.', isCorrect: false },
+          { text: 'I have finish my homework.', isCorrect: false },
+          { text: 'I finished have my homework.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences use the Present Perfect correctly?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'She has visited London.', isCorrect: true },
+          { text: 'They have seen this movie.', isCorrect: true },
+          { text: 'He have finished his work.', isCorrect: false },
+          { text: 'I has eaten breakfast.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct form: "We ___ here for two hours."',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'have been', isCorrect: true },
+          { text: 'has been', isCorrect: false },
+          { text: 'have be', isCorrect: false },
+          { text: 'are been', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which words can commonly be used with the Present Perfect?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'already', isCorrect: true },
+          { text: 'yet', isCorrect: true },
+          { text: 'last year', isCorrect: false },
+          { text: 'yesterday', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct sentence.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'Have you ever been to Paris?', isCorrect: true },
+          { text: 'Did you ever been to Paris?', isCorrect: false },
+          { text: 'Have you ever went to Paris?', isCorrect: false },
+          { text: 'Has you ever been to Paris?', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences are grammatically correct?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'I have never tried sushi.', isCorrect: true },
+          { text: 'She has already left.', isCorrect: true },
+          { text: 'They has never seen it.', isCorrect: false },
+          { text: 'He have already gone.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct sentence.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'Tom has lived here since 2020.', isCorrect: true },
+          { text: 'Tom have lived here since 2020.', isCorrect: false },
+          { text: 'Tom has live here since 2020.', isCorrect: false },
+          { text: 'Tom living here since 2020.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences correctly use "for" with Present Perfect?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'I have worked here for five years.', isCorrect: true },
+          { text: 'She has known him for a long time.', isCorrect: true },
+          { text: 'They have lived here for 2020.', isCorrect: false },
+          { text: 'He has been here for Monday.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct question.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'Have you finished the report?', isCorrect: true },
+          { text: 'Has you finished the report?', isCorrect: false },
+          { text: 'Have you finish the report?', isCorrect: false },
+          { text: 'Did you have finished the report?', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences are correct?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'We have just arrived.', isCorrect: true },
+          { text: 'She has never traveled abroad.', isCorrect: true },
+          { text: 'I has just arrived.', isCorrect: false },
+          { text: 'They have just arrive.', isCorrect: false },
+        ],
+      },
+    ],
+
+    // -------------------------
+    // Mission 2
+    // -------------------------
+    [
+      {
+        text: 'Choose the correct sentence.',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'I have lost my keys.', isCorrect: true },
+          { text: 'She has broken her phone.', isCorrect: true },
+          { text: 'He have lost his wallet.', isCorrect: false },
+          { text: 'They has broken the window.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct form: "She ___ three emails today."',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'has written', isCorrect: true },
+          { text: 'have written', isCorrect: false },
+          { text: 'has write', isCorrect: false },
+          { text: 'written has', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences are correct?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'Have they arrived yet?', isCorrect: true },
+          { text: 'Has he finished his work yet?', isCorrect: true },
+          { text: 'Have she arrived yet?', isCorrect: false },
+          { text: 'Has they finished yet?', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct sentence.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'I have known Sarah since 2019.', isCorrect: true },
+          { text: 'I have knew Sarah since 2019.', isCorrect: false },
+          { text: 'I has known Sarah since 2019.', isCorrect: false },
+          { text: 'I know Sarah since 2019.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which expressions can be used with Present Perfect?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'so far', isCorrect: true },
+          { text: 'recently', isCorrect: true },
+          { text: 'two days ago', isCorrect: false },
+          { text: 'in 2018', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct sentence.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'They have lived here for ten years.', isCorrect: true },
+          { text: 'They has lived here for ten years.', isCorrect: false },
+          { text: 'They have live here for ten years.', isCorrect: false },
+          { text: 'They living here for ten years.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences correctly use "since"?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'I have worked here since January.', isCorrect: true },
+          { text: 'She has lived there since 2022.', isCorrect: true },
+          { text: 'We have waited since three hours.', isCorrect: false },
+          { text: 'He has studied since five years.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct sentence.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'Have you ever eaten sushi?', isCorrect: true },
+          { text: 'Did you ever eaten sushi?', isCorrect: false },
+          { text: 'Have you ever eat sushi?', isCorrect: false },
+          { text: 'Has you ever eaten sushi?', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Which sentences are correct?',
+        type: 'MULTIPLE_CHOICE' as const,
+        options: [
+          { text: 'He has just called me.', isCorrect: true },
+          { text: 'We have already seen this film.', isCorrect: true },
+          { text: 'She has already see this film.', isCorrect: false },
+          { text: 'I have just call him.', isCorrect: false },
+        ],
+      },
+      {
+        text: 'Choose the correct sentence.',
+        type: 'SINGLE_CHOICE' as const,
+        options: [
+          { text: 'I have never been to Japan.', isCorrect: true },
+          { text: 'I has never been to Japan.', isCorrect: false },
+          { text: 'I have never went to Japan.', isCorrect: false },
+          { text: 'I never have been to Japan yesterday.', isCorrect: false },
+        ],
+      },
+    ],
+  ];
+
+  for (let missionIndex = 0; missionIndex < missions.length; missionIndex++) {
+    const missionData = missions[missionIndex];
+    const missionQuestions = questions[missionIndex];
+
+    // Don't create duplicates if the seed is run again.
+    let mission = await prisma.mission.findFirst({
+      where: {
+        outcomeId: outcome.id,
+        order: missionData.order,
+      },
+    });
+
+    if (!mission) {
+      mission = await prisma.mission.create({
+        data: {
+          title: missionData.title,
+          order: missionData.order,
+          passingScore: missionData.passingScore,
+          maxAttempts: missionData.maxAttempts,
+          outcomeId: outcome.id,
+        },
+      });
+
+      console.log(`  • created mission: ${mission.title}`);
+    } else {
+      console.log(`  • mission already exists: ${mission.title}`);
+    }
+
+    const existingQuestions = await prisma.question.count({
+      where: { missionId: mission.id },
+    });
+
+    if (existingQuestions === 0) {
+      for (let i = 0; i < missionQuestions.length; i++) {
+        const questionData = missionQuestions[i];
+
+        await prisma.question.create({
+          data: {
+            text: questionData.text,
+            type: questionData.type,
+            order: i + 1,
+            missionId: mission.id,
+            options: {
+              create: questionData.options.map((option, optionIndex) => ({
+                text: option.text,
+                isCorrect: option.isCorrect,
+                order: optionIndex + 1,
+              })),
+            },
+          },
+        });
+      }
+
+      console.log(`    ✓ created ${missionQuestions.length} questions`);
+    } else {
+      console.log(
+        `    • questions already exist (${existingQuestions}) — skipping`,
+      );
+    }
+  }
+
+  console.log('✅ Assessment seeding complete.');
+}
+
 async function main() {
   console.log('🌱 Seeding database…');
 
@@ -131,6 +437,8 @@ async function main() {
       `  • courses already exist (${existingCourses}) — skipping demo courses`,
     );
   }
+
+  await seedAssessments();
 
   console.log(
     '✅ Seeding complete. Login → any seed email + password: ' +
