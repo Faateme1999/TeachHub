@@ -42,4 +42,13 @@ export class OutcomesRepository {
       where: { id },
     });
   }
+
+  findAllMissionsByOutcomeId(outcomeId: number) {
+    return this.prisma.mission.findMany({
+      where: { outcomeId },
+      orderBy: {
+        order: 'asc',
+      },
+    });
+  }
 }

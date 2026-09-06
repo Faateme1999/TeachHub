@@ -48,13 +48,13 @@ async function seedAssessments() {
 
   const missions = [
     {
-      title: 'Present Perfect - Mission 1',
+      title: 'Mission 1 - Present Perfect',
       order: 1,
       passingScore: 70,
       maxAttempts: 2,
     },
     {
-      title: 'Present Perfect - Mission 2',
+      title: 'Mission 2 - Present Perfect',
       order: 2,
       passingScore: 70,
       maxAttempts: 2,
@@ -300,7 +300,18 @@ async function seedAssessments() {
 
       console.log(`  • created mission: ${mission.title}`);
     } else {
-      console.log(`  • mission already exists: ${mission.title}`);
+      mission = await prisma.mission.update({
+        where: {
+          id: mission.id,
+        },
+        data: {
+          title: missionData.title,
+          passingScore: missionData.passingScore,
+          maxAttempts: missionData.maxAttempts,
+        },
+      });
+
+      console.log(`  • updated mission: ${mission.title}`);
     }
 
     const existingQuestions = await prisma.question.count({

@@ -37,4 +37,8 @@ export class OutcomesService {
     await this.findOutcomeOrThrow(lessonId, outcomeId);
     return this.outcomesRepository.remove(outcomeId);
   }
+
+  findAllMissionsByOutcomeId(outcomeId: number) {
+    return this.outcomesRepository.findAllMissionsByOutcomeId(outcomeId);
+  }
 }
