@@ -1,22 +1,23 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { Layout } from './components/layout/Layout'
-import { AdminLayout } from './components/layout/AdminLayout'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import { PublicOnlyRoute } from './components/PublicOnlyRoute'
-import { AdminRoute } from './components/AdminRoute'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { CoursesPage } from './pages/CoursesPage'
-import { CourseDetailPage } from './pages/CourseDetailPage'
-import { CreateCoursePage } from './pages/CreateCoursePage'
-import { EditCoursePage } from './pages/EditCoursePage'
-import { UserProfilePage } from './pages/UserProfilePage'
-import { MyProfilePage } from './pages/MyProfilePage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
-import { AdminCoursesPage } from './pages/admin/AdminCoursesPage'
-import { AdminUsersPage } from './pages/admin/AdminUsersPage'
-import { CreateAdminPage } from './pages/admin/CreateAdminPage'
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Layout } from "./components/layout/Layout";
+import { AdminLayout } from "./components/layout/AdminLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicOnlyRoute } from "./components/PublicOnlyRoute";
+import { AdminRoute } from "./components/AdminRoute";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { CoursesPage } from "./pages/CoursesPage";
+import { CourseDetailPage } from "./pages/CourseDetailPage";
+import { CreateCoursePage } from "./pages/CreateCoursePage";
+import { EditCoursePage } from "./pages/EditCoursePage";
+import { UserProfilePage } from "./pages/UserProfilePage";
+import { MyProfilePage } from "./pages/MyProfilePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
+import { AdminCoursesPage } from "./pages/admin/AdminCoursesPage";
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { CreateAdminPage } from "./pages/admin/CreateAdminPage";
+import { MissionQuestionsPage } from "./pages/MissionQuestionsPage";
 
 // This is the "route table" — it maps URLs to pages.
 // Everything renders inside <Layout /> (navbar + footer). Pages that need a
@@ -70,7 +71,10 @@ function App() {
             </AdminRoute>
           }
         />
-
+        <Route
+          path="/missions/:missionId/questions"
+          element={<MissionQuestionsPage />}
+        />
         {/* Protected pages (any logged-in user) */}
         <Route
           path="/me"
@@ -131,7 +135,7 @@ function App() {
         />
       </Route>
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -83,6 +83,20 @@ export interface Mission {
   outcomeId: number;
 }
 
+export interface Question {
+  id: number;
+  text: string;
+  type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+  order: number;
+  options: Option[];
+}
+
+export interface Option {
+  id: number;
+  text: string;
+  order: number;
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {

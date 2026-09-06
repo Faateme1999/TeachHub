@@ -14,6 +14,7 @@ import { ErrorState } from "./ui/States";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
 import type { Lesson, Outcome } from "../types/api";
 import { useMissionsByOutcome } from "../hooks/useMissions";
+import { Link } from "react-router-dom";
 
 interface LessonItemProps {
   lesson: Lesson;
@@ -45,6 +46,7 @@ export function LessonItem({
     null,
   );
   const missionsQuery = useMissionsByOutcome(selectedOutcomeId ?? 0);
+  const missions = missionsQuery.data ?? [];
 
   function handleCreateOutcome() {
     const text = newOutcomeText.trim();
@@ -227,16 +229,17 @@ export function LessonItem({
                         <ErrorState message="Could not load missions." />
                       )}
 
-                      {missionsQuery.data &&
-                        missionsQuery.data.length === 0 && (
-                          <p>No missions yet.</p>
-                        )}
+                      {!missionsQuery.isLoading && missions.length === 0 && (
+                        <p>No missions yet.</p>
+                      )}
 
-                      {missionsQuery.data && missionsQuery.data.length > 0 && (
+                      {missions.length > 0 && (
                         <ul>
-                          {missionsQuery.data.map((mission) => (
+                          {missions.map((mission) => (
                             <li key={mission.id}>
-                              {mission.order}. {mission.title}
+                              <Link to={`/missions/${mission.id}/questions`}>
+                                {mission.order}. {mission.title}
+                              </Link>
                             </li>
                           ))}
                         </ul>

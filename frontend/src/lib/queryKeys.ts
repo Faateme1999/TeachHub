@@ -19,6 +19,10 @@ export const queryKeys = {
     missions: (outcomeId: number) =>
       ["outcomes", outcomeId, "missions"] as const,
   },
+  questions: {
+    byMission: (missionId: number) =>
+      ["missions", missionId, "questions"] as const,
+  },
   users: {
     all: ["users"] as const,
     detail: (id: number) => ["users", id] as const,
