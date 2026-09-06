@@ -74,6 +74,15 @@ export interface OutcomeInput {
   text: string;
 }
 
+export interface Mission {
+  id: number;
+  title: string;
+  order: number;
+  passingScore: number;
+  maxAttempts: number;
+  outcomeId: number;
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {

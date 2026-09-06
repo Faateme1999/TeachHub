@@ -13,6 +13,7 @@ import { Spinner } from "./ui/Spinner";
 import { ErrorState } from "./ui/States";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
 import type { Lesson, Outcome } from "../types/api";
+import { useMissionsByOutcome } from "../hooks/useMissions";
 
 interface LessonItemProps {
   lesson: Lesson;
@@ -40,6 +41,10 @@ export function LessonItem({
   const [editingOutcome, setEditingOutcome] = useState<Outcome | null>(null);
   const [editOutcomeText, setEditOutcomeText] = useState("");
   const [outcomeToDelete, setOutcomeToDelete] = useState<Outcome | null>(null);
+  const [selectedOutcomeId, setSelectedOutcomeId] = useState<number | null>(
+    null,
+  );
+  const missionsQuery = useMissionsByOutcome(selectedOutcomeId ?? 0);
 
   function handleCreateOutcome() {
     const text = newOutcomeText.trim();
@@ -177,7 +182,18 @@ export function LessonItem({
                     </div>
                   ) : (
                     <div>
-                      <span>{outcome.text}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedOutcomeId(
+                            selectedOutcomeId === outcome.id
+                              ? null
+                              : outcome.id,
+                          )
+                        }
+                      >
+                        {outcome.text}
+                      </button>
 
                       {isAdmin && (
                         <>
@@ -200,6 +216,30 @@ export function LessonItem({
                             Delete
                           </Button>
                         </>
+                      )}
+                    </div>
+                  )}
+                  {selectedOutcomeId === outcome.id && (
+                    <div style={{ marginLeft: "24px", marginTop: "8px" }}>
+                      {missionsQuery.isLoading && <Spinner />}
+
+                      {missionsQuery.isError && (
+                        <ErrorState message="Could not load missions." />
+                      )}
+
+                      {missionsQuery.data &&
+                        missionsQuery.data.length === 0 && (
+                          <p>No missions yet.</p>
+                        )}
+
+                      {missionsQuery.data && missionsQuery.data.length > 0 && (
+                        <ul>
+                          {missionsQuery.data.map((mission) => (
+                            <li key={mission.id}>
+                              {mission.order}. {mission.title}
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                   )}
