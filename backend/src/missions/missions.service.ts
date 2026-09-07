@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { QuestionsRepository } from './questions.repository';
+import { QuestionsRepository } from './missions.repository';
 
 @Injectable()
 export class QuestionsService {
