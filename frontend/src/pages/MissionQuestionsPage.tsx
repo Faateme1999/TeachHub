@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuestionsByMission } from "../hooks/useQuestions";
 import { Spinner } from "../components/ui/Spinner";
 import { ErrorState } from "../components/ui/States";
 import { Card } from "../components/ui/Card";
-import { useState } from "react";
+import { useSubmitMission } from "../hooks/useSubmitMission";
 
 export function MissionQuestionsPage() {
   const { missionId } = useParams();
@@ -11,6 +12,8 @@ export function MissionQuestionsPage() {
   const navigate = useNavigate();
 
   const questionsQuery = useQuestionsByMission(id);
+  const submitMission = useSubmitMission();
+
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
 
   function handleOptionChange(
@@ -39,6 +42,20 @@ export function MissionQuestionsPage() {
     });
   }
 
+  function handleSubmit() {
+    const formattedAnswers = Object.entries(answers).map(
+      ([questionId, optionIds]) => ({
+        questionId: Number(questionId),
+        optionIds,
+      }),
+    );
+
+    submitMission.mutate({
+      missionId: id,
+      answers: formattedAnswers,
+    });
+  }
+
   if (questionsQuery.isLoading) {
     return <Spinner center />;
   }
@@ -53,12 +70,44 @@ export function MissionQuestionsPage() {
   }
 
   const questions = questionsQuery.data ?? [];
+  const result = submitMission.data;
+
+  if (result) {
+    return (
+      <div>
+        <button type="button" onClick={() => navigate(-1)}>
+          ← Back to lesson
+        </button>
+
+        <section className="detail__section">
+          <div className="page-header">
+            <h1 className="page-header__title">Mission Result</h1>
+          </div>
+
+          <Card>
+            <h2>{result.passed ? "Mission Passed!" : "Mission Failed"}</h2>
+
+            <p>
+              Score: <strong>{result.score}%</strong>
+            </p>
+
+            <p>
+              {result.passed
+                ? "Congratulations! You passed this mission."
+                : "You did not reach the passing score."}
+            </p>
+          </Card>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div>
       <button type="button" onClick={() => navigate(-1)}>
         ← Back to lesson
       </button>
+
       <section className="detail__section">
         <div className="page-header">
           <h1 className="page-header__title">Mission Questions</h1>
@@ -109,9 +158,18 @@ export function MissionQuestionsPage() {
                 </ul>
               </Card>
             ))}
-            <button type="button" onClick={() => console.log(answers)}>
-              Submit
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitMission.isPending}
+            >
+              {submitMission.isPending ? "Submitting..." : "Submit"}
             </button>
+
+            {submitMission.isError && (
+              <p>Could not submit the mission. Please try again.</p>
+            )}
           </div>
         )}
       </section>

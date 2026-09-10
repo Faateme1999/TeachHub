@@ -97,6 +97,16 @@ export interface Option {
   order: number;
 }
 
+export interface SubmitMissionResponse {
+  score: number;
+  passed: boolean;
+}
+
+export interface SubmitMissionResponse {
+  score: number;
+  passed: boolean;
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {
