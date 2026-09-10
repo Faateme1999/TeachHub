@@ -38,12 +38,21 @@ async function seedAssessments() {
 
   // We intentionally use the existing Outcome.
   // This Outcome already exists in the database.
-  const outcome = await prisma.outcome.findUnique({
-    where: { id: 5 },
+  const outcome = await prisma.outcome.findFirst({
+    where: {
+      text: 'Present Perfect',
+      lesson: {
+        course: {
+          title: 'General English B2',
+        },
+      },
+    },
   });
 
   if (!outcome) {
-    throw new Error('Outcome with id=5 was not found.');
+    throw new Error(
+      'Outcome "Present Perfect" in course "General English B2" was not found.',
+    );
   }
 
   const missions = [
