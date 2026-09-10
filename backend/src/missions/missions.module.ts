@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { QuestionsController } from './missions.controller';
-import { QuestionsService } from './missions.service';
-import { QuestionsRepository } from './missions.repository';
+import { MissionsService } from './missions.service';
+import { MissionsRepository } from './missions.repository';
+import { MissionsController } from './missions.controller';
 
 @Module({
-  controllers: [QuestionsController],
-  providers: [QuestionsService, QuestionsRepository],
+  controllers: [MissionsController],
+  providers: [MissionsService, MissionsRepository],
 })
 export class QuestionsModule {}

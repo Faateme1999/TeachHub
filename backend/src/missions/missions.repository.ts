@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class QuestionsRepository {
+export class MissionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   findAllQuestionsByMissionId(missionId: number) {
@@ -33,6 +33,28 @@ export class QuestionsRepository {
       where: { id: missionId },
       select: {
         id: true,
+      },
+    });
+  }
+
+  findMissionForSubmission(missionId: number) {
+    return this.prisma.mission.findUnique({
+      where: { id: missionId },
+      select: {
+        id: true,
+        passingScore: true,
+        questions: {
+          select: {
+            id: true,
+            type: true,
+            options: {
+              select: {
+                id: true,
+                isCorrect: true,
+              },
+            },
+          },
+        },
       },
     });
   }
