@@ -70,10 +70,17 @@ model Enrollment {
   createdAt DateTime @default(now())
 }
 
+enum LessonType{
+  RECORDED
+  LIVE
+}
+
 model Lesson {
   id        Int      @id @default(autoincrement())
   title     String
-  content   String
+  content   String?
+  meetingUrl  String?
+  type      LessonType   @default(RECORDED)
 
 // Each Lesson belongs to one Course.
 // courseId (foreign key)
