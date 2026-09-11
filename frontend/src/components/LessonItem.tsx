@@ -131,11 +131,44 @@ export function LessonItem({
   return (
     <Card className="lesson-item">
       <div className="lesson-item__body">
-        <p className="lesson-item__title">
-          {index + 1}. {lesson.title}
-        </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <p className="lesson-item__title">
+            {index + 1}. {lesson.title}
+          </p>
 
-        <p className="lesson-item__content">{lesson.content}</p>
+          <span
+            style={{
+              fontSize: "12px",
+              padding: "3px 8px",
+              borderRadius: "999px",
+              border: "1px solid #ccc",
+            }}
+          >
+            {lesson.type === "RECORDED" ? "Recorded" : "Live"}
+          </span>
+        </div>
+
+        {lesson.type === "RECORDED" && lesson.content && (
+          <p className="lesson-item__content">{lesson.content}</p>
+        )}
+
+        {lesson.type === "LIVE" && lesson.meetingUrl && (
+          <p className="lesson-item__content">
+            <a
+              href={lesson.meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Join live lesson
+            </a>
+          </p>
+        )}
 
         <div style={{ marginTop: "var(--space-3)" }}>
           <h3>Learning outcomes</h3>

@@ -256,7 +256,12 @@ export function CourseDetailPage() {
         <LessonForm
           initialValue={
             editingLesson
-              ? { title: editingLesson.title, content: editingLesson.content }
+              ? {
+                  title: editingLesson.title,
+                  content: editingLesson.content ?? "",
+                  meetingUrl: editingLesson.meetingUrl ?? "",
+                  type: editingLesson.type,
+                }
               : undefined
           }
           submitLabel={editingLesson ? "Save changes" : "Add lesson"}
