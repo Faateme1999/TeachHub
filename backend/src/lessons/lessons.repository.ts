@@ -12,6 +12,8 @@ export class LessonsRepository {
       data: {
         title: createLessonDto.title,
         content: createLessonDto.content,
+        meetingUrl: createLessonDto.meetingUrl,
+        type: createLessonDto.type,
         courseId,
       },
     });

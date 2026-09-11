@@ -11,6 +11,7 @@ import 'dotenv/config';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, type User } from '@prisma/client';
+import { LessonType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const adapter = new PrismaPg({
@@ -415,11 +416,13 @@ async function main() {
             {
               title: 'What is NestJS?',
               content: 'An overview of the NestJS framework and why it exists.',
+              type: LessonType.RECORDED,
             },
             {
               title: 'Your first controller',
               content:
                 'Create a controller and return your first route response.',
+              type: LessonType.RECORDED,
             },
           ],
         },
@@ -437,6 +440,7 @@ async function main() {
             {
               title: 'Components & JSX',
               content: 'How UI is built from small, reusable components.',
+              type: LessonType.RECORDED,
             },
           ],
         },

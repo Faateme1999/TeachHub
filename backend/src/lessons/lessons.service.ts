@@ -1,13 +1,32 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { LessonsRepository } from './lessons.repository';
+import { LessonType } from '@prisma/client';
 
 @Injectable()
 export class LessonsService {
   constructor(private readonly lessonsRepository: LessonsRepository) {}
 
+  private validateLessonData(data: {
+    type?: LessonType | null;
+    content?: string | null;
+    meetingUrl?: string | null;
+  }) {
+    if (data.type === LessonType.LIVE && !data.meetingUrl) {
+      throw new BadRequestException('meetingUrl is required for LIVE lessons');
+    }
+    if (data.type === LessonType.RECORDED && !data.content) {
+      throw new BadRequestException('content is required for RECORDED lessons');
+    }
+  }
+
   async create(courseId: number, createLessonDto: CreateLessonDto) {
+    this.validateLessonData(createLessonDto);
     return this.lessonsRepository.create(courseId, createLessonDto);
   }
 
@@ -26,8 +45,13 @@ export class LessonsService {
   }
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
-    await this.findOne(id);
-
+    const existingLesson = await this.findOne(id);
+    // ... Spread Operator
+    const updatedLesson = {
+      ...existingLesson,
+      ...updateLessonDto,
+    };
+    this.validateLessonData(updatedLesson);
     return this.lessonsRepository.update(id, updateLessonDto);
   }
 
