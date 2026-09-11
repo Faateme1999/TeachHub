@@ -80,7 +80,7 @@ model Lesson {
   title     String
   content   String?
   meetingUrl  String?
-  type      LessonType   @default(RECORDED)
+  type      LessonType  
 
 // Each Lesson belongs to one Course.
 // courseId (foreign key)
