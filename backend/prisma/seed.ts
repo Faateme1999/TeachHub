@@ -10,8 +10,7 @@
 import 'dotenv/config';
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type User } from '@prisma/client';
-import { LessonType } from '@prisma/client';
+import { PrismaClient, LessonType, type User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const adapter = new PrismaPg({
@@ -461,7 +460,55 @@ async function main() {
       `  • courses already exist (${existingCourses}) — skipping demo courses`,
     );
   }
+  const lessonsToUpdate = [
+    {
+      courseTitle: 'Intro to NestJS',
+      title: 'What is NestJS?',
+      type: LessonType.RECORDED,
+    },
+    {
+      courseTitle: 'Intro to NestJS',
+      title: 'Your first controller',
+      type: LessonType.RECORDED,
+    },
+    {
+      courseTitle: 'React for Beginners',
+      title: 'Components & JSX',
+      type: LessonType.RECORDED,
+    },
+  ];
 
+  for (const lessonData of lessonsToUpdate) {
+    const course = await prisma.course.findFirst({
+      where: {
+        title: lessonData.courseTitle,
+      },
+    });
+
+    if (!course) {
+      continue;
+    }
+
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        courseId: course.id,
+        title: lessonData.title,
+      },
+    });
+
+    if (lesson) {
+      await prisma.lesson.update({
+        where: {
+          id: lesson.id,
+        },
+        data: {
+          type: lessonData.type,
+        },
+      });
+
+      console.log(`  • updated lesson type: ${lesson.title}`);
+    }
+  }
   await seedAssessments();
 
   console.log(
