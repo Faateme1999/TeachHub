@@ -9,6 +9,7 @@ import { Card } from "../components/ui/Card";
 
 export function MissionQuestionsPage() {
   const { missionId } = useParams();
+
   const id = Number(missionId);
 
   const navigate = useNavigate();
@@ -53,14 +54,27 @@ export function MissionQuestionsPage() {
       }),
     );
 
-    await submitMission.mutateAsync({
-      missionId: id,
-      answers: formattedAnswers,
-    });
+    try {
+      await submitMission.mutateAsync({
+        missionId: id,
+        answers: formattedAnswers,
+      });
 
-    // After POST successfully saves the result,
-    // fetch the saved result from the database.
-    await missionResultQuery.refetch();
+      // POST saved the result.
+      // Now GET reads the saved result from the database.
+      await missionResultQuery.refetch();
+    } catch {
+      // The mutation error is displayed below.
+    }
+  }
+
+  function handleTryAgain() {
+    // Clear selected answers.
+    setAnswers({});
+
+    // Remove the old result from the current query.
+    // The next render will show the questions again.
+    missionResultQuery.remove();
   }
 
   if (questionsQuery.isLoading || missionResultQuery.isLoading) {
@@ -86,9 +100,14 @@ export function MissionQuestionsPage() {
   }
 
   const questions = questionsQuery.data ?? [];
+
   const result = missionResultQuery.data;
 
   if (result) {
+    const maxAttempts = 2;
+
+    const canTryAgain = !result.passed && result.attemptsUsed < maxAttempts;
+
     return (
       <div>
         <button type="button" onClick={() => navigate(-1)}>
@@ -108,7 +127,10 @@ export function MissionQuestionsPage() {
             </p>
 
             <p>
-              Attempts Used: <strong>{result.attemptsUsed}</strong>
+              Attempts Used:{" "}
+              <strong>
+                {result.attemptsUsed} / {maxAttempts}
+              </strong>
             </p>
 
             <p>
@@ -116,6 +138,12 @@ export function MissionQuestionsPage() {
                 ? "Congratulations! You passed this mission."
                 : "You did not reach the passing score."}
             </p>
+
+            {canTryAgain && (
+              <button type="button" onClick={handleTryAgain}>
+                Try Again
+              </button>
+            )}
           </Card>
         </section>
       </div>
