@@ -162,4 +162,5 @@ model MissionResult{
 
   @@unique([userId, missionId])
   // یک کاربر نمی‌تواند برای یک Mission بیشتر از یک MissionResult داشته باشد.
+  // @@unique([userId, missionId], name: "user_mission_unique")
 }

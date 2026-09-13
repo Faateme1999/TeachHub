@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MissionsRepository } from './missions.repository';
 import { SubmitMissionDto } from './dto/submit-mission-dto';
 
@@ -31,8 +35,21 @@ export class MissionsService {
     return this.missionsRepository.findAllQuestionsByMissionId(missionId);
   }
 
-  async submitMission(missionId: number, submitMissionDto: SubmitMissionDto) {
+  async submitMission(
+    missionId: number,
+    userId: number,
+    submitMissionDto: SubmitMissionDto,
+  ) {
     const mission = await this.findMissionForSubmissionOrThrow(missionId);
+
+    const existingResult = await this.missionsRepository.findMissionResult(
+      userId,
+      missionId,
+    );
+
+    if (existingResult && existingResult.attemptsUsed >= mission.maxAttempts) {
+      throw new BadRequestException('Maximum attempts reached');
+    }
 
     let correctAnswers = 0;
 
@@ -62,9 +79,31 @@ export class MissionsService {
     const score =
       totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
+    const currentPassed = score >= mission.passingScore;
+    const attemptsUsed = (existingResult?.attemptsUsed ?? 0) + 1;
+
+    const bestScore = Math.max(existingResult?.bestScore ?? 0, score);
+
+    const passed = existingResult?.passed === true || currentPassed;
+
+    // false || false => false
+    // false || true  ✅
+    // true || false ✅
+    // true || true  ✅
+
+    await this.missionsRepository.saveMissionResult(
+      userId,
+      missionId,
+      bestScore,
+      passed,
+      attemptsUsed,
+    );
+
     return {
       score,
-      passed: score >= mission?.passingScore,
+      passed,
+      bestScore,
+      attemptsUsed,
     };
   }
 }

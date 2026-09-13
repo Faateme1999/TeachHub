@@ -43,6 +43,7 @@ export class MissionsRepository {
       select: {
         id: true,
         passingScore: true,
+        maxAttempts: true,
         questions: {
           select: {
             id: true,
@@ -55,6 +56,46 @@ export class MissionsRepository {
             },
           },
         },
+      },
+    });
+  }
+
+  findMissionResult(userId: number, missionId: number) {
+    return this.prisma.missionResult.findUnique({
+      where: {
+        userId_missionId: {
+          userId,
+          missionId,
+        },
+      },
+    });
+  }
+
+  saveMissionResult(
+    userId: number,
+    missionId: number,
+    bestScore: number,
+    passed: boolean,
+    attemptsUsed: number,
+  ) {
+    return this.prisma.missionResult.upsert({
+      where: {
+        userId_missionId: {
+          userId,
+          missionId,
+        },
+      },
+      update: {
+        bestScore,
+        passed,
+        attemptsUsed,
+      },
+      create: {
+        userId,
+        missionId,
+        bestScore,
+        passed,
+        attemptsUsed,
       },
     });
   }
