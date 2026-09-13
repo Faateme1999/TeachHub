@@ -23,6 +23,9 @@ export const queryKeys = {
     byMission: (missionId: number) =>
       ["missions", missionId, "questions"] as const,
   },
+  missions: {
+    result: (missionId: number) => ["missions", missionId, "result"] as const,
+  },
   users: {
     all: ["users"] as const,
     detail: (id: number) => ["users", id] as const,

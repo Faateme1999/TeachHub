@@ -98,13 +98,6 @@ export class MissionsService {
       passed,
       attemptsUsed,
     );
-
-    return {
-      score,
-      passed,
-      bestScore,
-      attemptsUsed,
-    };
   }
 
   async getMissionResult(userId: number, missionId: number) {

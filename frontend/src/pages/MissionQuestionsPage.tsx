@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuestionsByMission } from "../hooks/useQuestions";
+import { useMissionResult } from "../hooks/useMissionResult";
+import { useSubmitMission } from "../hooks/useSubmitMission";
 import { Spinner } from "../components/ui/Spinner";
 import { ErrorState } from "../components/ui/States";
 import { Card } from "../components/ui/Card";
-import { useSubmitMission } from "../hooks/useSubmitMission";
 
 export function MissionQuestionsPage() {
   const { missionId } = useParams();
   const id = Number(missionId);
+
   const navigate = useNavigate();
 
   const questionsQuery = useQuestionsByMission(id);
+  const missionResultQuery = useMissionResult(id);
   const submitMission = useSubmitMission();
 
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
@@ -42,7 +45,7 @@ export function MissionQuestionsPage() {
     });
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const formattedAnswers = Object.entries(answers).map(
       ([questionId, optionIds]) => ({
         questionId: Number(questionId),
@@ -50,13 +53,17 @@ export function MissionQuestionsPage() {
       }),
     );
 
-    submitMission.mutate({
+    await submitMission.mutateAsync({
       missionId: id,
       answers: formattedAnswers,
     });
+
+    // After POST successfully saves the result,
+    // fetch the saved result from the database.
+    await missionResultQuery.refetch();
   }
 
-  if (questionsQuery.isLoading) {
+  if (questionsQuery.isLoading || missionResultQuery.isLoading) {
     return <Spinner center />;
   }
 
@@ -69,8 +76,17 @@ export function MissionQuestionsPage() {
     );
   }
 
+  if (missionResultQuery.isError) {
+    return (
+      <ErrorState
+        title="Could not load mission result"
+        message="The mission result could not be loaded."
+      />
+    );
+  }
+
   const questions = questionsQuery.data ?? [];
-  const result = submitMission.data;
+  const result = missionResultQuery.data;
 
   if (result) {
     return (
@@ -88,7 +104,11 @@ export function MissionQuestionsPage() {
             <h2>{result.passed ? "Mission Passed!" : "Mission Failed"}</h2>
 
             <p>
-              Score: <strong>{result.score}%</strong>
+              Best Score: <strong>{result.bestScore}%</strong>
+            </p>
+
+            <p>
+              Attempts Used: <strong>{result.attemptsUsed}</strong>
             </p>
 
             <p>
@@ -150,6 +170,7 @@ export function MissionQuestionsPage() {
                               )
                             }
                           />
+
                           {option.text}
                         </label>
                       </li>
