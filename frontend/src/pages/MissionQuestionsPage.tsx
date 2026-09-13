@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import { useQuestionsByMission } from "../hooks/useQuestions";
 import { useMissionResult } from "../hooks/useMissionResult";
 import { useSubmitMission } from "../hooks/useSubmitMission";
+
 import { Spinner } from "../components/ui/Spinner";
 import { ErrorState } from "../components/ui/States";
 import { Card } from "../components/ui/Card";
@@ -19,6 +21,9 @@ export function MissionQuestionsPage() {
   const submitMission = useSubmitMission();
 
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
+
+  // Controls whether we are currently answering the mission again.
+  const [isRetrying, setIsRetrying] = useState(false);
 
   function handleOptionChange(
     questionId: number,
@@ -60,21 +65,23 @@ export function MissionQuestionsPage() {
         answers: formattedAnswers,
       });
 
-      // POST saved the result.
-      // Now GET reads the saved result from the database.
+      // POST saved the new result.
+      // Now GET reads the latest result from the database.
       await missionResultQuery.refetch();
+
+      // Show the result again.
+      setIsRetrying(false);
     } catch {
-      // The mutation error is displayed below.
+      // Error is displayed below.
     }
   }
 
   function handleTryAgain() {
-    // Clear selected answers.
+    // Clear the previous answers.
     setAnswers({});
 
-    // Remove the old result from the current query.
-    // The next render will show the questions again.
-    missionResultQuery.remove();
+    // Hide the result and show the questions again.
+    setIsRetrying(true);
   }
 
   if (questionsQuery.isLoading || missionResultQuery.isLoading) {
@@ -100,12 +107,20 @@ export function MissionQuestionsPage() {
   }
 
   const questions = questionsQuery.data ?? [];
-
   const result = missionResultQuery.data;
 
-  if (result) {
-    const maxAttempts = 2;
+  /*
+   * For now every mission allows 2 attempts.
+   * The backend still enforces the real maxAttempts value.
+   */
+  const maxAttempts = 2;
 
+  /*
+   * Show the result only when:
+   * - a result exists
+   * - the user is NOT retrying
+   */
+  if (result && !isRetrying) {
     const canTryAgain = !result.passed && result.attemptsUsed < maxAttempts;
 
     return (
@@ -150,6 +165,10 @@ export function MissionQuestionsPage() {
     );
   }
 
+  /*
+   * If there is no result yet OR the user clicked Try Again,
+   * show the questions.
+   */
   return (
     <div>
       <button type="button" onClick={() => navigate(-1)}>
