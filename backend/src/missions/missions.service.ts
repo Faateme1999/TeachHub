@@ -106,4 +106,8 @@ export class MissionsService {
       attemptsUsed,
     };
   }
+
+  async getMissionResult(userId: number, missionId: number) {
+    return this.missionsRepository.findMissionResult(userId, missionId);
+  }
 }

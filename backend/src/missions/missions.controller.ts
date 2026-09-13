@@ -38,4 +38,15 @@ export class MissionsController {
       submitMissionDto,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':missionId/result')
+  getMissionResult(
+    @Param('missionId', ParseIntPipe) missionId: number,
+    @Req() req: any,
+  ) {
+    const userId = req.user.id;
+
+    return this.missionsService.getMissionResult(userId, missionId);
+  }
 }
