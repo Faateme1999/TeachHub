@@ -12,6 +12,9 @@ export class LessonsRepository {
       data: {
         title: createLessonDto.title,
         content: createLessonDto.content,
+        videoUrl: createLessonDto.videoUrl,
+        fileName: createLessonDto.fileName,
+        fileUrl: createLessonDto.fileUrl,
         meetingUrl: createLessonDto.meetingUrl,
         type: createLessonDto.type,
         courseId,

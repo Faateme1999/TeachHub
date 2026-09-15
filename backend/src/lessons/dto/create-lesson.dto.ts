@@ -13,6 +13,18 @@ export class CreateLessonDto {
   @IsUrl()
   meetingUrl?: string;
 
+  @IsOptional()
+  @IsUrl()
+  videoUrl?: string;
+
+  @IsOptional()
+  @IsUrl()
+  fileUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  fileName?: string;
+
   @IsEnum(LessonType)
   type: LessonType;
 }

@@ -15,13 +15,28 @@ export class LessonsService {
   private validateLessonData(data: {
     type?: LessonType | null;
     content?: string | null;
+    videoUrl?: string | null;
+    fileUrl?: string | null;
     meetingUrl?: string | null;
   }) {
     if (data.type === LessonType.LIVE && !data.meetingUrl) {
       throw new BadRequestException('meetingUrl is required for LIVE lessons');
     }
-    if (data.type === LessonType.RECORDED && !data.content) {
-      throw new BadRequestException('content is required for RECORDED lessons');
+    if (data.type === LessonType.RECORDED && data.meetingUrl) {
+      throw new BadRequestException(
+        'meetingUrl is not allowed for RECORDED lessons',
+      );
+    }
+
+    if (
+      data.type === LessonType.RECORDED &&
+      !data.content &&
+      !data.videoUrl &&
+      !data.fileUrl
+    ) {
+      throw new BadRequestException(
+        'At least one of content, videoUrl, or fileUrl is required for RECORDED lessons',
+      );
     }
   }
 
