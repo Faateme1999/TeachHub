@@ -51,11 +51,13 @@ export interface CourseInput {
 }
 
 export type LessonType = "RECORDED" | "LIVE";
-
 export interface Lesson {
   id: number;
   title: string;
   content: string | null;
+  videoUrl: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
   meetingUrl: string | null;
   type: LessonType;
   courseId: number;
@@ -66,6 +68,9 @@ export interface Lesson {
 export interface LessonInput {
   title: string;
   content?: string;
+  videoUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
   meetingUrl?: string;
   type: LessonType;
 }

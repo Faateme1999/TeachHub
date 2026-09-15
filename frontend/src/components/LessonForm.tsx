@@ -26,13 +26,16 @@ export function LessonForm({
     initialValue?.type ?? "RECORDED",
   );
   const [content, setContent] = useState(initialValue?.content ?? "");
-  const [meetingUrl, setMeetingUrl] = useState(
-    initialValue?.meetingUrl ?? "",
-  );
+  const [videoUrl, setVideoUrl] = useState(initialValue?.videoUrl ?? "");
+  const [fileUrl, setFileUrl] = useState(initialValue?.fileUrl ?? "");
+  const [fileName, setFileName] = useState(initialValue?.fileName ?? "");
+  const [meetingUrl, setMeetingUrl] = useState(initialValue?.meetingUrl ?? "");
 
   const [errors, setErrors] = useState<{
     title?: string;
     content?: string;
+    videoUrl?: string;
+    fileUrl?: string;
     meetingUrl?: string;
   }>({});
 
@@ -45,8 +48,14 @@ export function LessonForm({
       nextErrors.title = "Title is required";
     }
 
-    if (type === "RECORDED" && !content.trim()) {
-      nextErrors.content = "Content is required for recorded lessons";
+    if (
+      type === "RECORDED" &&
+      !content.trim() &&
+      !videoUrl.trim() &&
+      !fileUrl.trim()
+    ) {
+      nextErrors.content =
+        "At least one of content, video URL, or file URL is required";
     }
 
     if (type === "LIVE" && !meetingUrl.trim()) {
@@ -60,13 +69,11 @@ export function LessonForm({
     onSubmit({
       title: title.trim(),
       type,
-      ...(type === "RECORDED"
-        ? {
-            content: content.trim(),
-          }
-        : {
-            meetingUrl: meetingUrl.trim(),
-          }),
+      ...(content.trim() ? { content: content.trim() } : {}),
+      ...(videoUrl.trim() ? { videoUrl: videoUrl.trim() } : {}),
+      ...(fileUrl.trim() ? { fileUrl: fileUrl.trim() } : {}),
+      ...(fileName.trim() ? { fileName: fileName.trim() } : {}),
+      ...(meetingUrl.trim() ? { meetingUrl: meetingUrl.trim() } : {}),
     });
   }
 
@@ -100,15 +107,36 @@ export function LessonForm({
         </select>
       </div>
 
-      {type === "RECORDED" && (
-        <Textarea
-          label="Content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          error={errors.content}
-          placeholder="The lesson material…"
-        />
-      )}
+      <Textarea
+        label="Content"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        error={errors.content}
+        placeholder="The lesson material…"
+      />
+
+      <Input
+        label="Video URL"
+        value={videoUrl}
+        onChange={(e) => setVideoUrl(e.target.value)}
+        error={errors.videoUrl}
+        placeholder="https://..."
+      />
+
+      <Input
+        label="File URL"
+        value={fileUrl}
+        onChange={(e) => setFileUrl(e.target.value)}
+        error={errors.fileUrl}
+        placeholder="https://..."
+      />
+
+      <Input
+        label="File name"
+        value={fileName}
+        onChange={(e) => setFileName(e.target.value)}
+        placeholder="e.g. lesson-1.pdf"
+      />
 
       {type === "LIVE" && (
         <Input
@@ -121,11 +149,7 @@ export function LessonForm({
       )}
 
       <div className="form__actions">
-        <Button
-          variant="secondary"
-          onClick={onCancel}
-          disabled={submitting}
-        >
+        <Button variant="secondary" onClick={onCancel} disabled={submitting}>
           Cancel
         </Button>
 

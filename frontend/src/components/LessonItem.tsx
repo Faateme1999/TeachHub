@@ -154,8 +154,36 @@ export function LessonItem({
           </span>
         </div>
 
-        {lesson.type === "RECORDED" && lesson.content && (
+        {lesson.content && (
           <p className="lesson-item__content">{lesson.content}</p>
+        )}
+
+        {lesson.videoUrl && (
+          <div style={{ marginTop: "var(--space-3)" }}>
+            <video
+              controls
+              style={{
+                width: "100%",
+                maxWidth: "700px",
+                borderRadius: "8px",
+              }}
+            >
+              <source src={lesson.videoUrl} />
+              Your browser does not support the video element.
+            </video>
+          </div>
+        )}
+
+        {lesson.fileName && (
+          <p className="lesson-item__content">📄 {lesson.fileName}</p>
+        )}
+
+        {lesson.fileUrl && (
+          <p className="lesson-item__content">
+            <a href={lesson.fileUrl} target="_blank" rel="noopener noreferrer">
+              Open lesson file
+            </a>
+          </p>
         )}
 
         {lesson.type === "LIVE" && lesson.meetingUrl && (
@@ -165,7 +193,7 @@ export function LessonItem({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Join live lesson
+              🔴 Join live lesson
             </a>
           </p>
         )}
