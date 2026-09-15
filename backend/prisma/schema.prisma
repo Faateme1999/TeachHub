@@ -79,6 +79,9 @@ model Lesson {
   id        Int      @id @default(autoincrement())
   title     String
   content   String?
+  videoUrl   String?
+  fileUrl    String?
+  fileName   String?
   meetingUrl  String?
   type      LessonType  
 
