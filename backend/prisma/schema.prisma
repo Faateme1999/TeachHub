@@ -32,6 +32,8 @@ model User {
   enrollments Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
   missionResults MissionResult[]
+  submissions Submission[]
+
 }
 
 
@@ -97,6 +99,8 @@ model Lesson {
   
   createdAt DateTime @default(now())
   outcomes Outcome[]
+
+  assignments Assignment[]
 }
 
 
@@ -167,3 +171,39 @@ model MissionResult{
   // یک کاربر نمی‌تواند برای یک Mission بیشتر از یک MissionResult داشته باشد.
   // @@unique([userId, missionId], name: "user_mission_unique")
 }
+
+model Assignment{
+id  Int       @id @default(autoincrement())
+title String
+description String? 
+deadline   DateTime?
+lessonId Int
+
+lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+submissions Submission[]
+
+createdAt DateTime @default(now())
+}
+
+model Submission{
+id Int   @id @default(autoincrement())  
+
+assignmentId Int
+assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+userId Int
+user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+fileName String
+fileData Bytes
+
+submittedAt   DateTime  @default(now())
+
+feedback   String?
+correctedFileName String?
+correctedFileData Bytes?
+
+createdAt DateTime  @default(now())
+}
+
