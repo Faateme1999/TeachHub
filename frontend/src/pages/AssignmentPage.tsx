@@ -1,12 +1,10 @@
 import { Link, useParams } from "react-router-dom";
 import { useAssignments } from "../hooks/useAssignments";
-import { Card } from "../components/ui/Card";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState, ErrorState } from "../components/ui/States";
+import { AssignmentCard } from "../components/AssignmentCard";
 
-function formatDeadline(deadline: string) {
-  return new Date(deadline).toLocaleString();
-}
+
 
 export function AssignmentPage() {
   const { courseId, lessonId } = useParams();
@@ -57,34 +55,7 @@ export function AssignmentPage() {
         {assignments.length > 0 && (
           <div className="stack">
             {assignments.map((assignment) => (
-              <Card key={assignment.id}>
-                <div>
-                  <h2>{assignment.title}</h2>
-
-                  {assignment.description && (
-                    <p
-                      style={{
-                        color: "var(--text-muted)",
-                        marginTop: "var(--space-2)",
-                      }}
-                    >
-                      {assignment.description}
-                    </p>
-                  )}
-
-                  <div
-                    style={{
-                      marginTop: "var(--space-4)",
-                      padding: "var(--space-3)",
-                      background: "var(--surface-2)",
-                      borderRadius: "var(--radius)",
-                    }}
-                  >
-                    <strong>Deadline:</strong>{" "}
-                    {formatDeadline(assignment.deadline)}
-                  </div>
-                </div>
-              </Card>
+              <AssignmentCard key={assignment.id} assignment={assignment} />
             ))}
           </div>
         )}

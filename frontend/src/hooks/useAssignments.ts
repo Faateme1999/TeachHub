@@ -39,3 +39,19 @@ export function useCreateAssignment(lessonId: number) {
     },
   });
 }
+
+export function useSubmitAssignment(assignmentId: number) {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const { data } = await apiClient.post(
+        `/assignments/${assignmentId}/submissions`,
+        formData,
+      );
+
+      return data;
+    },
+  });
+}
