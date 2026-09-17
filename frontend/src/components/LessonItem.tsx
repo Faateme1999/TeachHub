@@ -12,9 +12,12 @@ import { Button } from "./ui/Button";
 import { Spinner } from "./ui/Spinner";
 import { ErrorState } from "./ui/States";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
-import type { Lesson, Outcome } from "../types/api";
+import type { AssignmentInput, Lesson, Outcome } from "../types/api";
 import { useMissionsByOutcome } from "../hooks/useMissions";
 import { Link } from "react-router-dom";
+import { useCreateAssignment } from "../hooks/useAssignments";
+import { AssignmentForm } from "./AssignmentForm";
+import { Modal } from "./ui/Modal";
 
 interface LessonItemProps {
   lesson: Lesson;
@@ -47,6 +50,10 @@ export function LessonItem({
   );
   const missionsQuery = useMissionsByOutcome(selectedOutcomeId ?? 0);
   const missions = missionsQuery.data ?? [];
+
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const [assignmentError, setAssignmentError] = useState<string | undefined>();
+  const createAssignment = useCreateAssignment(lesson.id);
 
   function handleCreateOutcome() {
     const text = newOutcomeText.trim();
@@ -128,6 +135,26 @@ export function LessonItem({
 
   const outcomes = outcomesQuery.data ?? [];
 
+  function openAddAssignment() {
+    setAssignmentError(undefined);
+    setAssignmentModalOpen(true);
+  }
+
+  function handleAssignmentSubmit(values: AssignmentInput) {
+    createAssignment.mutate(values, {
+      onSuccess: () => {
+        setAssignmentModalOpen(false);
+        setAssignmentError(undefined);
+        showToast("Assignment added");
+      },
+      onError: (error) => {
+        setAssignmentError(
+          getApiErrorMessage(error, "Could not add assignment"),
+        );
+      },
+    });
+  }
+
   return (
     <Card className="lesson-item">
       <div className="lesson-item__body">
@@ -196,6 +223,14 @@ export function LessonItem({
               🔴 Join live lesson
             </a>
           </p>
+        )}
+
+        {isAdmin && (
+          <div style={{ marginTop: "16px" }}>
+            <Button size="sm" onClick={openAddAssignment}>
+              + Add assignment
+            </Button>
+          </div>
         )}
 
         <div style={{ marginTop: "var(--space-3)" }}>
@@ -377,6 +412,23 @@ export function LessonItem({
         onConfirm={handleDeleteOutcome}
         onCancel={() => setOutcomeToDelete(null)}
       />
+      <Modal
+        open={assignmentModalOpen}
+        title="Add assignment"
+        onClose={() => {
+          if (!createAssignment.isPending) {
+            setAssignmentModalOpen(false);
+          }
+        }}
+      >
+        <AssignmentForm
+          submitLabel="Add assignment"
+          submitting={createAssignment.isPending}
+          serverError={assignmentError}
+          onSubmit={handleAssignmentSubmit}
+          onCancel={() => setAssignmentModalOpen(false)}
+        />
+      </Modal>
     </Card>
   );
 }

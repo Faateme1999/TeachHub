@@ -118,6 +118,21 @@ export interface SubmitMissionResponse {
   passed: boolean;
 }
 
+export interface Assignment {
+  id: number;
+  title: string;
+  description: string | null;
+  deadline: string;
+  lessonId: number;
+  createdAt: string;
+}
+
+export interface AssignmentInput {
+  title: string;
+  description?: string;
+  deadline: string;
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {

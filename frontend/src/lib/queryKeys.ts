@@ -14,6 +14,8 @@ export const queryKeys = {
   lessons: {
     detail: (id: number) => ["lessons", id] as const,
     outcomes: (lessonId: number) => ["lessons", lessonId, "outcomes"] as const,
+    assignments: (lessonId: number) =>
+      ["lessons", lessonId, "assignments"] as const,
   },
   outcomes: {
     missions: (outcomeId: number) =>
