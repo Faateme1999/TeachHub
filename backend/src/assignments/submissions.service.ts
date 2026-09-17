@@ -13,8 +13,8 @@ export class SubmissionsService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async findAssignmnet(assignmentId: number) {
-    const assignment = this.prisma.assignment.findUnique({
+  async findAssignment(assignmentId: number) {
+    const assignment = await this.prisma.assignment.findUnique({
       where: {
         id: assignmentId,
       },
@@ -31,7 +31,7 @@ export class SubmissionsService {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    await this.findAssignmnet(assignmentId);
+    await this.findAssignment(assignmentId);
 
     await this.submissionsRepository.create(
       assignmentId,
@@ -43,6 +43,11 @@ export class SubmissionsService {
   }
 
   async downloadAssignmentFile(submissionId: number) {
-    return this.submissionsRepository.downloadAssignmentFile(submissionId);
+    const submission =
+      await this.submissionsRepository.downloadAssignmentFile(submissionId);
+    if (!submission) {
+      throw new NotFoundException(`Submission ${submissionId} not found`);
+    }
+    return submission;
   }
 }

@@ -5,6 +5,7 @@ import {
   ParseIntPipe,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -14,6 +15,7 @@ import { SubmissionsService } from './submissions.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import type { Response } from 'express';
 
 @Controller('assignments/:assignmentId/submissions')
 @UseGuards(JwtAuthGuard)
@@ -37,9 +39,23 @@ export class SubmissionsController {
   @Get(':submissionId/download')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  downloadAssignmentFile(
+  async downloadAssignmentFile(
     @Param('submissionId', ParseIntPipe) submissionId: number,
+    @Res() res: Response,
   ) {
-    return this.submissionsService.downloadAssignmentFile(submissionId);
+    const submission =
+      await this.submissionsService.downloadAssignmentFile(submissionId);
+
+    res.set({
+      // Set the HTTP response headers before sending the file.
+      // Content-Type tells the browser that the response is binary file data.
+      'Content-Type': 'application/octet-stream',
+
+      // Content-Disposition tells the browser to download the file and use the original file name.
+      'Content-Disposition': `attachment; filename="${submission.fileName}"`,
+    });
+
+    // Convert the stored binary data into a Node.js Buffer and send the actual file data to the browser.
+    res.send(Buffer.from(submission.fileData));
   }
 }

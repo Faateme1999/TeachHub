@@ -27,6 +27,10 @@ export class SubmissionsRepository {
       where: {
         id: submissionId,
       },
+      select: {
+        fileName: true,
+        fileData: true,
+      },
     });
   }
 }
