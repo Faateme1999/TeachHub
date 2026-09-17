@@ -6,6 +6,7 @@ import type {
   CreateAdminInput,
   RegisterResponse,
   User,
+  UserSubmission,
 } from "../types/api";
 
 // Hooks for reading users and their enrolled courses.
@@ -125,5 +126,18 @@ export function useCreateAdmin() {
       // The user list changed — refresh it so the new admin appears.
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
     },
+  });
+}
+
+export function useUserSubmissions(id: number) {
+  return useQuery({
+    queryKey: queryKeys.users.submissions(id),
+    queryFn: async () => {
+      const { data } = await apiClient.get<UserSubmission[]>(
+        `/users/${id}/submissions`,
+      );
+      return data;
+    },
+    enabled: Number.isFinite(id),
   });
 }

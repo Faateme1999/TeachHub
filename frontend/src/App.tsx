@@ -19,6 +19,7 @@ import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { CreateAdminPage } from "./pages/admin/CreateAdminPage";
 import { MissionQuestionsPage } from "./pages/MissionQuestionsPage";
 import { AssignmentPage } from "./pages/AssignmentPage";
+import { AdminUserSubmissionsPage } from "./pages/admin/AdminUserSubmissionsPage";
 
 // This is the "route table" — it maps URLs to pages.
 // Everything renders inside <Layout /> (navbar + footer). Pages that need a
@@ -123,6 +124,23 @@ function App() {
           element={
             <AdminRoute>
               <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="users/:id"
+          element={
+            <AdminRoute>
+              <UserProfilePage />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="users/:id/submissions"
+          element={
+            <AdminRoute>
+              <AdminUserSubmissionsPage />
             </AdminRoute>
           }
         />

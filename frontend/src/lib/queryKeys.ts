@@ -16,6 +16,8 @@ export const queryKeys = {
     outcomes: (lessonId: number) => ["lessons", lessonId, "outcomes"] as const,
     assignments: (lessonId: number) =>
       ["lessons", lessonId, "assignments"] as const,
+    submissions: (assignmentId: number) =>
+      ["assignments", assignmentId, "submissions"] as const,
   },
   outcomes: {
     missions: (outcomeId: number) =>
@@ -32,6 +34,7 @@ export const queryKeys = {
     all: ["users"] as const,
     detail: (id: number) => ["users", id] as const,
     courses: (id: number) => ["users", id, "courses"] as const,
+    submissions: (id: number) => ["users", id, "submissions"] as const,
   },
   me: {
     profile: ["me", "profile"] as const,

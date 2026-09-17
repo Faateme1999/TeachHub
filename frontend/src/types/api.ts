@@ -128,6 +128,36 @@ export interface AssignmentInput {
   deadline: string;
 }
 
+export interface Submission {
+  id: number;
+  assignmentId: number;
+  userId: number;
+  fileName: string;
+  fileData: unknown;
+}
+
+export interface UserSubmission {
+  id: number;
+  userId: number;
+  assignmentId: number;
+  fileName: string;
+
+  assignment: {
+    id: number;
+    title: string;
+
+    lesson: {
+      id: number;
+      title: string;
+
+      course: {
+        id: number;
+        title: string;
+      };
+    };
+  };
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {
