@@ -64,4 +64,11 @@ export class UsersController {
     // everything coming from a URL arrives as text.
     return this.usersService.findById(id);
   }
+
+  @Get(':userId/submissions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  findUserSubmissions(@Param('userId', ParseIntPipe) userId: number) {
+    return this.usersService.findUserSubmissions(userId);
+  }
 }
