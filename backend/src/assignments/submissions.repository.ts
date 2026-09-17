@@ -21,4 +21,12 @@ export class SubmissionsRepository {
       },
     });
   }
+
+  async downloadAssignmentFile(submissionId: number) {
+    return this.prisma.submission.findUnique({
+      where: {
+        id: submissionId,
+      },
+    });
+  }
 }
