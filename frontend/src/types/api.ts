@@ -113,11 +113,6 @@ export interface SubmitMissionResponse {
   passed: boolean;
 }
 
-export interface SubmitMissionResponse {
-  score: number;
-  passed: boolean;
-}
-
 export interface Assignment {
   id: number;
   title: string;

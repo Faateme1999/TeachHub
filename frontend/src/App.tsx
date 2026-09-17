@@ -18,6 +18,7 @@ import { AdminCoursesPage } from "./pages/admin/AdminCoursesPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { CreateAdminPage } from "./pages/admin/CreateAdminPage";
 import { MissionQuestionsPage } from "./pages/MissionQuestionsPage";
+import { AssignmentPage } from "./pages/AssignmentPage";
 
 // This is the "route table" — it maps URLs to pages.
 // Everything renders inside <Layout /> (navbar + footer). Pages that need a
@@ -74,6 +75,15 @@ function App() {
         <Route
           path="/missions/:missionId/questions"
           element={<MissionQuestionsPage />}
+        />
+
+        <Route
+          path="/courses/:courseId/lessons/:lessonId/assignments"
+          element={
+            <ProtectedRoute>
+              <AssignmentPage />
+            </ProtectedRoute>
+          }
         />
         {/* Protected pages (any logged-in user) */}
         <Route

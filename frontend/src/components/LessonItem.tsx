@@ -225,13 +225,28 @@ export function LessonItem({
           </p>
         )}
 
-        {isAdmin && (
-          <div style={{ marginTop: "16px" }}>
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+          }}
+        >
+          <Link
+            to={`/courses/${lesson.courseId}/lessons/${lesson.id}/assignments`}
+          >
+            <Button variant="secondary" size="sm">
+              Assignments
+            </Button>
+          </Link>
+
+          {isAdmin && (
             <Button size="sm" onClick={openAddAssignment}>
               + Add assignment
             </Button>
-          </div>
-        )}
+          )}
+        </div>
 
         <div style={{ marginTop: "var(--space-3)" }}>
           <h3>Learning outcomes</h3>

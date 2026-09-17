@@ -1,7 +1,23 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/apiClient";
 import { queryKeys } from "../lib/queryKeys";
 import type { Assignment, AssignmentInput } from "../types/api";
+
+export function useAssignments(lessonId: number) {
+  return useQuery({
+    queryKey: queryKeys.lessons.assignments(lessonId),
+
+    queryFn: async () => {
+      const { data } = await apiClient.get<Assignment[]>(
+        `/lessons/${lessonId}/assignments`,
+      );
+
+      return data;
+    },
+
+    enabled: lessonId > 0,
+  });
+}
 
 export function useCreateAssignment(lessonId: number) {
   const queryClient = useQueryClient();
