@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useUser, useUserSubmissions } from "../../hooks/useUsers";
+import { useDownloadSubmission } from "../../hooks/useAssignments";
 
 export function AdminUserSubmissionsPage() {
   const { id } = useParams();
@@ -12,6 +13,31 @@ export function AdminUserSubmissionsPage() {
     isLoading: isSubmissionsLoading,
     isError,
   } = useUserSubmissions(userId);
+
+  const downloadSubmission = useDownloadSubmission();
+
+  const handleDownload = async (
+    assignmentId: number,
+    submissionId: number,
+    fileName: string,
+  ) => {
+    const response = await downloadSubmission.mutateAsync({
+      assignmentId,
+      submissionId,
+    });
+
+    const url = window.URL.createObjectURL(response.data);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  };
 
   if (isUserLoading || isSubmissionsLoading) {
     return (
@@ -99,10 +125,18 @@ export function AdminUserSubmissionsPage() {
                 <button
                   type="button"
                   className="admin-action-button admin-action-button--primary"
-                  disabled
-                  title="File download will be available after the backend download endpoint is completed"
+                  onClick={() =>
+                    handleDownload(
+                      submission.assignment.id,
+                      submission.id,
+                      submission.fileName,
+                    )
+                  }
+                  disabled={downloadSubmission.isPending}
                 >
-                  View / Download
+                  {downloadSubmission.isPending
+                    ? "Downloading..."
+                    : "View / Download"}
                 </button>
               </div>
             </article>

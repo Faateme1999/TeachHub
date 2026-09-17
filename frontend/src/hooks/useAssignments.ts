@@ -55,3 +55,24 @@ export function useSubmitAssignment(assignmentId: number) {
     },
   });
 }
+
+export function useDownloadSubmission() {
+  return useMutation({
+    mutationFn: async ({
+      assignmentId,
+      submissionId,
+    }: {
+      assignmentId: number;
+      submissionId: number;
+    }) => {
+      const response = await apiClient.get(
+        `/assignments/${assignmentId}/submissions/${submissionId}/download`,
+        {
+          responseType: "blob",
+        },
+      );
+
+      return response;
+    },
+  });
+}
