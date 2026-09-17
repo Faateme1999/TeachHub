@@ -16,4 +16,15 @@ export class AssignmentsRepository {
       },
     });
   }
+
+  async getAssignmentsByLessonId(lessonId: number) {
+    return this.prisma.assignment.findMany({
+      where: {
+        lessonId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -26,5 +27,11 @@ export class AssignmentsController {
     createAssignmentDto: CreateAssignmentDto,
   ) {
     return this.assignmentsService.create(lessonId, createAssignmentDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  getAssignmentsByLessonId(@Param('lessonId', ParseIntPipe) lessonId: number) {
+    return this.assignmentsService.getAssignmentsByLessonId(lessonId);
   }
 }

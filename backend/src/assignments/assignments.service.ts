@@ -29,4 +29,9 @@ export class AssignmentsService {
 
     return this.assignmentsRepository.create(lessonId, createAssignmentDto);
   }
+
+  async getAssignmentsByLessonId(lessonId: number) {
+    await this.findLesson(lessonId);
+    return this.assignmentsRepository.getAssignmentsByLessonId(lessonId);
+  }
 }
