@@ -1,22 +1,22 @@
 import { Link, useParams } from "react-router-dom";
 import { useAssignments } from "../hooks/useAssignments";
+import { useMyProfile } from "../hooks/useUsers";
 import { Spinner } from "../components/ui/Spinner";
 import { EmptyState, ErrorState } from "../components/ui/States";
 import { AssignmentCard } from "../components/AssignmentCard";
-
-
 
 export function AssignmentPage() {
   const { courseId, lessonId } = useParams();
   const parsedLessonId = Number(lessonId);
 
   const assignmentsQuery = useAssignments(parsedLessonId);
+  const profileQuery = useMyProfile();
 
-  if (assignmentsQuery.isLoading) {
+  if (assignmentsQuery.isLoading || profileQuery.isLoading) {
     return <Spinner center />;
   }
 
-  if (assignmentsQuery.isError) {
+  if (assignmentsQuery.isError || profileQuery.isError) {
     return (
       <ErrorState
         title="Could not load assignments"
@@ -26,6 +26,7 @@ export function AssignmentPage() {
   }
 
   const assignments = assignmentsQuery.data ?? [];
+  const isAdmin = profileQuery.data?.role === "ADMIN";
 
   return (
     <div>
@@ -55,7 +56,11 @@ export function AssignmentPage() {
         {assignments.length > 0 && (
           <div className="stack">
             {assignments.map((assignment) => (
-              <AssignmentCard key={assignment.id} assignment={assignment} />
+              <AssignmentCard
+                key={assignment.id}
+                assignment={assignment}
+                isAdmin={isAdmin}
+              />
             ))}
           </div>
         )}
