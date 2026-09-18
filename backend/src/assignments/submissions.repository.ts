@@ -33,4 +33,22 @@ export class SubmissionsRepository {
       },
     });
   }
+
+  async uploadCorrectedFile(
+    submissionId: number,
+    correctedFileName: string,
+    correctedFileData: Uint8Array,
+    feedback?: string,
+  ) {
+    return this.prisma.submission.update({
+      where: {
+        id: submissionId,
+      },
+      data: {
+        correctedFileName,
+        correctedFileData: correctedFileData as any,
+        feedback,
+      },
+    });
+  }
 }

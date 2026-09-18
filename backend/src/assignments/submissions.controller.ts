@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
@@ -16,6 +17,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import type { Response } from 'express';
+import { Role } from '@prisma/client';
+import { CreateCorrectedAssignmentDto } from './dto/create-corrected-assignment';
 
 @Controller('assignments/:assignmentId/submissions')
 @UseGuards(JwtAuthGuard)
@@ -57,5 +60,23 @@ export class SubmissionsController {
 
     // Convert the stored binary data into a Node.js Buffer and send the actual file data to the browser.
     res.send(Buffer.from(submission.fileData));
+  }
+
+  @Post(':submissionId/correct')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  uploadCorrectedFile(
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @UploadedFile() correctedFile: any,
+    @Body() createCorrectedAssignmentDto: CreateCorrectedAssignmentDto,
+  ) {
+    return this.submissionsService.uploadCorrectedFile(
+      assignmentId,
+      submissionId,
+      correctedFile,
+      createCorrectedAssignmentDto,
+    );
   }
 }

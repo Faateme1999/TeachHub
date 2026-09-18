@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubmissionsRepository } from './submissions.repository';
+import { CreateCorrectedAssignmentDto } from './dto/create-corrected-assignment';
 
 @Injectable()
 export class SubmissionsService {
@@ -49,5 +50,24 @@ export class SubmissionsService {
       throw new NotFoundException(`Submission ${submissionId} not found`);
     }
     return submission;
+  }
+
+  async uploadCorrectedFile(
+    assignmentId: number,
+    submissionId: number,
+    correctedFile: any,
+    createCorrectedAssignmentDto: CreateCorrectedAssignmentDto,
+  ) {
+    if (!correctedFile) {
+      throw new BadRequestException('Corrected file is required');
+    }
+    await this.findAssignment(assignmentId);
+
+    return this.submissionsRepository.uploadCorrectedFile(
+      submissionId,
+      correctedFile.originalname,
+      correctedFile.buffer,
+      createCorrectedAssignmentDto.feedback,
+    );
   }
 }
