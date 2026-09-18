@@ -79,4 +79,26 @@ export class SubmissionsController {
       createCorrectedAssignmentDto,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':submissionId/corrected-download')
+  async downloadCorrectedFile(
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    const submission = await this.submissionsService.downloadCorrectedFile(
+      assignmentId,
+      submissionId,
+      req.uer.id,
+    );
+
+    res.set({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${submission.correctedFileName}"`,
+    });
+
+    res.send(Buffer.from(submission.correctedFileData!));
+  }
 }

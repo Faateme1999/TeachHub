@@ -59,4 +59,22 @@ export class SubmissionsRepository {
       },
     });
   }
+
+  async downloadCorrectedFile(
+    assignmentId: number,
+    submissionId: number,
+    userId: number,
+  ) {
+    return this.prisma.submission.findFirst({
+      where: {
+        id: submissionId,
+        assignmentId,
+        userId,
+      },
+      select: {
+        correctedFileName: true,
+        correctedFileData: true,
+      },
+    });
+  }
 }

@@ -70,4 +70,26 @@ export class SubmissionsService {
       createCorrectedAssignmentDto.feedback,
     );
   }
+
+  async downloadCorrectedFile(
+    assignmentId: number,
+    submissionId: number,
+    userId: number,
+  ) {
+    await this.findAssignment(assignmentId);
+    const submission = await this.submissionsRepository.downloadCorrectedFile(
+      assignmentId,
+      submissionId,
+      userId,
+    );
+    if (!submission) {
+      throw new NotFoundException(
+        'Corrected file not found for this submission',
+      );
+    }
+    if (!submission.correctedFileName || !submission.correctedFileData) {
+      throw new NotFoundException('Corrected file has not been uploaded yet');
+    }
+    return submission;
+  }
 }
