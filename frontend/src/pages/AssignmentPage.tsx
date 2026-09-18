@@ -30,8 +30,12 @@ export function AssignmentPage() {
 
   return (
     <div>
-      <Link to="/courses" className="navbar__link" style={{ paddingLeft: 0 }}>
-        ← Back to courses
+      <Link
+        to={`/courses/${courseId}`}
+        className="navbar__link"
+        style={{ paddingLeft: 0 }}
+      >
+        ← Back to course
       </Link>
 
       <section
