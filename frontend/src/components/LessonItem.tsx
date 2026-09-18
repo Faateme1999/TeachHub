@@ -384,15 +384,24 @@ export function LessonItem({
               style={{
                 marginTop: "20px",
                 padding: "16px",
-                border: "1px solid #ccc",
+                borderRadius: "12px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
               }}
             >
-              <h3>Learning outcomes</h3>
-
               <input
                 value={newOutcomeText}
                 onChange={(event) => setNewOutcomeText(event.target.value)}
-                placeholder="Add a learning outcome"
+                placeholder="Add a learning outcome..."
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #cbd5e1",
+                }}
               />
 
               <Button
@@ -400,7 +409,7 @@ export function LessonItem({
                 onClick={handleCreateOutcome}
                 disabled={createOutcome.isPending}
               >
-                {createOutcome.isPending ? "Adding…" : "+ Add outcome"}
+                {createOutcome.isPending ? "Adding…" : "+ Add learning outcome"}
               </Button>
             </div>
           )}
