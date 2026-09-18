@@ -76,3 +76,24 @@ export function useDownloadSubmission() {
     },
   });
 }
+
+export function useDownloadCorrectedSubmission() {
+  return useMutation({
+    mutationFn: async ({
+      assignmentId,
+      submissionId,
+    }: {
+      assignmentId: number;
+      submissionId: number;
+    }) => {
+      const response = await apiClient.get(
+        `/assignments/${assignmentId}/submissions/${submissionId}/corrected-download`,
+        {
+          responseType: "blob",
+        },
+      );
+
+      return response;
+    },
+  });
+}

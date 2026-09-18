@@ -120,6 +120,13 @@ export interface Assignment {
   deadline: string;
   lessonId: number;
   createdAt: string;
+
+  submissions: {
+    id: number;
+    fileName: string;
+    correctedFileName: string | null;
+    feedback: string | null;
+  }[];
 }
 
 export interface AssignmentInput {

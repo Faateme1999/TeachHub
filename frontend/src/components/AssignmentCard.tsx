@@ -1,4 +1,7 @@
-import { useSubmitAssignment } from "../hooks/useAssignments";
+import {
+  useDownloadCorrectedSubmission,
+  useSubmitAssignment,
+} from "../hooks/useAssignments";
 import type { Assignment } from "../types/api";
 import { Card } from "./ui/Card";
 
@@ -8,6 +11,9 @@ function formatDeadline(deadline: string) {
 
 export function AssignmentCard({ assignment }: { assignment: Assignment }) {
   const submitMutation = useSubmitAssignment(assignment.id);
+  const downloadCorrectedMutation = useDownloadCorrectedSubmission();
+
+  const submission = assignment.submissions?.[0];
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -17,6 +23,29 @@ export function AssignmentCard({ assignment }: { assignment: Assignment }) {
     submitMutation.mutate(file);
 
     e.target.value = "";
+  }
+
+  async function handleDownloadCorrected() {
+    if (!submission?.id || !submission.correctedFileName) {
+      return;
+    }
+
+    const response = await downloadCorrectedMutation.mutateAsync({
+      assignmentId: assignment.id,
+      submissionId: submission.id,
+    });
+
+    const url = window.URL.createObjectURL(response.data);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = submission.correctedFileName;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
   }
 
   return (
@@ -87,6 +116,60 @@ export function AssignmentCard({ assignment }: { assignment: Assignment }) {
             </p>
           )}
         </div>
+
+        {submission && (
+          <div
+            style={{
+              marginTop: "var(--space-5)",
+              padding: "var(--space-4)",
+              background: "var(--surface-2)",
+              borderRadius: "var(--radius)",
+            }}
+          >
+            <h3>Your submission</h3>
+
+            <p style={{ marginTop: "var(--space-2)" }}>
+              <strong>File:</strong> {submission.fileName}
+            </p>
+
+            {submission.correctedFileName && (
+              <div style={{ marginTop: "var(--space-4)" }}>
+                <p>
+                  <strong>Corrected file:</strong>{" "}
+                  {submission.correctedFileName}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadCorrected}
+                  disabled={downloadCorrectedMutation.isPending}
+                  style={{
+                    marginTop: "var(--space-2)",
+                  }}
+                >
+                  {downloadCorrectedMutation.isPending
+                    ? "Downloading..."
+                    : "Download corrected file"}
+                </button>
+              </div>
+            )}
+
+            {submission.feedback && (
+              <div style={{ marginTop: "var(--space-4)" }}>
+                <strong>Teacher feedback:</strong>
+
+                <p
+                  style={{
+                    marginTop: "var(--space-2)",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  {submission.feedback}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   );
