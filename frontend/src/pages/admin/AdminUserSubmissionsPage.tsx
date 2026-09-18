@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useUser, useUserSubmissions } from "../../hooks/useUsers";
-import { useDownloadSubmission } from "../../hooks/useAssignments";
+import {
+  useDownloadSubmission,
+  useUploadCorrectedFile,
+} from "../../hooks/useAssignments";
 
 export function AdminUserSubmissionsPage() {
   const { id } = useParams();
@@ -15,6 +19,31 @@ export function AdminUserSubmissionsPage() {
   } = useUserSubmissions(userId);
 
   const downloadSubmission = useDownloadSubmission();
+  const uploadCorrectedFile = useUploadCorrectedFile();
+
+  const [selectedFiles, setSelectedFiles] = useState<
+    Record<number, File | null>
+  >({});
+
+  const [feedbacks, setFeedbacks] = useState<Record<number, string>>({});
+
+  const [uploadedSubmissionId, setUploadedSubmissionId] = useState<
+    number | null
+  >(null);
+
+  const handleFileChange = (submissionId: number, file: File | null) => {
+    setSelectedFiles((current) => ({
+      ...current,
+      [submissionId]: file,
+    }));
+  };
+
+  const handleFeedbackChange = (submissionId: number, feedback: string) => {
+    setFeedbacks((current) => ({
+      ...current,
+      [submissionId]: feedback,
+    }));
+  };
 
   const handleDownload = async (
     assignmentId: number,
@@ -37,6 +66,35 @@ export function AdminUserSubmissionsPage() {
     link.remove();
 
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleUploadCorrection = async (
+    assignmentId: number,
+    submissionId: number,
+  ) => {
+    const file = selectedFiles[submissionId];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      await uploadCorrectedFile.mutateAsync({
+        assignmentId,
+        submissionId,
+        file,
+        feedback: feedbacks[submissionId],
+      });
+
+      setUploadedSubmissionId(submissionId);
+
+      setSelectedFiles((current) => ({
+        ...current,
+        [submissionId]: null,
+      }));
+    } catch {
+      setUploadedSubmissionId(null);
+    }
   };
 
   if (isUserLoading || isSubmissionsLoading) {
@@ -91,56 +149,175 @@ export function AdminUserSubmissionsPage() {
 
       {submissions && submissions.length > 0 && (
         <div className="admin-submissions-list">
-          {submissions.map((submission) => (
-            <article key={submission.id} className="admin-submission-card">
-              <h2>{submission.assignment.title}</h2>
+          {submissions.map((submission) => {
+            const selectedFile = selectedFiles[submission.id] ?? null;
 
-              <div className="admin-submission-details">
-                <div className="admin-submission-detail">
-                  <span>Course:</span>
+            const feedback = feedbacks[submission.id] ?? "";
 
-                  <strong>{submission.assignment.lesson.course.title}</strong>
+            const isUploading =
+              uploadCorrectedFile.isPending &&
+              uploadCorrectedFile.variables?.submissionId === submission.id;
+
+            const uploadSucceeded = uploadedSubmissionId === submission.id;
+
+            return (
+              <article key={submission.id} className="admin-submission-card">
+                <h2>{submission.assignment.title}</h2>
+
+                <div className="admin-submission-details">
+                  <div className="admin-submission-detail">
+                    <span>Course:</span>
+
+                    <strong>{submission.assignment.lesson.course.title}</strong>
+                  </div>
+
+                  <div className="admin-submission-detail">
+                    <span>Lesson:</span>
+
+                    <strong>{submission.assignment.lesson.title}</strong>
+                  </div>
+
+                  <div className="admin-submission-detail">
+                    <span>Assignment:</span>
+
+                    <strong>{submission.assignment.title}</strong>
+                  </div>
+
+                  <div className="admin-submission-detail">
+                    <span>Student file:</span>
+
+                    <strong>{submission.fileName}</strong>
+                  </div>
                 </div>
 
-                <div className="admin-submission-detail">
-                  <span>Lesson:</span>
-
-                  <strong>{submission.assignment.lesson.title}</strong>
+                <div className="admin-submission-actions">
+                  <button
+                    type="button"
+                    className="admin-action-button admin-action-button--primary"
+                    onClick={() =>
+                      handleDownload(
+                        submission.assignment.id,
+                        submission.id,
+                        submission.fileName,
+                      )
+                    }
+                    disabled={downloadSubmission.isPending}
+                  >
+                    {downloadSubmission.isPending
+                      ? "Downloading..."
+                      : "View / Download"}
+                  </button>
                 </div>
 
-                <div className="admin-submission-detail">
-                  <span>Assignment:</span>
-
-                  <strong>{submission.assignment.title}</strong>
-                </div>
-
-                <div className="admin-submission-detail">
-                  <span>File:</span>
-
-                  <strong>{submission.fileName}</strong>
-                </div>
-              </div>
-
-              <div className="admin-submission-actions">
-                <button
-                  type="button"
-                  className="admin-action-button admin-action-button--primary"
-                  onClick={() =>
-                    handleDownload(
-                      submission.assignment.id,
-                      submission.id,
-                      submission.fileName,
-                    )
-                  }
-                  disabled={downloadSubmission.isPending}
+                <div
+                  style={{
+                    marginTop: "var(--space-5)",
+                    padding: "var(--space-4)",
+                    background: "var(--surface-2)",
+                    borderRadius: "var(--radius)",
+                  }}
                 >
-                  {downloadSubmission.isPending
-                    ? "Downloading..."
-                    : "View / Download"}
-                </button>
-              </div>
-            </article>
-          ))}
+                  <h3>Correct this assignment</h3>
+
+                  <div style={{ marginTop: "var(--space-4)" }}>
+                    <label>
+                      <strong>Corrected file</strong>
+
+                      <input
+                        type="file"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+
+                          handleFileChange(submission.id, file);
+                        }}
+                        disabled={isUploading}
+                        style={{
+                          display: "block",
+                          marginTop: "var(--space-2)",
+                        }}
+                      />
+                    </label>
+
+                    {selectedFile && (
+                      <p
+                        style={{
+                          marginTop: "var(--space-2)",
+                        }}
+                      >
+                        Selected: {selectedFile.name}
+                      </p>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: "var(--space-4)" }}>
+                    <label>
+                      <strong>Feedback</strong>
+
+                      <textarea
+                        value={feedback}
+                        onChange={(event) =>
+                          handleFeedbackChange(
+                            submission.id,
+                            event.target.value,
+                          )
+                        }
+                        disabled={isUploading}
+                        rows={4}
+                        placeholder="Write feedback for the student..."
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          marginTop: "var(--space-2)",
+                          padding: "var(--space-3)",
+                          resize: "vertical",
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <div style={{ marginTop: "var(--space-4)" }}>
+                    <button
+                      type="button"
+                      className="admin-action-button admin-action-button--primary"
+                      onClick={() =>
+                        handleUploadCorrection(
+                          submission.assignment.id,
+                          submission.id,
+                        )
+                      }
+                      disabled={!selectedFile || isUploading}
+                    >
+                      {isUploading ? "Uploading..." : "Upload correction"}
+                    </button>
+                  </div>
+
+                  {uploadSucceeded && (
+                    <p
+                      style={{
+                        marginTop: "var(--space-3)",
+                        color: "var(--success)",
+                      }}
+                    >
+                      Correction uploaded successfully.
+                    </p>
+                  )}
+
+                  {uploadCorrectedFile.isError &&
+                    uploadCorrectedFile.variables?.submissionId ===
+                      submission.id && (
+                      <p
+                        style={{
+                          marginTop: "var(--space-3)",
+                          color: "var(--danger)",
+                        }}
+                      >
+                        Failed to upload correction.
+                      </p>
+                    )}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

@@ -49,6 +49,14 @@ export class SubmissionsRepository {
         correctedFileData: correctedFileData as any,
         feedback,
       },
+      select: {
+        id: true,
+        assignmentId: true,
+        userId: true,
+        fileName: true,
+        correctedFileName: true,
+        feedback: true,
+      },
     });
   }
 }

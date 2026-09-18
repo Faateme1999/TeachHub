@@ -65,7 +65,7 @@ export class SubmissionsController {
   @Post(':submissionId/correct')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('correctedFile'))
   uploadCorrectedFile(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
     @Param('submissionId', ParseIntPipe) submissionId: number,

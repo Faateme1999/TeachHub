@@ -97,3 +97,34 @@ export function useDownloadCorrectedSubmission() {
     },
   });
 }
+
+export function useUploadCorrectedFile() {
+  return useMutation({
+    mutationFn: async ({
+      assignmentId,
+      submissionId,
+      file,
+      feedback,
+    }: {
+      assignmentId: number;
+      submissionId: number;
+      file: File;
+      feedback?: string;
+    }) => {
+      const formData = new FormData();
+
+      formData.append("correctedFile", file);
+
+      if (feedback?.trim()) {
+        formData.append("feedback", feedback.trim());
+      }
+
+      const { data } = await apiClient.post(
+        `/assignments/${assignmentId}/submissions/${submissionId}/correct`,
+        formData,
+      );
+
+      return data;
+    },
+  });
+}
