@@ -18,7 +18,10 @@ export function AssignmentCard({ assignment, isAdmin }: AssignmentCardProps) {
   const submitMutation = useSubmitAssignment(assignment.id);
   const downloadCorrectedMutation = useDownloadCorrectedSubmission();
 
-  const submission = assignment.submissions?.[0];
+  const submission =
+    assignment.submissions?.find(
+      (submission) => submission.correctedFileName,
+    ) ?? assignment.submissions?.[0];
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

@@ -91,7 +91,7 @@ export class SubmissionsController {
     const submission = await this.submissionsService.downloadCorrectedFile(
       assignmentId,
       submissionId,
-      req.uer.id,
+      req.user.id,
     );
 
     res.set({
