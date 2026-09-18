@@ -17,13 +17,26 @@ export class AssignmentsRepository {
     });
   }
 
-  async getAssignmentsByLessonId(lessonId: number) {
+  async getAssignmentsByLessonId(lessonId: number, userId: number) {
     return this.prisma.assignment.findMany({
       where: {
         lessonId,
       },
       orderBy: {
         createdAt: 'desc',
+      },
+      include: {
+        submissions: {
+          where: {
+            userId,
+          },
+          select: {
+            id: true,
+            fileName: true,
+            correctedFileName: true,
+            feedback: true,
+          },
+        },
       },
     });
   }

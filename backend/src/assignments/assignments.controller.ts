@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
@@ -31,7 +32,13 @@ export class AssignmentsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  getAssignmentsByLessonId(@Param('lessonId', ParseIntPipe) lessonId: number) {
-    return this.assignmentsService.getAssignmentsByLessonId(lessonId);
+  getAssignmentsByLessonId(
+    @Param('lessonId', ParseIntPipe) lessonId: number,
+    @Req() req: any,
+  ) {
+    return this.assignmentsService.getAssignmentsByLessonId(
+      lessonId,
+      req.user.id,
+    );
   }
 }

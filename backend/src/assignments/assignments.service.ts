@@ -30,8 +30,11 @@ export class AssignmentsService {
     return this.assignmentsRepository.create(lessonId, createAssignmentDto);
   }
 
-  async getAssignmentsByLessonId(lessonId: number) {
+  async getAssignmentsByLessonId(lessonId: number, userId: number) {
     await this.findLesson(lessonId);
-    return this.assignmentsRepository.getAssignmentsByLessonId(lessonId);
+    return this.assignmentsRepository.getAssignmentsByLessonId(
+      lessonId,
+      userId,
+    );
   }
 }
