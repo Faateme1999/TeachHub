@@ -28,13 +28,25 @@ export class SubmissionsService {
     return assignment;
   }
 
-  async create(assignmentId: number, userId: number, file: any) {
+  async upsert(assignmentId: number, userId: number, file: any) {
     if (!file) {
       throw new BadRequestException('File is required');
     }
     await this.findAssignment(assignmentId);
 
-    await this.submissionsRepository.create(
+    const existingSubmission =
+      await this.submissionsRepository.findUniqueSubmissionByUserAndAssignment(
+        assignmentId,
+        userId,
+      );
+
+    if (existingSubmission?.correctedFileData) {
+      throw new BadRequestException(
+        'You cannot submit the assignment again because it has already been corrected',
+      );
+    }
+
+    return this.submissionsRepository.upsert(
       assignmentId,
       userId,
       file.originalname,

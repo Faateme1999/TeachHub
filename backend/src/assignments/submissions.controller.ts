@@ -29,14 +29,14 @@ export class SubmissionsController {
   @UseInterceptors(FileInterceptor('file'))
   // Extract the file from the multipart/form-data request where the field name is file.
   // multipart/form-data is the request format, file is the field name, and FileInterceptor('file') extracts and processes that file field.
-  create(
+  upsert(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
     //  @UploadedFile() => NestJS parameter decorator
     @UploadedFile() file: any,
     @Req()
     req: any,
   ) {
-    return this.submissionsService.create(assignmentId, req.user.id, file);
+    return this.submissionsService.upsert(assignmentId, req.user.id, file);
   }
 
   @Get(':submissionId/download')

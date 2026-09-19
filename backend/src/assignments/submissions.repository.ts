@@ -5,19 +5,45 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SubmissionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
+  async findUniqueSubmissionByUserAndAssignment(assignmentId: number, userId: number) {
+    return this.prisma.submission.findUnique({
+      where: {
+        userId_assignmentId: {
+          userId,
+          assignmentId,
+        },
+      },
+      select: {
+        id: true,
+        correctedFileData: true,
+      },
+    });
+  }
+
+  async upsert(
     assignmentId: number,
     userId: number,
     fileName: string,
     fileData: Uint8Array,
     // A type used to store binary data such as file contents
   ) {
-    return this.prisma.submission.create({
-      data: {
+    return this.prisma.submission.upsert({
+      where: {
+        userId_assignmentId: {
+          userId,
+          assignmentId,
+        },
+      },
+      create: {
         assignmentId,
         userId,
         fileName,
         fileData: fileData as any,
+      },
+      update: {
+        fileName,
+        fileData: fileData as any,
+        submittedAt: new Date(),
       },
     });
   }
