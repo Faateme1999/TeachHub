@@ -2,6 +2,7 @@ import {
   useDownloadCorrectedSubmission,
   useSubmitAssignment,
 } from "../hooks/useAssignments";
+import { getApiErrorMessage } from "../lib/apiClient";
 import type { Assignment } from "../types/api";
 import { Card } from "./ui/Card";
 
@@ -114,7 +115,6 @@ export function AssignmentCard({ assignment, isAdmin }: AssignmentCardProps) {
                   File uploaded successfully.
                 </p>
               )}
-
               {submitMutation.isError && (
                 <p
                   style={{
@@ -122,7 +122,10 @@ export function AssignmentCard({ assignment, isAdmin }: AssignmentCardProps) {
                     color: "var(--danger)",
                   }}
                 >
-                  Failed to upload file.
+                  {getApiErrorMessage(
+                    submitMutation.error,
+                    "Failed to upload file.",
+                  )}
                 </p>
               )}
             </div>
