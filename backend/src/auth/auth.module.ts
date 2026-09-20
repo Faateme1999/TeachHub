@@ -6,11 +6,14 @@ import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthRepository } from './auth.repository';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
     UsersModule,
     EnrollmentsModule,
+    EmailModule,
     // because the configuration depends on another service
     // The word Async here really means:"Before registering this module, I need to execute some code." / "Don't register immediately. First execute the configuration function."
     JwtModule.registerAsync({
@@ -26,6 +29,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, AuthRepository],
 })
 export class AuthModule {}

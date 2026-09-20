@@ -14,7 +14,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 // NOTE: this is a Prisma enum. It becomes a real Postgres enum type in the DB and
 // a TypeScript `Role` union in the generated client — so you can write `Role.ADMIN`.
 enum Role {
@@ -33,11 +32,21 @@ model User {
   // A User has many Enrollments, The [] means: Array,Many,List
   missionResults MissionResult[]
   submissions Submission[]
+  passwordResetTokens  PasswordResetToken[]
 
 }
-
-
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
+
+
+model PasswordResetToken{
+  id           Int        @id @default(autoincrement())
+  userId       Int  
+  token        String     @unique
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
 
 
 model Course{

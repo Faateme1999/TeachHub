@@ -11,12 +11,21 @@ import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { CreateAdminDto } from '../users/dto/create-admin.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { AuthRepository } from './auth.repository';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { createHash, randomBytes } from 'crypto';
+import { EmailService } from '../email/email.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly authRepository: AuthRepository,
+    private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -133,6 +142,79 @@ export class AuthService {
       message: 'Login successful',
       accessToken,
       user: safeUser,
+    };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.usersService.findByEmail(forgotPasswordDto.email);
+
+    if (!user) {
+      return {
+        message:
+          'If an account with this email exists, a password reset link will be sent.',
+      };
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    //15min
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await this.authRepository.deleteUserPasswordResetTokens(user.id);
+
+    await this.authRepository.createPasswordResetToken({
+      token: tokenHash,
+      userId: user.id,
+      expiresAt,
+    });
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      user.name,
+      resetLink,
+    );
+
+    return {
+      message:
+        'If an account with this email exists, a password reset link will be sent.',
+    };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    // Create a SHA-256 hash
+    const tokenHash = createHash('sha256')
+      // Add the user's reset token to the hash
+      .update(resetPasswordDto.token)
+      // Convert the final hash to a hexadecimal string
+      .digest('hex');
+
+    const resetToken =
+      await this.authRepository.findPasswordResetToken(tokenHash);
+    if (!resetToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      await this.authRepository.deletePasswordResetToken(resetToken.id);
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 10);
+
+    await this.authRepository.updateUserPassword(
+      resetToken.userId,
+      hashedPassword,
+    );
+
+    await this.authRepository.deletePasswordResetToken(resetToken.id);
+
+    return {
+      message: 'Password reset successful',
     };
   }
 }
