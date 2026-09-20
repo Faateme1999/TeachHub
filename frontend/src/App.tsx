@@ -20,6 +20,8 @@ import { CreateAdminPage } from "./pages/admin/CreateAdminPage";
 import { MissionQuestionsPage } from "./pages/MissionQuestionsPage";
 import { AssignmentPage } from "./pages/AssignmentPage";
 import { AdminUserSubmissionsPage } from "./pages/admin/AdminUserSubmissionsPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 
 // This is the "route table" — it maps URLs to pages.
 // Everything renders inside <Layout /> (navbar + footer). Pages that need a
@@ -50,6 +52,23 @@ function App() {
           element={
             <PublicOnlyRoute>
               <RegisterPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicOnlyRoute>
+              <ForgotPasswordPage />
+            </PublicOnlyRoute>
+          }
+        />
+
+        <Route
+          path="/reset-password"
+          element={
+            <PublicOnlyRoute>
+              <ResetPasswordPage />
             </PublicOnlyRoute>
           }
         />
