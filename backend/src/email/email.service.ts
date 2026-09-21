@@ -1,26 +1,31 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  private readonly resend: Resend;
+  private readonly transporter: nodemailer.Transporter;
+
+  // Nodemailer: a library for sending emails from our app. It handles the SMTP  (the rules for sending emails).
+  // Transporter: an object created by Nodemailer. It handles the connection between our app and the email server and is responsible for sending emails.
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('RESEND_API_KEY');
-
-    this.resend = new Resend(apiKey);
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: this.configService.get<string>('MAIL_USER'),
+        pass: this.configService.get<string>('MAIL_PASSWORD'),
+      },
+    });
   }
 
   async sendPasswordResetEmail(email: string, name: string, resetLink: string) {
     try {
-      await this.resend.emails.send({
-        from: 'TeachHub <onboarding@resend.dev>',
+      await this.transporter.sendMail({
+        from: `"TeachHub" <${this.configService.get<string>('MAIL_USER')}>`,
         to: email,
         subject: 'Reset your TeachHub password',
         html: `
-          <h2>Reset your password</h2>
-
           <h2>Hello ${name}</h2>
 
           <p>
