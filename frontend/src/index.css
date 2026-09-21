@@ -400,3 +400,26 @@ code {
   font-size: 0.9rem;
   line-height: 1.5;
 }
+
+.input-password-wrapper {
+  position: relative;
+}
+
+.input-password-wrapper .input {
+  padding-right: 48px;
+}
+
+.input-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+
+  border: 0;
+  background: transparent;
+  padding: 4px;
+
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
