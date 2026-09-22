@@ -1,0 +1,133 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  enrollments Enrollment[]
+  missionResults MissionResult[]
+}
+
+
+
+
+model Course{
+  id            Int       @id  @default(autoincrement()) 
+  title         String
+  description   String
+  price         Float
+  createdAt     DateTime  @default(now())
+
+  enrollments Enrollment[]
+  lessons     Lesson[]
+ .
+}
+
+
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+
+  userId    Int
+  courseId  Int
+
+
+
+  user      User     @relation(fields: [userId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  
+  createdAt DateTime @default(now())
+  outcomes Outcome[]
+}
+
+
+
+model Outcome{
+  id        Int     @id @default(autoincrement())
+  text      String
+  lessonId  Int
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  missions Mission[]
+}
+
+model  Mission{
+  id        Int      @id @default(autoincrement())
+  title     String
+  order     Int
+  passingScore   Int
+  maxAttempts   Int
+  outcomeId    Int
+  outcome   Outcome  @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  missionResults MissionResult[]
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+
+model Question{
+  id  Int  @id @default(autoincrement())
+  text String
+  type    QuestionType
+  order Int
+  missionId  Int
+  mission  Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  options Option[]
+}
+
+model Option{
+  id Int @id @default(autoincrement())
+  text String
+  isCorrect  Boolean
+  order Int
+  questionId Int
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model MissionResult{
+  id      Int       @id @default(autoincrement())
+  passed  Boolean   @default(false)
+  bestScore   Int   @default(0)
+  attemptsUsed Int  @default(0)
+  userId      Int
+  missionId   Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId])
+  
+}
