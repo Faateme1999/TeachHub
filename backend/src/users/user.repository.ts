@@ -5,7 +5,7 @@ import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(data: CreateUserData) {
     // This Prisma call inserts a new user into the database.
@@ -66,5 +66,13 @@ export class UsersRepository {
         createdAt: true,
       },
     });
+  }
+
+  async remove(id: number) {
+    return this.prisma.user.delete({
+      where: {
+        id,
+      }
+    })
   }
 }

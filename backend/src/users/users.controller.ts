@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -17,7 +18,7 @@ import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
@@ -64,4 +65,15 @@ export class UsersController {
     // everything coming from a URL arrives as text.
     return this.usersService.findById(id);
   }
+
+
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete('users/:id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.remove(id)
+  }
 }
+
+
