@@ -9,7 +9,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly enrollmentsService: EnrollmentsService,
-  ) { }
+  ) {}
 
   async create(data: CreateUserData) {
     return this.usersRepository.create(data);
@@ -56,6 +56,6 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    return this.usersRepository.remove(id)
+    return this.usersRepository.remove(id);
   }
 }
