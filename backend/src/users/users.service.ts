@@ -51,6 +51,9 @@ export class UsersService {
     return this.usersRepository.updateRole(id, role);
   }
 
+  async findUserSubmissions(userId: number) {
+    return this.usersRepository.findUserSubmissions(userId);
+  }
 
   async remove(id: number) {
     return this.usersRepository.remove(id)

@@ -313,7 +313,8 @@ export function AdminCoursesPage() {
             editingLesson
               ? {
                   title: editingLesson.title,
-                  content: editingLesson.content,
+                  content: editingLesson.content ?? "",
+                  type: editingLesson.type,
                 }
               : undefined
           }

@@ -68,6 +68,38 @@ export class UsersRepository {
     });
   }
 
+  async findUserSubmissions(userId: number) {
+    return this.prisma.submission.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        assignmentId: true,
+        fileName: true,
+        assignment: {
+          select: {
+            id: true,
+            title: true,
+            lesson: {
+              select: {
+                id: true,
+                title: true,
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async remove(id: number) {
     return this.prisma.user.delete({
       where: {

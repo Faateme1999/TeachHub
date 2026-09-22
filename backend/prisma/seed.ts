@@ -10,7 +10,7 @@
 import 'dotenv/config';
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type User } from '@prisma/client';
+import { PrismaClient, LessonType, type User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const adapter = new PrismaPg({
@@ -38,12 +38,21 @@ async function seedAssessments() {
 
   // We intentionally use the existing Outcome.
   // This Outcome already exists in the database.
-  const outcome = await prisma.outcome.findUnique({
-    where: { id: 5 },
+  const outcome = await prisma.outcome.findFirst({
+    where: {
+      text: 'Present Perfect',
+      lesson: {
+        course: {
+          title: 'General English B2',
+        },
+      },
+    },
   });
 
   if (!outcome) {
-    throw new Error('Outcome with id=5 was not found.');
+    throw new Error(
+      'Outcome "Present Perfect" in course "General English B2" was not found.',
+    );
   }
 
   const missions = [
@@ -406,11 +415,13 @@ async function main() {
             {
               title: 'What is NestJS?',
               content: 'An overview of the NestJS framework and why it exists.',
+              type: LessonType.RECORDED,
             },
             {
               title: 'Your first controller',
               content:
                 'Create a controller and return your first route response.',
+              type: LessonType.RECORDED,
             },
           ],
         },
@@ -428,6 +439,7 @@ async function main() {
             {
               title: 'Components & JSX',
               content: 'How UI is built from small, reusable components.',
+              type: LessonType.RECORDED,
             },
           ],
         },
@@ -448,7 +460,55 @@ async function main() {
       `  • courses already exist (${existingCourses}) — skipping demo courses`,
     );
   }
+  const lessonsToUpdate = [
+    {
+      courseTitle: 'Intro to NestJS',
+      title: 'What is NestJS?',
+      type: LessonType.RECORDED,
+    },
+    {
+      courseTitle: 'Intro to NestJS',
+      title: 'Your first controller',
+      type: LessonType.RECORDED,
+    },
+    {
+      courseTitle: 'React for Beginners',
+      title: 'Components & JSX',
+      type: LessonType.RECORDED,
+    },
+  ];
 
+  for (const lessonData of lessonsToUpdate) {
+    const course = await prisma.course.findFirst({
+      where: {
+        title: lessonData.courseTitle,
+      },
+    });
+
+    if (!course) {
+      continue;
+    }
+
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        courseId: course.id,
+        title: lessonData.title,
+      },
+    });
+
+    if (lesson) {
+      await prisma.lesson.update({
+        where: {
+          id: lesson.id,
+        },
+        data: {
+          type: lessonData.type,
+        },
+      });
+
+      console.log(`  • updated lesson type: ${lesson.title}`);
+    }
+  }
   await seedAssessments();
 
   console.log(

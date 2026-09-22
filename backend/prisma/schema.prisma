@@ -14,7 +14,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 // NOTE: this is a Prisma enum. It becomes a real Postgres enum type in the DB and
 // a TypeScript `Role` union in the generated client — so you can write `Role.ADMIN`.
 enum Role {
@@ -32,10 +31,22 @@ model User {
   enrollments Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
   missionResults MissionResult[]
+  submissions Submission[]
+  passwordResetTokens  PasswordResetToken[]
+
 }
-
-
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
+
+
+model PasswordResetToken{
+  id           Int        @id @default(autoincrement())
+  userId       Int  
+  token        String     @unique
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
 
 
 model Course{
@@ -70,10 +81,20 @@ model Enrollment {
   createdAt DateTime @default(now())
 }
 
+enum LessonType{
+  RECORDED
+  LIVE
+}
+
 model Lesson {
   id        Int      @id @default(autoincrement())
   title     String
-  content   String
+  content   String?
+  videoUrl   String?
+  fileUrl    String?
+  fileName   String?
+  meetingUrl  String?
+  type      LessonType  
 
 // Each Lesson belongs to one Course.
 // courseId (foreign key)
@@ -87,6 +108,8 @@ model Lesson {
   
   createdAt DateTime @default(now())
   outcomes Outcome[]
+
+  assignments Assignment[]
 }
 
 
@@ -155,4 +178,43 @@ model MissionResult{
 
   @@unique([userId, missionId])
   // یک کاربر نمی‌تواند برای یک Mission بیشتر از یک MissionResult داشته باشد.
+  // @@unique([userId, missionId], name: "user_mission_unique")
 }
+
+model Assignment{
+id  Int       @id @default(autoincrement())
+title String
+description String? 
+deadline   DateTime?
+lessonId Int
+
+lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+submissions Submission[]
+
+createdAt DateTime @default(now())
+}
+
+model Submission{
+id Int   @id @default(autoincrement())  
+
+assignmentId Int
+assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+userId Int
+user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+fileName String
+fileData Bytes
+
+submittedAt   DateTime  @default(now())
+
+feedback   String?
+correctedFileName String?
+correctedFileData Bytes?
+
+createdAt DateTime  @default(now())
+
+@@unique([userId, assignmentId])
+}
+

@@ -1,0 +1,62 @@
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+
+@Injectable()
+export class EmailService {
+  private readonly transporter: nodemailer.Transporter;
+
+  // Nodemailer: a library for sending emails from our app. It handles the SMTP  (the rules for sending emails).
+  // Transporter: an object created by Nodemailer. It handles the connection between our app and the email server and is responsible for sending emails.
+
+  constructor(private readonly configService: ConfigService) {
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: this.configService.get<string>('MAIL_USER'),
+        pass: this.configService.get<string>('MAIL_PASSWORD'),
+      },
+    });
+  }
+
+  async sendPasswordResetEmail(email: string, name: string, resetLink: string) {
+    try {
+      await this.transporter.sendMail({
+        from: `"TeachHub" <${this.configService.get<string>('MAIL_USER')}>`,
+        to: email,
+        subject: 'Reset your TeachHub password',
+        html: `
+          <h2>Hello ${name}</h2>
+
+          <p>
+            We received a request to reset your TeachHub password.
+          </p>
+
+          <p>
+            Click the link below to reset your password:
+          </p>
+
+          <p>
+            <a href="${resetLink}">
+              Reset Password
+            </a>
+          </p>
+
+          <p>
+            This link will expire in 15 minutes.
+          </p>
+
+          <p>
+            If you did not request a password reset, you can ignore this email.
+          </p>
+        `,
+      });
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to send password reset email',
+      );
+    }
+  }
+}

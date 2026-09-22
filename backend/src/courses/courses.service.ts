@@ -73,19 +73,6 @@ export class CoursesService {
   async remove(id: number) {
     await this.findById(id);
 
-    // Two ways to fix it (pick one, see docs/junior-dev-tasks.md):
-    //   A) Schema-level cascade: add `onDelete: Cascade` to the relations in
-    //      schema.prisma, then run a migration. The DB deletes children for you.
-    //   B) App-level cleanup: delete the children first, inside a transaction so
-    //      it's all-or-nothing:
-    //
-    //        return this.prisma.$transaction([
-    //          this.prisma.lesson.deleteMany({ where: { courseId: id } }),
-    //          this.prisma.enrollment.deleteMany({ where: { courseId: id } }),
-    //          this.prisma.course.delete({ where: { id } }),
-    //        ]);
-    //
-
     // Delete all children before deleting the parent.
     return this.coursesRepository.deleteCourseWithChildren(id);
   }

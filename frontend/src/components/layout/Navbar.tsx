@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/auth-context'
-import { Button } from '../ui/Button'
-import './layout.css'
+import { useState } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/auth-context";
+import { Button } from "../ui/Button";
+import "./layout.css";
 
 // The top navigation bar, shown on every page.
 // - Left: brand/logo that links home.
@@ -10,23 +10,27 @@ import './layout.css'
 // - Right: the logged-in user's name + Logout, OR Login/Sign up buttons.
 // On small screens the center links collapse behind a ☰ button.
 export function Navbar() {
-  const { isAuthenticated, isAdmin, user, logout } = useAuth()
-  const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   function handleLogout() {
-    logout()
-    navigate('/login')
+    logout();
+    navigate("/login");
   }
 
   // Helper so a NavLink gets the "is-active" class when its route is current.
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `navbar__link ${isActive ? 'is-active' : ''}`
+    `navbar__link ${isActive ? "is-active" : ""}`;
 
   return (
     <header className="navbar">
       <div className="container navbar__inner">
-        <Link to="/" className="navbar__brand" onClick={() => setMenuOpen(false)}>
+        <Link
+          to="/"
+          className="navbar__brand"
+          onClick={() => setMenuOpen(false)}
+        >
           <span className="navbar__logo" aria-hidden="true">
             🎓
           </span>
@@ -34,13 +38,13 @@ export function Navbar() {
         </Link>
 
         <nav
-          className={`navbar__links ${menuOpen ? 'is-open' : ''}`}
+          className={`navbar__links ${menuOpen ? "is-open" : ""}`}
           onClick={() => setMenuOpen(false)}
         >
           <NavLink to="/courses" className={linkClass}>
             Courses
           </NavLink>
-          {isAuthenticated && (
+          {isAuthenticated && !isAdmin && (
             <NavLink to="/me" className={linkClass}>
               My Learning
             </NavLink>
@@ -69,7 +73,7 @@ export function Navbar() {
               <Link className="navbar__link" to="/login">
                 Login
               </Link>
-              <Button size="sm" onClick={() => navigate('/register')}>
+              <Button size="sm" onClick={() => navigate("/register")}>
                 Sign up
               </Button>
             </>
@@ -86,5 +90,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

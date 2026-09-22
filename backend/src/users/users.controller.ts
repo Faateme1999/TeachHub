@@ -66,7 +66,12 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
-
+  @Get(':userId/submissions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  findUserSubmissions(@Param('userId', ParseIntPipe) userId: number) {
+    return this.usersService.findUserSubmissions(userId);
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
@@ -75,5 +80,3 @@ export class UsersController {
     return this.usersService.remove(id)
   }
 }
-
-

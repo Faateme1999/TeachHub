@@ -30,14 +30,6 @@ export interface Course {
   lessons?: Lesson[];
 }
 
-export interface Lesson {
-  id: number;
-  title: string;
-  content: string;
-  courseId: number;
-  createdAt: string;
-}
-
 // The backend returns this from POST /auth/login.
 export interface LoginResponse {
   message: string;
@@ -58,10 +50,29 @@ export interface CourseInput {
   price: number;
 }
 
+export type LessonType = "RECORDED" | "LIVE";
+export interface Lesson {
+  id: number;
+  title: string;
+  content: string | null;
+  videoUrl: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  meetingUrl: string | null;
+  type: LessonType;
+  courseId: number;
+  createdAt: string;
+}
+
 // What we send when creating/updating a lesson.
 export interface LessonInput {
   title: string;
-  content: string;
+  content?: string;
+  videoUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  meetingUrl?: string;
+  type: LessonType;
 }
 
 export interface Outcome {
@@ -95,6 +106,63 @@ export interface Option {
   id: number;
   text: string;
   order: number;
+}
+
+export interface SubmitMissionResponse {
+  score: number;
+  passed: boolean;
+}
+
+export interface Assignment {
+  id: number;
+  title: string;
+  description: string | null;
+  deadline: string;
+  lessonId: number;
+  createdAt: string;
+
+  submissions: {
+    id: number;
+    fileName: string;
+    correctedFileName: string | null;
+    feedback: string | null;
+  }[];
+}
+
+export interface AssignmentInput {
+  title: string;
+  description?: string;
+  deadline: string;
+}
+
+export interface Submission {
+  id: number;
+  assignmentId: number;
+  userId: number;
+  fileName: string;
+  fileData: unknown;
+}
+
+export interface UserSubmission {
+  id: number;
+  userId: number;
+  assignmentId: number;
+  fileName: string;
+
+  assignment: {
+    id: number;
+    title: string;
+
+    lesson: {
+      id: number;
+      title: string;
+
+      course: {
+        id: number;
+        title: string;
+      };
+    };
+  };
 }
 
 // What we send to POST /auth/admins to create another admin. Same fields as
