@@ -11,7 +11,9 @@ export class EmailService {
 
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
         user: this.configService.get<string>('MAIL_USER'),
         pass: this.configService.get<string>('MAIL_PASSWORD'),
@@ -21,7 +23,7 @@ export class EmailService {
 
   async sendPasswordResetEmail(email: string, name: string, resetLink: string) {
     try {
-      await this.transporter.sendMail({
+      const info = await this.transporter.sendMail({
         from: `"TeachHub" <${this.configService.get<string>('MAIL_USER')}>`,
         to: email,
         subject: 'Reset your TeachHub password',
@@ -50,6 +52,12 @@ export class EmailService {
             If you did not request a password reset, you can ignore this email.
           </p>
         `,
+      });
+      console.log('EMAIL SENT:', {
+        messageId: info.messageId,
+        accepted: info.accepted,
+        rejected: info.rejected,
+        response: info.response,
       });
     } catch (error) {
       console.error('Failed to send password reset email:', error);
