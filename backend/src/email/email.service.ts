@@ -14,10 +14,20 @@ export class EmailService {
       host: 'smtp.gmail.com',
       port: 587,
       secure: false,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: {
         user: this.configService.get<string>('MAIL_USER'),
         pass: this.configService.get<string>('MAIL_PASSWORD'),
       },
+    });
+    this.transporter.verify((error, success) => {
+      if (error) {
+        console.log('SMTP VERIFY ERROR:', error);
+      } else {
+        console.log('SMTP READY:', success);
+      }
     });
   }
 
