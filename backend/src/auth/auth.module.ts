@@ -8,6 +8,7 @@ import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthRepository } from './auth.repository';
 import { EmailModule } from 'src/email/email.module';
+import { GoogleOAuthController } from './google-oauth.controller';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { EmailModule } from 'src/email/email.module';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, GoogleOAuthController],
   providers: [AuthService, JwtStrategy, AuthRepository],
 })
 export class AuthModule {}
