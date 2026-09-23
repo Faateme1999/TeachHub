@@ -11,15 +11,13 @@ export class EmailService {
 
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
+      service: 'gmail',
       auth: {
+        type: 'OAuth2',
         user: this.configService.get<string>('MAIL_USER'),
-        pass: this.configService.get<string>('MAIL_PASSWORD'),
+        clientId: this.configService.get<string>('GOOGLE_CLIENT_ID'),
+        clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
+        refreshToken: this.configService.get<string>('GMAIL_REFRESH_TOKEN'),
       },
     });
     this.transporter.verify((error, success) => {
