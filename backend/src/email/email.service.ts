@@ -1,71 +1,82 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
 @Injectable()
 export class EmailService {
-  private readonly transporter: nodemailer.Transporter;
-
-  // Nodemailer: a library for sending emails from our app. It handles the SMTP  (the rules for sending emails).
-  // Transporter: an object created by Nodemailer. It handles the connection between our app and the email server and is responsible for sending emails.
+  private readonly gmail;
 
   constructor(private readonly configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: this.configService.get<string>('MAIL_USER'),
-        clientId: this.configService.get<string>('GOOGLE_CLIENT_ID'),
-        clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
-        refreshToken: this.configService.get<string>('GMAIL_REFRESH_TOKEN'),
-      },
+    const oauth2Client = new google.auth.OAuth2(
+      this.configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
+      this.configService.getOrThrow<string>('GOOGLE_CLIENT_SECRET'),
+    );
+
+    oauth2Client.setCredentials({
+      refresh_token: this.configService.getOrThrow<string>(
+        'GMAIL_REFRESH_TOKEN',
+      ),
     });
-    this.transporter.verify((error, success) => {
-      if (error) {
-        console.log('SMTP VERIFY ERROR:', error);
-      } else {
-        console.log('SMTP READY:', success);
-      }
+
+    this.gmail = google.gmail({
+      version: 'v1',
+      auth: oauth2Client,
     });
   }
 
   async sendPasswordResetEmail(email: string, name: string, resetLink: string) {
     try {
-      const info = await this.transporter.sendMail({
-        from: `"TeachHub" <${this.configService.get<string>('MAIL_USER')}>`,
-        to: email,
-        subject: 'Reset your TeachHub password',
-        html: `
-          <h2>Hello ${name}</h2>
+      const from = this.configService.getOrThrow<string>('MAIL_USER');
 
-          <p>
-            We received a request to reset your TeachHub password.
-          </p>
+      const html = `
+        <h2>Hello ${name}</h2>
 
-          <p>
-            Click the link below to reset your password:
-          </p>
+        <p>
+          We received a request to reset your TeachHub password.
+        </p>
 
-          <p>
-            <a href="${resetLink}">
-              Reset Password
-            </a>
-          </p>
+        <p>
+          Click the link below to reset your password:
+        </p>
 
-          <p>
-            This link will expire in 15 minutes.
-          </p>
+        <p>
+          <a href="${resetLink}">
+            Reset Password
+          </a>
+        </p>
 
-          <p>
-            If you did not request a password reset, you can ignore this email.
-          </p>
-        `,
+        <p>
+          This link will expire in 15 minutes.
+        </p>
+
+        <p>
+          If you did not request a password reset, you can ignore this email.
+        </p>
+      `;
+
+      const message = [
+        `From: TeachHub <${from}>`,
+        `To: ${email}`,
+        'Subject: Reset your TeachHub password',
+        'MIME-Version: 1.0',
+        'Content-Type: text/html; charset=UTF-8',
+        '',
+        html,
+      ].join('\r\n');
+
+      const raw = Buffer.from(message, 'utf8').toString('base64url');
+
+      const result = await this.gmail.users.messages.send({
+        userId: 'me',
+        requestBody: {
+          raw,
+        },
       });
+
       console.log('EMAIL SENT:', {
-        messageId: info.messageId,
-        accepted: info.accepted,
-        rejected: info.rejected,
-        response: info.response,
+        messageId: result.data.id,
+        threadId: result.data.threadId,
+        to: email,
       });
     } catch (error) {
       console.error('Failed to send password reset email:', error);
