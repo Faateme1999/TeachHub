@@ -56,10 +56,7 @@ export interface Lesson {
   id: number;
   title: string;
   content: string | null;
-  videoData: {
-    type: "Buffer";
-    data: number[];
-  } | null;
+  hasVideo: boolean;
   meetingUrl: string | null;
   type: LessonType;
   courseId: number;

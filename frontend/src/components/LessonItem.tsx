@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useOutcomes,
   useCreateOutcome,
@@ -35,24 +35,6 @@ export function LessonItem({
   onDelete,
 }: LessonItemProps) {
   const { showToast } = useToast();
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!lesson.videoData) {
-      setVideoUrl(null);
-      return;
-    }
-
-    const bytes = new Uint8Array(lesson.videoData.data);
-    const blob = new Blob([bytes], { type: "video/mp4" });
-    const url = URL.createObjectURL(blob);
-
-    setVideoUrl(url);
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [lesson.videoData]);
 
   const outcomesQuery = useOutcomes(lesson.id);
   const createOutcome = useCreateOutcome(lesson.id);
@@ -66,6 +48,7 @@ export function LessonItem({
   const [selectedOutcomeId, setSelectedOutcomeId] = useState<number | null>(
     null,
   );
+
   const missionsQuery = useMissionsByOutcome(selectedOutcomeId ?? 0);
   const missions = missionsQuery.data ?? [];
 
@@ -203,32 +186,8 @@ export function LessonItem({
           <p className="lesson-item__content">{lesson.content}</p>
         )}
 
-        {videoUrl && (
-          <div style={{ marginTop: "var(--space-3)" }}>
-            <video
-              controls
-              style={{
-                width: "100%",
-                maxWidth: "700px",
-                borderRadius: "8px",
-              }}
-            >
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support the video element.
-            </video>
-          </div>
-        )}
-
-        {lesson.fileName && (
-          <p className="lesson-item__content">📄 {lesson.fileName}</p>
-        )}
-
-        {lesson.fileUrl && (
-          <p className="lesson-item__content">
-            <a href={lesson.fileUrl} target="_blank" rel="noopener noreferrer">
-              Open lesson file
-            </a>
-          </p>
+        {lesson.hasVideo && (
+          <p className="lesson-item__content">🎥 This lesson has a video</p>
         )}
 
         {lesson.type === "LIVE" && lesson.meetingUrl && (
@@ -350,6 +309,7 @@ export function LessonItem({
                       )}
                     </div>
                   )}
+
                   {selectedOutcomeId === outcome.id && (
                     <div style={{ marginLeft: "24px", marginTop: "8px" }}>
                       {missionsQuery.isLoading && <Spinner />}
@@ -379,6 +339,7 @@ export function LessonItem({
               ))}
             </ul>
           )}
+
           {isAdmin && (
             <div
               style={{
@@ -409,7 +370,9 @@ export function LessonItem({
                 onClick={handleCreateOutcome}
                 disabled={createOutcome.isPending}
               >
-                {createOutcome.isPending ? "Adding…" : "+ Add learning outcome"}
+                {createOutcome.isPending
+                  ? "Adding…"
+                  : "+ Add learning outcome"}
               </Button>
             </div>
           )}
@@ -436,6 +399,7 @@ export function LessonItem({
         onConfirm={handleDeleteOutcome}
         onCancel={() => setOutcomeToDelete(null)}
       />
+
       <Modal
         open={assignmentModalOpen}
         title="Add assignment"

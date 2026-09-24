@@ -91,6 +91,7 @@ model Lesson {
   title     String
   content   String?
   videoData   Bytes?
+  hasVideo    Boolean    @default(false)
   meetingUrl  String?
   type      LessonType  
 

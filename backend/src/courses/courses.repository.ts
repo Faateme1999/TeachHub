@@ -29,7 +29,18 @@ export class CoursesRepository {
     return this.prisma.course.findUnique({
       where: { id },
       include: {
-        lessons: true,
+        lessons: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            meetingUrl: true,
+            type: true,
+            courseId: true,
+            createdAt: true,
+            hasVideo: true,
+          },
+        },
       },
     });
   }

@@ -17,9 +17,22 @@ export class LessonsRepository {
         title: createLessonDto.title,
         content: createLessonDto.content,
         videoData: videoData as any,
+        // !! Double Negation
+        // converts a value into a Boolean
+        hasVideo: !!videoData,
         meetingUrl: createLessonDto.meetingUrl,
         type: createLessonDto.type,
         courseId,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        meetingUrl: true,
+        type: true,
+        courseId: true,
+        createdAt: true,
+        hasVideo: true,
       },
     });
   }
@@ -29,13 +42,35 @@ export class LessonsRepository {
       where: {
         courseId,
       },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        meetingUrl: true,
+        type: true,
+        courseId: true,
+        createdAt: true,
+        hasVideo: true,
+      },
     });
+
+    // const videoLessonIds=
   }
 
   async findOne(id: number) {
     return this.prisma.lesson.findUnique({
       where: {
         id,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        meetingUrl: true,
+        type: true,
+        courseId: true,
+        createdAt: true,
+        hasVideo: true,
       },
     });
   }
@@ -49,15 +84,35 @@ export class LessonsRepository {
       where: {
         id,
       },
-      data: { ...updateLessonDto, videoData: videoData as any },
+      data: {
+        ...updateLessonDto,
+        ...(videoData && {
+          videoData: videoData as any,
+          hasVideo: true,
+        }),
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        meetingUrl: true,
+        type: true,
+        courseId: true,
+        createdAt: true,
+        hasVideo: true,
+      },
     });
   }
 
   async remove(id: number) {
-    return this.prisma.lesson.delete({
+    await this.prisma.lesson.delete({
       where: {
         id,
       },
     });
+    return {
+      message: 'Lesson deleted successfully',
+    };
   }
+
 }
