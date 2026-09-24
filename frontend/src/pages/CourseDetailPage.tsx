@@ -259,9 +259,6 @@ export function CourseDetailPage() {
               ? {
                   title: editingLesson.title,
                   content: editingLesson.content ?? "",
-                  videoUrl: editingLesson.videoUrl ?? "",
-                  fileUrl: editingLesson.fileUrl ?? "",
-                  fileName: editingLesson.fileName ?? "",
                   meetingUrl: editingLesson.meetingUrl ?? "",
                   type: editingLesson.type,
                 }

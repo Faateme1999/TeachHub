@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useOutcomes,
   useCreateOutcome,
@@ -35,6 +35,24 @@ export function LessonItem({
   onDelete,
 }: LessonItemProps) {
   const { showToast } = useToast();
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!lesson.videoData) {
+      setVideoUrl(null);
+      return;
+    }
+
+    const bytes = new Uint8Array(lesson.videoData.data);
+    const blob = new Blob([bytes], { type: "video/mp4" });
+    const url = URL.createObjectURL(blob);
+
+    setVideoUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [lesson.videoData]);
 
   const outcomesQuery = useOutcomes(lesson.id);
   const createOutcome = useCreateOutcome(lesson.id);
@@ -185,7 +203,7 @@ export function LessonItem({
           <p className="lesson-item__content">{lesson.content}</p>
         )}
 
-        {lesson.videoUrl && (
+        {videoUrl && (
           <div style={{ marginTop: "var(--space-3)" }}>
             <video
               controls
@@ -195,7 +213,7 @@ export function LessonItem({
                 borderRadius: "8px",
               }}
             >
-              <source src={lesson.videoUrl} />
+              <source src={videoUrl} type="video/mp4" />
               Your browser does not support the video element.
             </video>
           </div>
@@ -361,24 +379,6 @@ export function LessonItem({
               ))}
             </ul>
           )}
-
-          {/* {isAdmin && (
-            <div style={{ marginTop: "var(--space-2)" }}>
-              <input
-                value={newOutcomeText}
-                onChange={(event) => setNewOutcomeText(event.target.value)}
-                placeholder="Add a learning outcome"
-              />
-
-              <Button
-                size="sm"
-                onClick={handleCreateOutcome}
-                disabled={createOutcome.isPending}
-              >
-                {createOutcome.isPending ? "Adding…" : "+ Add outcome"}
-              </Button>
-            </div>
-          )} */}
           {isAdmin && (
             <div
               style={{

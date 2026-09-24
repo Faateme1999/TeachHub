@@ -22,20 +22,21 @@ export function LessonForm({
   onCancel,
 }: LessonFormProps) {
   const [title, setTitle] = useState(initialValue?.title ?? "");
+
   const [type, setType] = useState<LessonType>(
     initialValue?.type ?? "RECORDED",
   );
+
   const [content, setContent] = useState(initialValue?.content ?? "");
-  const [videoUrl, setVideoUrl] = useState(initialValue?.videoUrl ?? "");
-  const [fileUrl, setFileUrl] = useState(initialValue?.fileUrl ?? "");
-  const [fileName, setFileName] = useState(initialValue?.fileName ?? "");
+
+  const [video, setVideo] = useState<File | undefined>(initialValue?.video);
+
   const [meetingUrl, setMeetingUrl] = useState(initialValue?.meetingUrl ?? "");
 
   const [errors, setErrors] = useState<{
     title?: string;
     content?: string;
-    videoUrl?: string;
-    fileUrl?: string;
+    video?: string;
     meetingUrl?: string;
   }>({});
 
@@ -48,14 +49,8 @@ export function LessonForm({
       nextErrors.title = "Title is required";
     }
 
-    if (
-      type === "RECORDED" &&
-      !content.trim() &&
-      !videoUrl.trim() &&
-      !fileUrl.trim()
-    ) {
-      nextErrors.content =
-        "At least one of content, video URL, or file URL is required";
+    if (type === "RECORDED" && !content.trim() && !video) {
+      nextErrors.content = "At least one of content or video is required";
     }
 
     if (type === "LIVE" && !meetingUrl.trim()) {
@@ -69,10 +64,11 @@ export function LessonForm({
     onSubmit({
       title: title.trim(),
       type,
+
       ...(content.trim() ? { content: content.trim() } : {}),
-      ...(videoUrl.trim() ? { videoUrl: videoUrl.trim() } : {}),
-      ...(fileUrl.trim() ? { fileUrl: fileUrl.trim() } : {}),
-      ...(fileName.trim() ? { fileName: fileName.trim() } : {}),
+
+      ...(video ? { video } : {}),
+
       ...(meetingUrl.trim() ? { meetingUrl: meetingUrl.trim() } : {}),
     });
   }
@@ -97,6 +93,7 @@ export function LessonForm({
           value={type}
           onChange={(e) => {
             const newType = e.target.value as LessonType;
+
             setType(newType);
             setErrors({});
           }}
@@ -115,28 +112,29 @@ export function LessonForm({
         placeholder="The lesson material…"
       />
 
-      <Input
-        label="Video URL"
-        value={videoUrl}
-        onChange={(e) => setVideoUrl(e.target.value)}
-        error={errors.videoUrl}
-        placeholder="https://..."
-      />
+      <div className="form__field">
+        <label htmlFor="lesson-video">Video</label>
 
-      <Input
-        label="File URL"
-        value={fileUrl}
-        onChange={(e) => setFileUrl(e.target.value)}
-        error={errors.fileUrl}
-        placeholder="https://..."
-      />
+        <input
+          id="lesson-video"
+          type="file"
+          accept="video/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
 
-      <Input
-        label="File name"
-        value={fileName}
-        onChange={(e) => setFileName(e.target.value)}
-        placeholder="e.g. lesson-1.pdf"
-      />
+            setVideo(file);
+            setErrors((current) => ({
+              ...current,
+              video: undefined,
+            }));
+          }}
+          disabled={submitting}
+        />
+
+        {video && <small>Selected: {video.name}</small>}
+
+        {errors.video && <div className="form__error">{errors.video}</div>}
+      </div>
 
       {type === "LIVE" && (
         <Input
