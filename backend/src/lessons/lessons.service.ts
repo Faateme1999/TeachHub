@@ -88,6 +88,10 @@ export class LessonsService {
       throw new NotFoundException('This lesson has no video');
     }
 
-    return this.lessonsRepository.getVideo(lessonId);
+    const video = await this.lessonsRepository.getVideo(lessonId);
+    if (!video) {
+      throw new NotFoundException('Video not found');
+    }
+    return video;
   }
 }

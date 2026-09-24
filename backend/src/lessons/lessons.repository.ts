@@ -116,7 +116,7 @@ export class LessonsRepository {
   }
 
   async getVideo(lessonId: number) {
-    await this.prisma.lesson.findUnique({
+    return this.prisma.lesson.findUnique({
       where: { id: lessonId },
       select: {
         videoData: true,

@@ -12,6 +12,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -120,7 +121,7 @@ export class LessonsController {
   }
 
   @Get(':lessonId/video')
-  getVideo(
+  async getVideo(
     @Param('lessonId', ParseIntPipe) lessonId: number,
     @Res() res: Response,
   ) {
