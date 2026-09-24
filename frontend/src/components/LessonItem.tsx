@@ -5,7 +5,7 @@ import {
   useUpdateOutcome,
   useDeleteOutcome,
 } from "../hooks/useOutcomes";
-import { getApiErrorMessage } from "../lib/apiClient";
+import { apiClient, getApiErrorMessage } from "../lib/apiClient";
 import { useToast } from "./ui/toast-context";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
@@ -187,7 +187,18 @@ export function LessonItem({
         )}
 
         {lesson.hasVideo && (
-          <p className="lesson-item__content">🎥 This lesson has a video</p>
+          <video
+            controls
+            style={{
+              width: "100%",
+              maxWidth: "800px",
+              marginTop: "12px",
+              borderRadius: "12px",
+            }}
+            src={`${apiClient.defaults.baseURL}/lessons/${lesson.id}/video`}
+          >
+            Your browser does not support the video tag.
+          </video>
         )}
 
         {lesson.type === "LIVE" && lesson.meetingUrl && (
@@ -370,9 +381,7 @@ export function LessonItem({
                 onClick={handleCreateOutcome}
                 disabled={createOutcome.isPending}
               >
-                {createOutcome.isPending
-                  ? "Adding…"
-                  : "+ Add learning outcome"}
+                {createOutcome.isPending ? "Adding…" : "+ Add learning outcome"}
               </Button>
             </div>
           )}

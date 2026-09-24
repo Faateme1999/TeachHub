@@ -120,7 +120,7 @@ export class LessonsController {
     return this.outcomesService.remove(lessonId, outcomeId);
   }
 
-  @Get(':lessonId/video')
+  @Get('lessons/:lessonId/video')
   async getVideo(
     @Param('lessonId', ParseIntPipe) lessonId: number,
     @Res() res: Response,
