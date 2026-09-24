@@ -80,4 +80,14 @@ export class LessonsService {
 
     return this.lessonsRepository.remove(id);
   }
+
+  async getVideo(lessonId: number) {
+    const lesson = await this.findOne(lessonId);
+
+    if (!lesson.hasVideo) {
+      throw new NotFoundException('This lesson has no video');
+    }
+
+    return this.lessonsRepository.getVideo(lessonId);
+  }
 }

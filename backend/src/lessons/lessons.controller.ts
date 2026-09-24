@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -116,5 +117,22 @@ export class LessonsController {
     @Param('outcomeId', ParseIntPipe) outcomeId: number,
   ) {
     return this.outcomesService.remove(lessonId, outcomeId);
+  }
+
+  @Get(':lessonId/video')
+  getVideo(
+    @Param('lessonId', ParseIntPipe) lessonId: number,
+    @Res() res: Response,
+  ) {
+    const video = await this.lessonsService.getVideo(lessonId);
+
+    // ! Non-null assertion operator
+    // This value is not null or undefined
+    res.set({
+      'Content-Type': 'video/mp4',
+      'Content-Length': video.videoData!.length,
+    });
+
+    res.send(video.videoData);
   }
 }
