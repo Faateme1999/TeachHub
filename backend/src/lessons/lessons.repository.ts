@@ -7,14 +7,16 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 export class LessonsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(courseId: number, createLessonDto: CreateLessonDto) {
+  async create(
+    courseId: number,
+    createLessonDto: CreateLessonDto,
+    videoData?: Uint8Array,
+  ) {
     return this.prisma.lesson.create({
       data: {
         title: createLessonDto.title,
         content: createLessonDto.content,
-        videoUrl: createLessonDto.videoUrl,
-        fileName: createLessonDto.fileName,
-        fileUrl: createLessonDto.fileUrl,
+        videoData: videoData as any,
         meetingUrl: createLessonDto.meetingUrl,
         type: createLessonDto.type,
         courseId,
@@ -38,12 +40,16 @@ export class LessonsRepository {
     });
   }
 
-  async update(id: number, updateLessonDto: UpdateLessonDto) {
+  async update(
+    id: number,
+    updateLessonDto: UpdateLessonDto,
+    videoData?: Uint8Array,
+  ) {
     return this.prisma.lesson.update({
       where: {
         id,
       },
-      data: updateLessonDto,
+      data: { ...updateLessonDto, videoData: videoData as any },
     });
   }
 

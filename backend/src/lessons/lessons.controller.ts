@@ -7,8 +7,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -34,11 +38,17 @@ export class LessonsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post('courses/:courseId/lessons')
+  @UseInterceptors(FileInterceptor('video'))
   create(
     @Param('courseId', ParseIntPipe) courseId: number,
     @Body() createLessonDto: CreateLessonDto,
+    @UploadedFile() videoData?: any,
   ) {
-    return this.lessonsService.create(courseId, createLessonDto);
+    return this.lessonsService.create(
+      courseId,
+      createLessonDto,
+      videoData?.buffer,
+    );
   }
 
   @Get('courses/:courseId/lessons')
@@ -55,11 +65,13 @@ export class LessonsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Patch('lessons/:id')
+  @UseInterceptors(FileInterceptor('video'))
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateLessonDto: UpdateLessonDto,
+    @UploadedFile() video?: any,
   ) {
-    return this.lessonsService.update(id, updateLessonDto);
+    return this.lessonsService.update(id, updateLessonDto, video?.buffer);
   }
 
   // Deleting a lesson is ADMIN-only.

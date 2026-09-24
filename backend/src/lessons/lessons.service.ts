@@ -12,13 +12,14 @@ import { LessonType } from '@prisma/client';
 export class LessonsService {
   constructor(private readonly lessonsRepository: LessonsRepository) {}
 
-  private validateLessonData(data: {
-    type?: LessonType | null;
-    content?: string | null;
-    videoUrl?: string | null;
-    fileUrl?: string | null;
-    meetingUrl?: string | null;
-  }) {
+  private validateLessonData(
+    data: {
+      type?: LessonType | null;
+      content?: string | null;
+      meetingUrl?: string | null;
+    },
+    videoData?: Buffer,
+  ) {
     if (data.type === LessonType.LIVE && !data.meetingUrl) {
       throw new BadRequestException('meetingUrl is required for LIVE lessons');
     }
@@ -28,21 +29,20 @@ export class LessonsService {
       );
     }
 
-    if (
-      data.type === LessonType.RECORDED &&
-      !data.content &&
-      !data.videoUrl &&
-      !data.fileUrl
-    ) {
+    if (data.type === LessonType.RECORDED && !data.content && !videoData) {
       throw new BadRequestException(
-        'At least one of content, videoUrl, or fileUrl is required for RECORDED lessons',
+        'At least one of content or video is required for RECORDED lessons',
       );
     }
   }
 
-  async create(courseId: number, createLessonDto: CreateLessonDto) {
-    this.validateLessonData(createLessonDto);
-    return this.lessonsRepository.create(courseId, createLessonDto);
+  async create(
+    courseId: number,
+    createLessonDto: CreateLessonDto,
+    videoData?: Buffer,
+  ) {
+    this.validateLessonData(createLessonDto, videoData);
+    return this.lessonsRepository.create(courseId, createLessonDto, videoData);
   }
 
   async findAllByCourse(courseId: number) {
@@ -59,15 +59,19 @@ export class LessonsService {
     return lesson;
   }
 
-  async update(id: number, updateLessonDto: UpdateLessonDto) {
+  async update(
+    id: number,
+    updateLessonDto: UpdateLessonDto,
+    videoData?: Buffer,
+  ) {
     const existingLesson = await this.findOne(id);
     // ... Spread Operator
     const updatedLesson = {
       ...existingLesson,
       ...updateLessonDto,
     };
-    this.validateLessonData(updatedLesson);
-    return this.lessonsRepository.update(id, updateLessonDto);
+    this.validateLessonData(updatedLesson, videoData);
+    return this.lessonsRepository.update(id, updateLessonDto, videoData);
   }
 
   async remove(id: number) {
