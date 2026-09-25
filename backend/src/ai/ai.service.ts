@@ -24,7 +24,25 @@ export class AiService {
       messages: [
         {
           role: 'user',
-          content: 'Say hello',
+          content: `
+You are an AI assistant for an online learning platform.
+
+Based on this learning outcome:
+"Student can implement JWT authentication in NestJS"
+
+Generate 3 practical coding missions for the student.
+
+Return only JSON format:
+{
+  "missions": [
+    {
+      "title": "",
+      "description": "",
+      "difficulty": ""
+    }
+  ]
+}
+`,
         },
       ],
     });
