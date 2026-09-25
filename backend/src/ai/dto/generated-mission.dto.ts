@@ -5,8 +5,8 @@ export class GeneratedOptionDto {
 
 export class GeneratedQuestionDto {
   text: string;
-  options: GeneratedOptionDto[];
   type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
+  options: GeneratedOptionDto[];
 }
 
 export class GeneratedMissionDto {

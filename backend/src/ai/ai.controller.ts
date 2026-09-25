@@ -7,13 +7,8 @@ export class AiController {
 
   @Get('generate-missions')
   generate() {
-    return this.aiService.generatMissions(
+    return this.aiService.generateMissions(
       'Student can implement JWT authentication in NestJS',
     );
-  }
-
-  @Get('models')
-  getModels() {
-    return this.aiService.getModels();
   }
 }
