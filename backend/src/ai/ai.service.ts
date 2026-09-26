@@ -80,10 +80,10 @@ Return this structure:
 
     const content = response.choices[0].message.content;
 
+    console.log('GROQ RESPONSE:', JSON.stringify(response, null, 2));
+
     if (!content) {
       throw new Error('AI returned empty response');
     }
-
-    return JSON.parse(content);
   }
 }
