@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Groq from 'groq-sdk';
+import { GeneratedMissionsResponseDto } from './dto/generated-mission.dto';
 
 @Injectable()
 export class AiService {
@@ -9,14 +10,14 @@ export class AiService {
   constructor(private readonly configService: ConfigService) {
     const key = this.configService.get<string>('GROQ_API_KEY');
 
-    console.log('GROQ KEY EXISTS:', !!key);
-
     this.groq = new Groq({
       apiKey: key,
     });
   }
 
-  async generateMissions(learningOutcome: string) {
+  async generateMissions(
+    learningOutcome: string,
+  ): Promise<GeneratedMissionsResponseDto> {
     console.log('CALLING GROQ');
 
     const response = await this.groq.chat.completions.create({
@@ -34,8 +35,10 @@ Rules:
 - Return ONLY valid JSON.
 - No markdown.
 - No explanations.
-- Generate exactly 1 mission.
+- Generate 2 missions per learning outcome.
 - The mission must contain 10 questions.
+- Generate a passingScore for each mission.
+- Generate a maxAttempts for each mission.
 - Each question must have 4 options.
 - Questions can be SINGLE_CHOICE or MULTIPLE_CHOICE.
 - SINGLE_CHOICE means exactly one option has isCorrect=true.
@@ -49,6 +52,8 @@ Return this structure:
   "missions": [
     {
       "title": "string",
+      "passingScore": 70,
+      "maxAttempts": 3,
       "questions": [
         {
           "text": "string",

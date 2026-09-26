@@ -11,6 +11,8 @@ export class GeneratedQuestionDto {
 
 export class GeneratedMissionDto {
   title: string;
+  passingScore: number;
+  maxAttempts: number;
   questions: GeneratedQuestionDto[];
 }
 

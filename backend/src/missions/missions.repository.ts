@@ -1,9 +1,41 @@
 import { Injectable } from '@nestjs/common';
+import { GeneratedMissionDto } from 'src/ai/dto/generated-mission.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MissionsRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  createMission(
+    outcomeId: number,
+    mission: GeneratedMissionDto,
+    order: number,
+  ) {
+    return this.prisma.mission.create({
+      data: {
+        title: mission.title,
+        order,
+        passingScore: mission.passingScore,
+        maxAttempts: mission.maxAttempts,
+        outcomeId,
+        // array.map((item, index) => ...)
+        questions: {
+          create: mission.questions.map((question, questionIndex) => ({
+            text: question.text,
+            type: question.type,
+            order: questionIndex + 1,
+            options: {
+              create: question.options.map((option, optionIndex) => ({
+                text: option.text,
+                isCorrect: option.isCorrect,
+                order: optionIndex + 1,
+              })),
+            },
+          })),
+        },
+      },
+    });
+  }
 
   findAllQuestionsByMissionId(missionId: number) {
     return this.prisma.question.findMany({

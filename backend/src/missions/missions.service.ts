@@ -5,10 +5,19 @@ import {
 } from '@nestjs/common';
 import { MissionsRepository } from './missions.repository';
 import { SubmitMissionDto } from './dto/submit-mission-dto';
+import { GeneratedMissionDto } from 'src/ai/dto/generated-mission.dto';
 
 @Injectable()
 export class MissionsService {
   constructor(private readonly missionsRepository: MissionsRepository) {}
+
+  async createMission(
+    outcomeId: number,
+    mission: GeneratedMissionDto,
+    order: number,
+  ) {
+    return this.missionsRepository.createMission(outcomeId, mission, order);
+  }
 
   private async findMissionOrThrow(missionId: number) {
     const mission = await this.missionsRepository.findMission(missionId);
