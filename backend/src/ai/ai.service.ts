@@ -85,5 +85,6 @@ Return this structure:
     if (!content) {
       throw new Error('AI returned empty response');
     }
+    return JSON.parse(content);
   }
 }
