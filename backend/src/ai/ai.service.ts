@@ -22,6 +22,7 @@ export class AiService {
 
     const response = await this.groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
+      max_tokens: 4000,
 
       messages: [
         {
@@ -36,7 +37,7 @@ Rules:
 - No markdown.
 - No explanations.
 - Generate 2 missions per learning outcome.
-- The mission must contain 10 questions.
+- The mission must contain 5 questions.
 - Generate a passingScore for each mission.
 - Generate a maxAttempts for each mission.
 - Each question must have 4 options.
