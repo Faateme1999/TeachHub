@@ -1,9 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EnrollmentsRepository } from './enrollments.repository';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(private readonly enrollmentsRepository: EnrollmentsRepository) {}
+  constructor(private readonly enrollmentsRepository: EnrollmentsRepository,
+    private readonly i18n: I18nService,
+  ) { }
 
   async enroll(userId: number, courseId: number) {
     // Check if already enrolled
@@ -12,9 +15,10 @@ export class EnrollmentsService {
       await this.enrollmentsRepository.findExistingEnrollment(userId, courseId);
 
     if (existingEnrollment) {
-      throw new BadRequestException('User is already enrolled in this course');
+      throw new BadRequestException(
+        await this.i18n.translate('common.enrollment.alreadyEnrolled'),
+      );
     }
-
     return this.enrollmentsRepository.create(userId, courseId);
   }
 
@@ -25,7 +29,9 @@ export class EnrollmentsService {
     );
 
     if (!enrollment) {
-      throw new BadRequestException('User is not enrolled in this course');
+      throw new BadRequestException(
+        await this.i18n.translate('common.enrollment.notEnrolled'),
+      );
     }
 
     return this.enrollmentsRepository.delete(enrollment.id);

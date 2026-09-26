@@ -1,0 +1,59 @@
+{
+    "welcome": "Welcome to the app",
+    "hello": "Hello {name}",
+    "user": {
+        "notFound": "User {id} not found"
+    },
+    "course": {
+        "notFound": "Course {id} not found"
+    },
+    "enrollment": {
+        "alreadyEnrolled": "User is already enrolled in this course",
+        "notEnrolled": "User is not enrolled in this course"
+    },
+    "lesson": {
+        "liveMeetingUrlRequired": "meetingUrl is required for LIVE lessons",
+        "recordedMeetingUrlNotAllowed": "meetingUrl is not allowed for RECORDED lessons",
+        "recordedContentOrVideoRequired": "At least one of content or video is required for RECORDED lessons",
+        "notFound": "Lesson {id} not found",
+        "noVideo": "This lesson has no video",
+        "videoNotFound": "Video not found"
+    },
+    "passwordReset": {
+        "subject": "Reset your TeachHub password",
+        "greeting": "Hello {name}",
+        "request": "We received a request to reset your TeachHub password.",
+        "instruction": "Click the link below to reset your password:",
+        "resetPassword": "Reset Password",
+        "expires": "This link will expire in 15 minutes.",
+        "ignore": "If you did not request a password reset, you can ignore this email.",
+        "sendFailed": "Failed to send password reset email"
+    },
+    "outcome": {
+        "notFound": "Outcome not found"
+    },
+    "mission": {
+        "notFound": "Mission not found",
+        "maximumAttemptsReached": "Maximum attempts reached"
+    },
+    "assignment": {
+        "notFound": "Assignment {id} not found"
+    },
+    "submission": {
+        "fileRequired": "File is required",
+        "alreadyCorrected": "You cannot submit the assignment again because it has already been corrected",
+        "notFound": "Submission {id} not found",
+        "correctedFileRequired": "Corrected file is required",
+        "correctedFileNotFound": "Corrected file not found for this submission",
+        "correctedFileNotUploaded": "Corrected file has not been uploaded yet"
+    },
+    "auth": {
+        "emailAlreadyExists": "Email already exists",
+        "invalidCredentials": "Invalid email or password",
+        "registrationSuccessful": "Registration successful",
+        "adminCreated": "Admin created",
+        "loginSuccessful": "Login successful",
+        "passwordResetRequest": "If an account with this email exists, a password reset link will be sent.",
+        "passwordResetSuccessful": "Password reset successful"
+    }
+}

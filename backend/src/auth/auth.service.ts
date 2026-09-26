@@ -17,6 +17,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { createHash, randomBytes } from 'crypto';
 import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,8 @@ export class AuthService {
     private readonly authRepository: AuthRepository,
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
-  ) {}
+    private readonly i18n: I18nService,
+  ) { }
 
   async register(createUserDto: CreateUserDto) {
     // 1. Call findByEmail()
@@ -37,7 +39,9 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.emailAlreadyExists'),
+      );
     }
 
     // Hash password
@@ -65,7 +69,7 @@ export class AuthService {
     const { password, ...safeUser } = user;
 
     return {
-      message: 'Registration successful',
+      message: await this.i18n.translate('common.auth.registrationSuccessful'),
       user: safeUser,
     };
   }
@@ -81,7 +85,9 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.emailAlreadyExists'),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
@@ -96,7 +102,7 @@ export class AuthService {
     const { password, ...safeUser } = user;
 
     return {
-      message: 'Admin created',
+      message: await this.i18n.translate('common.auth.adminCreated'),
       user: safeUser,
     };
   }
@@ -106,7 +112,9 @@ export class AuthService {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        await this.i18n.translate('common.auth.invalidCredentials'),
+      );
     }
 
     // 2. Compare passwords
@@ -116,7 +124,9 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        await this.i18n.translate('common.auth.invalidCredentials'),
+      );
     }
 
     // 3. Create JWT payload
@@ -139,7 +149,7 @@ export class AuthService {
     const { password, ...safeUser } = user;
 
     return {
-      message: 'Login successful',
+      message: await this.i18n.translate('common.auth.loginSuccessful'),
       accessToken,
       user: safeUser,
     };
@@ -150,8 +160,9 @@ export class AuthService {
 
     if (!user) {
       return {
-        message:
-          'If an account with this email exists, a password reset link will be sent.',
+        message: await this.i18n.translate(
+          'common.auth.passwordResetRequest',
+        ),
       };
     }
 
@@ -180,8 +191,9 @@ export class AuthService {
     );
 
     return {
-      message:
-        'If an account with this email exists, a password reset link will be sent.',
+      message: await this.i18n.translate(
+        'common.auth.passwordResetRequest',
+      ),
     };
   }
 
@@ -196,12 +208,16 @@ export class AuthService {
     const resetToken =
       await this.authRepository.findPasswordResetToken(tokenHash);
     if (!resetToken) {
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.invalidOrExpiredResetToken'),
+      );
     }
 
     if (resetToken.expiresAt < new Date()) {
       await this.authRepository.deletePasswordResetToken(resetToken.id);
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.invalidOrExpiredResetToken'),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 10);
@@ -214,7 +230,7 @@ export class AuthService {
     await this.authRepository.deletePasswordResetToken(resetToken.id);
 
     return {
-      message: 'Password reset successful',
+      message: await this.i18n.translate('common.auth.passwordResetSuccessful'),
     };
   }
 }

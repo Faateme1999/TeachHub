@@ -5,11 +5,17 @@ import {
 } from '@nestjs/common';
 import { MissionsRepository } from './missions.repository';
 import { SubmitMissionDto } from './dto/submit-mission-dto';
+
 import { GeneratedMissionDto } from 'src/ai/dto/generated-mission.dto';
+
+import { I18nService } from 'nestjs-i18n';
+
 
 @Injectable()
 export class MissionsService {
-  constructor(private readonly missionsRepository: MissionsRepository) {}
+  constructor(private readonly missionsRepository: MissionsRepository,
+    private readonly i18n: I18nService,
+  ) { }
 
   async createMission(
     outcomeId: number,
@@ -22,7 +28,9 @@ export class MissionsService {
   private async findMissionOrThrow(missionId: number) {
     const mission = await this.missionsRepository.findMission(missionId);
     if (!mission) {
-      throw new NotFoundException('Mission not found');
+      throw new NotFoundException(
+        await this.i18n.translate('common.mission.notFound'),
+      );
     }
 
     return mission;
@@ -33,7 +41,9 @@ export class MissionsService {
       await this.missionsRepository.findMissionForSubmission(missionId);
 
     if (!mission) {
-      throw new NotFoundException('Mission not found');
+      throw new NotFoundException(
+        await this.i18n.translate('common.mission.notFound'),
+      );
     }
 
     return mission;
@@ -57,7 +67,9 @@ export class MissionsService {
     );
 
     if (existingResult && existingResult.attemptsUsed >= mission.maxAttempts) {
-      throw new BadRequestException('Maximum attempts reached');
+      throw new BadRequestException(
+        await this.i18n.translate('common.mission.maximumAttemptsReached'),
+      );
     }
 
     let correctAnswers = 0;

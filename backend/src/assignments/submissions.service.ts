@@ -6,13 +6,15 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubmissionsRepository } from './submissions.repository';
 import { CreateCorrectedAssignmentDto } from './dto/create-corrected-assignment';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class SubmissionsService {
   constructor(
     private readonly submissionsRepository: SubmissionsRepository,
     private readonly prisma: PrismaService,
-  ) {}
+    private readonly i18n: I18nService,
+  ) { }
 
   async findAssignment(assignmentId: number) {
     const assignment = await this.prisma.assignment.findUnique({
@@ -22,7 +24,11 @@ export class SubmissionsService {
     });
 
     if (!assignment) {
-      throw new NotFoundException(`Assignment ${assignmentId} not found`);
+      throw new NotFoundException(
+        await this.i18n.translate('common.assignment.notFound', {
+          args: { id: assignmentId },
+        }),
+      );
     }
 
     return assignment;
@@ -30,7 +36,9 @@ export class SubmissionsService {
 
   async upsert(assignmentId: number, userId: number, file: any) {
     if (!file) {
-      throw new BadRequestException('File is required');
+      throw new BadRequestException(
+        await this.i18n.translate('common.submission.fileRequired'),
+      );
     }
     await this.findAssignment(assignmentId);
 
@@ -42,7 +50,7 @@ export class SubmissionsService {
 
     if (existingSubmission?.correctedFileData) {
       throw new BadRequestException(
-        'You cannot submit the assignment again because it has already been corrected',
+        await this.i18n.translate('common.submission.alreadyCorrected'),
       );
     }
 
@@ -59,7 +67,11 @@ export class SubmissionsService {
     const submission =
       await this.submissionsRepository.downloadAssignmentFile(submissionId);
     if (!submission) {
-      throw new NotFoundException(`Submission ${submissionId} not found`);
+      throw new NotFoundException(
+        await this.i18n.translate('common.submission.notFound', {
+          args: { id: submissionId },
+        }),
+      );
     }
     return submission;
   }
@@ -71,7 +83,9 @@ export class SubmissionsService {
     createCorrectedAssignmentDto: CreateCorrectedAssignmentDto,
   ) {
     if (!correctedFile) {
-      throw new BadRequestException('Corrected file is required');
+      throw new BadRequestException(
+        await this.i18n.translate('common.submission.correctedFileRequired'),
+      );
     }
     await this.findAssignment(assignmentId);
 
@@ -96,11 +110,13 @@ export class SubmissionsService {
     );
     if (!submission) {
       throw new NotFoundException(
-        'Corrected file not found for this submission',
+        await this.i18n.translate('common.submission.correctedFileNotFound'),
       );
     }
     if (!submission.correctedFileName || !submission.correctedFileData) {
-      throw new NotFoundException('Corrected file has not been uploaded yet');
+      throw new NotFoundException(
+        await this.i18n.translate('common.submission.correctedFileNotUploaded'),
+      );
     }
     return submission;
   }

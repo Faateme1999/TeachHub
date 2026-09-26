@@ -1,3 +1,5 @@
+import { I18nService } from 'nestjs-i18n';
+
 import { Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -6,7 +8,9 @@ import { CoursesRepository } from './courses.repository';
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly coursesRepository: CoursesRepository) {}
+  constructor(private readonly coursesRepository: CoursesRepository,
+    private readonly i18n: I18nService,
+  ) { }
 
   async create(createCourseDto: CreateCourseDto) {
     return this.coursesRepository.create(createCourseDto);
@@ -54,7 +58,11 @@ export class CoursesService {
     const course = await this.coursesRepository.findById(id);
 
     if (!course) {
-      throw new NotFoundException(`Course ${id} not found`);
+      throw new NotFoundException(
+        await this.i18n.translate('common.course.notFound', {
+          args: { id },
+        }),
+      );
     }
 
     return course;

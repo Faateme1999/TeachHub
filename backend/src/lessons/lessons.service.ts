@@ -7,12 +7,16 @@ import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { LessonsRepository } from './lessons.repository';
 import { LessonType } from '@prisma/client';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly lessonsRepository: LessonsRepository) {}
+  constructor(private readonly lessonsRepository: LessonsRepository,
+    private readonly i18n: I18nService
 
-  private validateLessonData(
+  ) { }
+
+  private async validateLessonData(
     data: {
       type?: LessonType | null;
       content?: string | null;
@@ -21,17 +25,19 @@ export class LessonsService {
     videoData?: Buffer,
   ) {
     if (data.type === LessonType.LIVE && !data.meetingUrl) {
-      throw new BadRequestException('meetingUrl is required for LIVE lessons');
+      throw new BadRequestException(
+        await this.i18n.translate('common.lesson.liveMeetingUrlRequired'),
+      );
     }
     if (data.type === LessonType.RECORDED && data.meetingUrl) {
       throw new BadRequestException(
-        'meetingUrl is not allowed for RECORDED lessons',
+        await this.i18n.translate('common.lesson.recordedMeetingUrlNotAllowed'),
       );
     }
 
     if (data.type === LessonType.RECORDED && !data.content && !videoData) {
       throw new BadRequestException(
-        'At least one of content or video is required for RECORDED lessons',
+        await this.i18n.translate('common.lesson.recordedContentOrVideoRequired'),
       );
     }
   }
@@ -41,7 +47,7 @@ export class LessonsService {
     createLessonDto: CreateLessonDto,
     videoData?: Buffer,
   ) {
-    this.validateLessonData(createLessonDto, videoData);
+    await this.validateLessonData(createLessonDto, videoData);
     return this.lessonsRepository.create(courseId, createLessonDto, videoData);
   }
 
@@ -53,12 +59,15 @@ export class LessonsService {
     const lesson = await this.lessonsRepository.findOne(id);
 
     if (!lesson) {
-      throw new NotFoundException(`Lesson ${id} not found`);
+      throw new NotFoundException(
+        await this.i18n.translate('common.lesson.notFound', {
+          args: { id },
+        }),
+      );
     }
 
     return lesson;
   }
-
   async update(
     id: number,
     updateLessonDto: UpdateLessonDto,
@@ -70,7 +79,7 @@ export class LessonsService {
       ...existingLesson,
       ...updateLessonDto,
     };
-    this.validateLessonData(updatedLesson, videoData);
+    await this.validateLessonData(updatedLesson, videoData);
     return this.lessonsRepository.update(id, updateLessonDto, videoData);
   }
 
@@ -85,12 +94,16 @@ export class LessonsService {
     const lesson = await this.findOne(lessonId);
 
     if (!lesson.hasVideo) {
-      throw new NotFoundException('This lesson has no video');
+      throw new NotFoundException(
+        await this.i18n.translate('common.lesson.noVideo'),
+      );
     }
 
     const video = await this.lessonsRepository.getVideo(lessonId);
     if (!video) {
-      throw new NotFoundException('Video not found');
+      throw new NotFoundException(
+        await this.i18n.translate('common.lesson.videoNotFound'),
+      );
     }
     return video;
   }
