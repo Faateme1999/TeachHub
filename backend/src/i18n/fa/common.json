@@ -30,7 +30,7 @@
         "sendFailed": "ارسال ایمیل بازنشانی رمز عبور ناموفق بود"
     },
     "outcome": {
-        "notFound": "نتیجه پیدا نشد"
+        "notFound": "هدفی پیدا نشد"
     },
     "mission": {
         "notFound": "ماموریت پیدا نشد",
@@ -42,7 +42,7 @@
     "submission": {
         "fileRequired": "فایل الزامی است",
         "alreadyCorrected": "شما نمی‌توانید دوباره تکلیف را ارسال کنید، زیرا قبلاً تصحیح شده است",
-        "notFound": "ارسال {id} پیدا نشد",
+        "notFound": " تکلیف ارسال {id} پیدا نشد",
         "correctedFileRequired": "فایل تصحیح‌شده الزامی است",
         "correctedFileNotFound": "فایل تصحیح‌شده‌ای برای این ارسال پیدا نشد",
         "correctedFileNotUploaded": "فایل تصحیح‌شده هنوز آپلود نشده است"

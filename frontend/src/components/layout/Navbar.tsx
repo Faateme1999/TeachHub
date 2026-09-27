@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth-context";
 import { Button } from "../ui/Button";
 import "./layout.css";
+import { getLanguage, setLanguage, type Language } from "../../i18n/language";
 
 // The top navigation bar, shown on every page.
 // - Left: brand/logo that links home.
@@ -13,10 +14,16 @@ export function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [language, setCurrentLanguage] = useState<Language>(getLanguage());
 
   function handleLogout() {
     logout();
     navigate("/login");
+  }
+
+  function handleLanguageChange(language: Language) {
+    setCurrentLanguage(language);
+    setLanguage(language);
   }
 
   // Helper so a NavLink gets the "is-active" class when its route is current.
@@ -59,6 +66,13 @@ export function Navbar() {
         </nav>
 
         <div className="navbar__right">
+          <select
+            value={language}
+            onChange={(e) => handleLanguageChange(e.target.value as Language)}
+          >
+            <option value="en">English</option>
+            <option value="fa">فارسی</option>
+          </select>
           {isAuthenticated ? (
             <>
               <span className="navbar__user">
