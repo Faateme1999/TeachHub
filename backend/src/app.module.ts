@@ -30,11 +30,7 @@ import { MissionsModule } from './missions/missions.module';
         path: path.join(__dirname, 'i18n'),
         watch: true,
       },
-      resolvers: [
-        { use: QueryResolver, options: ['lang'] },
-        new HeaderResolver(['x-lang']),
-        AcceptLanguageResolver,
-      ],
+      resolvers: [new HeaderResolver(['x-lang'])],
     }),
 
     PrismaModule,

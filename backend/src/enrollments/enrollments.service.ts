@@ -4,9 +4,10 @@ import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(private readonly enrollmentsRepository: EnrollmentsRepository,
+  constructor(
+    private readonly enrollmentsRepository: EnrollmentsRepository,
     private readonly i18n: I18nService,
-  ) { }
+  ) {}
 
   async enroll(userId: number, courseId: number) {
     // Check if already enrolled

@@ -8,9 +8,10 @@ import { CoursesRepository } from './courses.repository';
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly coursesRepository: CoursesRepository,
+  constructor(
+    private readonly coursesRepository: CoursesRepository,
     private readonly i18n: I18nService,
-  ) { }
+  ) {}
 
   async create(createCourseDto: CreateCourseDto) {
     return this.coursesRepository.create(createCourseDto);

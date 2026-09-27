@@ -8,7 +8,8 @@ import { I18nService } from 'nestjs-i18n';
 export class EmailService {
   private readonly gmail;
 
-  constructor(private readonly configService: ConfigService,
+  constructor(
+    private readonly configService: ConfigService,
     private readonly i18n: I18nService,
   ) {
     const oauth2Client = new google.auth.OAuth2(
@@ -39,34 +40,21 @@ export class EmailService {
         },
       );
 
-
       const requestText = await this.i18n.translate(
         'common.passwordReset.request',
       );
-
 
       const instruction = await this.i18n.translate(
         'common.passwordReset.instruction',
       );
 
-
-
       const resetPassword = await this.i18n.translate(
         'common.passwordReset.resetPassword',
       );
 
+      const expires = await this.i18n.translate('common.passwordReset.expires');
 
-
-      const expires = await this.i18n.translate(
-        'common.passwordReset.expires',
-      );
-
-
-      const ignore = await this.i18n.translate(
-        'common.passwordReset.ignore',
-      );
-
-
+      const ignore = await this.i18n.translate('common.passwordReset.ignore');
 
       const html = `
         <h2>${greeting}</h2>
@@ -94,11 +82,7 @@ export class EmailService {
         </p>
       `;
 
-
-      const subject = await this.i18n.translate(
-        'common.passwordReset.subject',
-      );
-
+      const subject = await this.i18n.translate('common.passwordReset.subject');
 
       const message = [
         `From: TeachHub <${from}>`,
