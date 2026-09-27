@@ -1,4 +1,9 @@
-import { I18nModule, AcceptLanguageResolver, QueryResolver, HeaderResolver } from 'nestjs-i18n';
+import {
+  I18nModule,
+  AcceptLanguageResolver,
+  QueryResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
 import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
@@ -22,7 +27,7 @@ import { MissionsModule } from './missions/missions.module';
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: path.join(__dirname, '/i18n/'),
+        path: path.join(__dirname, 'i18n'),
         watch: true,
       },
       resolvers: [
@@ -31,6 +36,7 @@ import { MissionsModule } from './missions/missions.module';
         AcceptLanguageResolver,
       ],
     }),
+
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -45,4 +51,4 @@ import { MissionsModule } from './missions/missions.module';
     // Create one ConfigService and make it available everywhere.
   ],
 })
-export class AppModule { }
+export class AppModule {}
