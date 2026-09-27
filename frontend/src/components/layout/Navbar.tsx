@@ -16,6 +16,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [language, setCurrentLanguage] = useState<Language>(getLanguage());
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
 
   function handleLogout() {
     logout();
@@ -67,13 +68,41 @@ export function Navbar() {
         </nav>
 
         <div className="navbar__right">
-          <select
-            value={language}
-            onChange={(e) => handleLanguageChange(e.target.value as Language)}
-          >
-            <option value="en">English</option>
-            <option value="fa">فارسی</option>
-          </select>
+          <div className="language-dropdown">
+            <button
+              type="button"
+              className="language-switcher"
+              onClick={() => setLanguageMenuOpen((open) => !open)}
+            >
+              <span>{language === "en" ? "English" : "فارسی"}</span>
+            </button>
+
+            {languageMenuOpen && (
+              <div className="language-menu">
+                <button
+                  type="button"
+                  className={language === "en" ? "active" : ""}
+                  onClick={() => {
+                    handleLanguageChange("en");
+                    setLanguageMenuOpen(false);
+                  }}
+                >
+                  English
+                </button>
+
+                <button
+                  type="button"
+                  className={language === "fa" ? "active" : ""}
+                  onClick={() => {
+                    handleLanguageChange("fa");
+                    setLanguageMenuOpen(false);
+                  }}
+                >
+                  فارسی
+                </button>
+              </div>
+            )}
+          </div>
           {isAuthenticated ? (
             <>
               <span className="navbar__user">
