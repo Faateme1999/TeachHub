@@ -4,6 +4,7 @@ import { useAuth } from "../../context/auth-context";
 import { Button } from "../ui/Button";
 import "./layout.css";
 import { getLanguage, setLanguage, type Language } from "../../i18n/language";
+import { t } from "../../i18n/i18n";
 
 // The top navigation bar, shown on every page.
 // - Left: brand/logo that links home.
@@ -49,7 +50,7 @@ export function Navbar() {
           onClick={() => setMenuOpen(false)}
         >
           <NavLink to="/courses" className={linkClass}>
-            Courses
+            <span>{t("navbar.courses")}</span>
           </NavLink>
           {isAuthenticated && !isAdmin && (
             <NavLink to="/me" className={linkClass}>
