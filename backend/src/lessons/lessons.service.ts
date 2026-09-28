@@ -11,10 +11,10 @@ import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly lessonsRepository: LessonsRepository,
-    private readonly i18n: I18nService
-
-  ) { }
+  constructor(
+    private readonly lessonsRepository: LessonsRepository,
+    private readonly i18n: I18nService,
+  ) {}
 
   private async validateLessonData(
     data: {
@@ -37,7 +37,9 @@ export class LessonsService {
 
     if (data.type === LessonType.RECORDED && !data.content && !videoData) {
       throw new BadRequestException(
-        await this.i18n.translate('common.lesson.recordedContentOrVideoRequired'),
+        await this.i18n.translate(
+          'common.lesson.recordedContentOrVideoRequired',
+        ),
       );
     }
   }

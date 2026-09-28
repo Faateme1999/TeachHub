@@ -10,7 +10,7 @@ export class AssignmentsService {
     private readonly assignmentsRepository: AssignmentsRepository,
     private readonly prisma: PrismaService,
     private readonly i18n: I18nService,
-  ) { }
+  ) {}
 
   async findLesson(lessonId: number) {
     const lesson = await this.prisma.lesson.findUnique({
