@@ -26,6 +26,7 @@ import { Role } from '@prisma/client';
 import { CreateOutcomeDto } from 'src/outcomes/dto/create-outcome-dto';
 import { OutcomesService } from 'src/outcomes/outcomes.service';
 import { UpdateOutcomeDto } from 'src/outcomes/dto/update-outcome.dto';
+import { Readable } from 'stream';
 
 @Controller()
 export class LessonsController {
@@ -46,11 +47,7 @@ export class LessonsController {
     @Body() createLessonDto: CreateLessonDto,
     @UploadedFile() videoData?: any,
   ) {
-    return this.lessonsService.create(
-      courseId,
-      createLessonDto,
-      videoData?.buffer,
-    );
+    return this.lessonsService.create(courseId, createLessonDto, videoData);
   }
 
   @Get('courses/:courseId/lessons')
@@ -73,7 +70,7 @@ export class LessonsController {
     @Body() updateLessonDto: UpdateLessonDto,
     @UploadedFile() video?: any,
   ) {
-    return this.lessonsService.update(id, updateLessonDto, video?.buffer);
+    return this.lessonsService.update(id, updateLessonDto, video);
   }
 
   // Deleting a lesson is ADMIN-only.
@@ -127,13 +124,18 @@ export class LessonsController {
   ) {
     const video = await this.lessonsService.getVideo(lessonId);
 
-    // ! Non-null assertion operator
-    // This value is not null or undefined
     res.set({
       'Content-Type': 'video/mp4',
-      'Content-Length': video.videoData!.length,
     });
 
-    res.send(video.videoData);
+    if (Buffer.isBuffer(video)) {
+      res.set({
+        'Content-Length': video.length,
+      });
+
+      return res.send(video);
+    }
+
+    return (video as Readable).pipe(res);
   }
 }

@@ -11,15 +11,17 @@ export class LessonsRepository {
     courseId: number,
     createLessonDto: CreateLessonDto,
     videoData?: Uint8Array,
+    videoKey?: string,
   ) {
     return this.prisma.lesson.create({
       data: {
         title: createLessonDto.title,
         content: createLessonDto.content,
-        videoData: videoData as any,
+        videoData: videoKey ? undefined : (videoData as any),
         // !! Double Negation
         // converts a value into a Boolean
-        hasVideo: !!videoData,
+        hasVideo: !!videoData || !!videoKey,
+        videoKey,
         meetingUrl: createLessonDto.meetingUrl,
         type: createLessonDto.type,
         courseId,
@@ -33,6 +35,7 @@ export class LessonsRepository {
         courseId: true,
         createdAt: true,
         hasVideo: true,
+        videoKey: true,
       },
     });
   }
@@ -71,6 +74,7 @@ export class LessonsRepository {
         courseId: true,
         createdAt: true,
         hasVideo: true,
+        videoKey: true,
       },
     });
   }
@@ -79,6 +83,7 @@ export class LessonsRepository {
     id: number,
     updateLessonDto: UpdateLessonDto,
     videoData?: Uint8Array,
+    videoKey?: string,
   ) {
     return this.prisma.lesson.update({
       where: {
@@ -86,10 +91,19 @@ export class LessonsRepository {
       },
       data: {
         ...updateLessonDto,
-        ...(videoData && {
-          videoData: videoData as any,
-          hasVideo: true,
-        }),
+        ...(videoKey
+          ? {
+              videoKey,
+              videoData: null,
+              hasVideo: true,
+            }
+          : videoData
+            ? {
+                videoData: videoData as any,
+                videoKey: null,
+                hasVideo: true,
+              }
+            : {}),
       },
       select: {
         id: true,
@@ -100,6 +114,7 @@ export class LessonsRepository {
         courseId: true,
         createdAt: true,
         hasVideo: true,
+        videoKey: true,
       },
     });
   }
