@@ -8,13 +8,21 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { LessonsRepository } from './lessons.repository';
 import { LessonType } from '@prisma/client';
 import { I18nService } from 'nestjs-i18n';
+import { StorageService } from 'src/storage/storage.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class LessonsService {
   constructor(
     private readonly lessonsRepository: LessonsRepository,
+    private readonly storageService: StorageService,
+    private readonly configService: ConfigService,
     private readonly i18n: I18nService,
   ) {}
+
+  private isProduction() {
+    return this.configService.get<string>('NODE_ENV') === 'production';
+  }
 
   private async validateLessonData(
     data: {
@@ -22,7 +30,7 @@ export class LessonsService {
       content?: string | null;
       meetingUrl?: string | null;
     },
-    videoData?: Buffer,
+    videoData?: any,
   ) {
     if (data.type === LessonType.LIVE && !data.meetingUrl) {
       throw new BadRequestException(
@@ -47,10 +55,30 @@ export class LessonsService {
   async create(
     courseId: number,
     createLessonDto: CreateLessonDto,
-    videoData?: Buffer,
+    videoData?: any,
   ) {
     await this.validateLessonData(createLessonDto, videoData);
-    return this.lessonsRepository.create(courseId, createLessonDto, videoData);
+
+    let videoKey: string | undefined;
+    let videoBuffer = videoData?.buffer;
+
+    if (this.isProduction() && videoData) {
+      videoKey = `lessons/${Date.now()}-${videoData.originalname}`;
+
+      await this.storageService.uploadFile(
+        videoData.buffer,
+        videoKey,
+        videoData.mimetype,
+      );
+      videoBuffer = undefined;
+    }
+
+    return this.lessonsRepository.create(
+      courseId,
+      createLessonDto,
+      videoBuffer,
+      videoKey,
+    );
   }
 
   async findAllByCourse(courseId: number) {
@@ -70,11 +98,7 @@ export class LessonsService {
 
     return lesson;
   }
-  async update(
-    id: number,
-    updateLessonDto: UpdateLessonDto,
-    videoData?: Buffer,
-  ) {
+  async update(id: number, updateLessonDto: UpdateLessonDto, videoData?: any) {
     const existingLesson = await this.findOne(id);
     // ... Spread Operator
     const updatedLesson = {
@@ -82,12 +106,41 @@ export class LessonsService {
       ...updateLessonDto,
     };
     await this.validateLessonData(updatedLesson, videoData);
-    return this.lessonsRepository.update(id, updateLessonDto, videoData);
+
+    let videoBuffer = videoData?.buffer;
+    let videoKey: string | undefined;
+
+    if (this.isProduction() && videoData) {
+      if (existingLesson.videoKey) {
+        await this.storageService.deleteFile(existingLesson.videoKey);
+      }
+
+      videoKey = `lessons/${Date.now()}-${videoData.originalname}`;
+
+      await this.storageService.uploadFile(
+        videoData.buffer,
+        videoKey,
+        videoData.mimetype,
+      );
+
+      videoBuffer = undefined;
+    }
+
+    return this.lessonsRepository.update(
+      id,
+      updateLessonDto,
+      videoBuffer,
+      videoKey,
+    );
   }
 
   async remove(id: number) {
     // DRY principle ("Don't Repeat Yourself")
-    await this.findOne(id);
+    const lesson = await this.findOne(id);
+
+    if (this.isProduction() && lesson.videoKey) {
+      await this.storageService.deleteFile(lesson.videoKey);
+    }
 
     return this.lessonsRepository.remove(id);
   }
@@ -101,12 +154,29 @@ export class LessonsService {
       );
     }
 
+    if (this.isProduction()) {
+      if (!lesson.videoKey) {
+        throw new NotFoundException(
+          await this.i18n.translate('common.lesson.videoNotFound'),
+        );
+      }
+
+      const video = await this.storageService.getFile(lesson.videoKey);
+      if (!video) {
+        throw new NotFoundException(
+          await this.i18n.translate('common.lesson.videoNotFound'),
+        );
+      }
+
+      return video;
+    }
+
     const video = await this.lessonsRepository.getVideo(lessonId);
-    if (!video) {
+    if (!video?.videoData) {
       throw new NotFoundException(
         await this.i18n.translate('common.lesson.videoNotFound'),
       );
     }
-    return video;
+    return video.videoData;
   }
 }
