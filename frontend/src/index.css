@@ -585,3 +585,133 @@ code {
     transform: translateY(0);
   }
 }
+
+.lesson-type-field {
+  margin-top: 20px;
+  margin-bottom: 22px;
+}
+
+.lesson-type-dropdown {
+  position: relative;
+  width: 170px;
+  margin-top: 10px;
+}
+
+.lesson-type-trigger {
+  width: 100%;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  background: var(--surface);
+  color: var(--text);
+
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.lesson-type-trigger:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.lesson-type-trigger:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+.lesson-type-arrow {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.lesson-type-arrow.is-open {
+  transform: rotate(180deg);
+}
+
+.lesson-type-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+
+  width: 100%;
+  padding: 6px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  box-shadow: var(--shadow-lg);
+
+  z-index: 50;
+
+  animation: lesson-type-menu-in 0.15s ease-out;
+}
+
+.lesson-type-menu button {
+  width: 100%;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 11px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+  color: var(--text);
+
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.lesson-type-menu button:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.lesson-type-menu button.is-selected {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+@keyframes lesson-type-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
