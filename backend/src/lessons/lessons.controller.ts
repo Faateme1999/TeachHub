@@ -128,14 +128,17 @@ export class LessonsController {
       'Content-Type': 'video/mp4',
     });
 
-    if (Buffer.isBuffer(video)) {
-      res.set({
-        'Content-Length': video.length,
-      });
-
-      return res.send(video);
+    // Readable = a stream that can be read piece by piece.
+    // Send it to the response as a stream.
+    if (video instanceof Readable) {
+      return video.pipe(res);
     }
 
-    return (video as Readable).pipe(res);
+    const buffer = Buffer.from(video);
+    res.set({
+      'Content-Length': buffer.length,
+    });
+
+    return res.send(buffer);
   }
 }

@@ -22,6 +22,7 @@ export function LessonForm({
   onCancel,
 }: LessonFormProps) {
   const [title, setTitle] = useState(initialValue?.title ?? "");
+  const [typeMenuOpen, setTypeMenuOpen] = useState(false);
 
   const [type, setType] = useState<LessonType>(
     initialValue?.type ?? "RECORDED",
@@ -85,23 +86,55 @@ export function LessonForm({
         placeholder="e.g. Setting up your first module"
       />
 
-      <div className="form__field">
-        <label htmlFor="lesson-type">Lesson type</label>
+      <div className="form__field lesson-type-field">
+        <label>Lesson type</label>
 
-        <select
-          id="lesson-type"
-          value={type}
-          onChange={(e) => {
-            const newType = e.target.value as LessonType;
+        <div className="lesson-type-dropdown">
+          <button
+            type="button"
+            className="lesson-type-trigger"
+            onClick={() => setTypeMenuOpen((open) => !open)}
+            disabled={submitting}
+          >
+            <span>{type === "RECORDED" ? "Recorded" : "Live"}</span>
 
-            setType(newType);
-            setErrors({});
-          }}
-          disabled={submitting}
-        >
-          <option value="RECORDED">Recorded</option>
-          <option value="LIVE">Live</option>
-        </select>
+            <span
+              className={`lesson-type-arrow ${typeMenuOpen ? "is-open" : ""}`}
+            >
+              ˅
+            </span>
+          </button>
+
+          {typeMenuOpen && (
+            <div className="lesson-type-menu">
+              <button
+                type="button"
+                className={type === "RECORDED" ? "is-selected" : ""}
+                onClick={() => {
+                  setType("RECORDED");
+                  setErrors({});
+                  setTypeMenuOpen(false);
+                }}
+              >
+                <span>Recorded</span>
+                {type === "RECORDED" && <span>✓</span>}
+              </button>
+
+              <button
+                type="button"
+                className={type === "LIVE" ? "is-selected" : ""}
+                onClick={() => {
+                  setType("LIVE");
+                  setErrors({});
+                  setTypeMenuOpen(false);
+                }}
+              >
+                <span>Live</span>
+                {type === "LIVE" && <span>✓</span>}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <Textarea
