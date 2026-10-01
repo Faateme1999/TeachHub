@@ -62,6 +62,13 @@ export class UsersService {
     return this.usersRepository.findUserSubmissions(userId);
   }
 
+  async findUserSubmissionsForTeacher(teacherId: number, studentId: number) {
+    return this.usersRepository.findUserSubmissionsForTeacher(
+      teacherId,
+      studentId,
+    );
+  }
+
   async remove(id: number) {
     return this.usersRepository.remove(id);
   }
