@@ -410,6 +410,11 @@ async function main() {
         description:
           'Build your first REST API with NestJS: modules, controllers, services, and Prisma.',
         price: 0,
+        createdBy: {
+          connect: {
+            id: admin.id,
+          },
+        },
         lessons: {
           create: [
             {
@@ -434,6 +439,11 @@ async function main() {
         description:
           'Learn components, props, state, and hooks by building a small app.',
         price: 19.99,
+        createdBy: {
+          connect: {
+            id: admin.id,
+          },
+        },
         lessons: {
           create: [
             {

@@ -1,7 +1,7 @@
-import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/auth-context'
-import { Button } from '../ui/Button'
-import './admin.css'
+import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/auth-context";
+import { Button } from "../ui/Button";
+import "./admin.css";
 
 // The frame for the SEPARATE admin section. Unlike the student <Layout>, this has
 // its own sidebar (no student navbar/footer) so admins get a distinct workspace.
@@ -10,16 +10,16 @@ import './admin.css'
 // This layout is only ever reached through <AdminRoute>, so we can assume the
 // viewer is an admin. We still show their name + a logout button.
 export function AdminLayout() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   function handleLogout() {
-    logout()
-    navigate('/login')
+    logout();
+    navigate("/login");
   }
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `admin-sidebar__link ${isActive ? 'is-active' : ''}`
+    `admin-sidebar__link ${isActive ? "is-active" : ""}`;
 
   return (
     <div className="admin-shell">
@@ -37,6 +37,9 @@ export function AdminLayout() {
         </NavLink>
         <NavLink to="/admin/users" className={linkClass}>
           Manage users
+        </NavLink>
+        <NavLink to="/admin/teachers/new" className={linkClass}>
+          Create teacher
         </NavLink>
         <NavLink to="/admin/admins/new" className={linkClass}>
           Create admin
@@ -62,5 +65,5 @@ export function AdminLayout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }

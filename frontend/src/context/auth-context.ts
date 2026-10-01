@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react'
-import type { User } from '../types/api'
+import { createContext, useContext } from "react";
+import type { User } from "../types/api";
 
 // This file holds the "shape" of our auth state and the hook to read it.
 // The actual <AuthProvider> component lives in AuthProvider.tsx.
@@ -10,26 +10,29 @@ import type { User } from '../types/api'
 // component) keeps everything tidy and warning-free.
 
 export interface AuthContextValue {
-  user: User | null
-  token: string | null
+  user: User | null;
+  token: string | null;
   // true only when we have a valid token
-  isAuthenticated: boolean
+  isAuthenticated: boolean;
   // true when the logged-in user is an admin. Use this to show/hide admin-only
   // UI and to guard the /admin section (see AdminRoute).
-  isAdmin: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
+  isAdmin: boolean;
+  isStaff: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
 // `undefined` default lets us detect "used outside the provider" (see the hook).
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+export const AuthContext = createContext<AuthContextValue | undefined>(
+  undefined,
+);
 
 // The hook every component uses to read auth state: `const { user } = useAuth()`.
 export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used inside <AuthProvider>')
+    throw new Error("useAuth must be used inside <AuthProvider>");
   }
-  return context
+  return context;
 }

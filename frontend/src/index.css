@@ -715,3 +715,9 @@ code {
     transform: translateY(0);
   }
 }
+
+.pagination {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}

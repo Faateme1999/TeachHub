@@ -68,9 +68,16 @@ export class UsersController {
 
   @Get(':userId/submissions')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  findUserSubmissions(@Param('userId', ParseIntPipe) userId: number) {
-    return this.usersService.findUserSubmissions(userId);
+  @Roles(Role.ADMIN, Role.TEACHER)
+  findUserSubmissions(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Request() req: any,
+  ) {
+    if (req.user.role === Role.ADMIN) {
+      return this.usersService.findUserSubmissions(userId);
+    }
+
+    return this.usersService.findUserSubmissionsForTeacher(req.user.id, userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -39,7 +39,7 @@ export class LessonsController {
   // JwtAuthGuard verifies the token and sets req.user; RolesGuard then checks the
   // role. Reading lessons stays public so anyone can browse a course's curriculum.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post('courses/:courseId/lessons')
   @UseInterceptors(FileInterceptor('video'))
   create(
@@ -62,7 +62,7 @@ export class LessonsController {
 
   // Editing a lesson is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Patch('lessons/:id')
   @UseInterceptors(FileInterceptor('video'))
   update(
@@ -75,14 +75,14 @@ export class LessonsController {
 
   // Deleting a lesson is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Delete('lessons/:id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.lessonsService.remove(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post('lessons/:lessonId/outcomes')
   createOutcome(
     @Param('lessonId', ParseIntPipe) lessonId: number,
@@ -97,7 +97,7 @@ export class LessonsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Patch('lessons/:lessonId/outcomes/:outcomeId')
   updateOutcome(
     @Param('lessonId', ParseIntPipe) lessonId: number,
@@ -108,7 +108,7 @@ export class LessonsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Delete('lessons/:lessonId/outcomes/:outcomeId')
   removeOutcome(
     @Param('lessonId', ParseIntPipe) lessonId: number,

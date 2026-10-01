@@ -4,6 +4,7 @@ import { queryKeys } from "../lib/queryKeys";
 import type {
   Course,
   CreateAdminInput,
+  CreateTeacherInput,
   RegisterResponse,
   User,
   UserSubmission,
@@ -129,6 +130,27 @@ export function useCreateAdmin() {
   });
 }
 
+export function useCreateTeacher() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateTeacherInput) => {
+      const { data } = await apiClient.post<RegisterResponse>(
+        "/auth/teachers",
+        input,
+      );
+
+      return data;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.all,
+      });
+    },
+  });
+}
+
 export function useUserSubmissions(id: number) {
   return useQuery({
     queryKey: queryKeys.users.submissions(id),
@@ -141,3 +163,5 @@ export function useUserSubmissions(id: number) {
     enabled: Number.isFinite(id),
   });
 }
+
+

@@ -41,7 +41,7 @@ export class SubmissionsController {
 
   @Get(':submissionId/download')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN, Role.TEACHER)
   async downloadAssignmentFile(
     @Param('submissionId', ParseIntPipe) submissionId: number,
     @Res() res: Response,
@@ -64,7 +64,7 @@ export class SubmissionsController {
 
   @Post(':submissionId/correct')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @UseInterceptors(FileInterceptor('correctedFile'))
   uploadCorrectedFile(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
