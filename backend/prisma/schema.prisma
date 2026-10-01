@@ -29,12 +29,13 @@ model User {
   password  String
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now())
+
   enrollments Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
   missionResults MissionResult[]
   submissions Submission[]
   passwordResetTokens  PasswordResetToken[]
-
+  createdCourses Course[]
 }
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
 
@@ -56,6 +57,9 @@ model Course{
   description   String
   price         Float
   createdAt     DateTime  @default(now())
+
+  createdById   Int
+  createdBy     User      @relation(fields: [createdById], references: [id])
 
   //No enrollments column,It tells Prisma: A User can have many Enrollments
   // do NOT appear as columns anywhere.
