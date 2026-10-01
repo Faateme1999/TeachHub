@@ -7,9 +7,33 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 export class CoursesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createCourseDto: CreateCourseDto) {
+  async create(createCourseDto: CreateCourseDto, userId: number) {
     return this.prisma.course.create({
-      data: createCourseDto,
+      data: {
+        ...createCourseDto,
+        createdById: userId,
+      },
+    });
+  }
+
+  async findCourseByCreatorId(userId: number) {
+    return this.prisma.course.findMany({
+      where: {
+        createdById: userId,
+      },
+      include: {
+        enrollments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 

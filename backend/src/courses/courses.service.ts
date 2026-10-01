@@ -13,8 +13,8 @@ export class CoursesService {
     private readonly i18n: I18nService,
   ) {}
 
-  async create(createCourseDto: CreateCourseDto) {
-    return this.coursesRepository.create(createCourseDto);
+  async create(createCourseDto: CreateCourseDto, userId: number) {
+    return this.coursesRepository.create(createCourseDto, userId);
   }
 
   // Because Prisma's create() method is defined to expect an object with a property called data.
@@ -25,6 +25,10 @@ export class CoursesService {
   //     price: 49.99,
   //   }
   // });
+
+  async findMyCourses(userId: number) {
+    return this.coursesRepository.findCourseByCreatorId(userId);
+  }
 
   async findAll(page = '1') {
     //  Math.max(..., 1): This guarantees the page number is at least 1.

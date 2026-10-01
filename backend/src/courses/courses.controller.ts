@@ -33,8 +33,15 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.TEACHER)
   @Post()
-  create(@Body() createCourseDto: CreateCourseDto) {
-    return this.coursesService.create(createCourseDto);
+  create(@Body() createCourseDto: CreateCourseDto, @Request() req: any) {
+    return this.coursesService.create(createCourseDto, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Get('my-courses')
+  findMyCourses(@Request() req: any) {
+    return this.coursesService.findMyCourses(req.user.id);
   }
 
   // @Query() tells NestJS:"Get something from the URL's query parameters."
