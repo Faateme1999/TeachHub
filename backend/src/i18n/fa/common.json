@@ -1,59 +1,60 @@
 {
-    "welcome": "به اپلیکیشن خوش آمدید",
-    "hello": "سلام {name}",
-    "user": {
-        "notFound": "کاربر {id} پیدا نشد"
-    },
-    "course": {
-        "notFound": "دوره {id} پیدا نشد"
-    },
-    "enrollment": {
-        "alreadyEnrolled": "کاربر قبلاً در این دوره ثبت‌نام کرده است",
-        "notEnrolled": "کاربر در این دوره ثبت‌نام نکرده است"
-    },
-    "lesson": {
-        "liveMeetingUrlRequired": "برای درس زنده، meetingUrl الزامی است",
-        "recordedMeetingUrlNotAllowed": "برای درس ضبط‌شده، meetingUrl مجاز نیست",
-        "recordedContentOrVideoRequired": "برای درس ضبط‌شده، حداقل یکی از محتوا یا ویدیو الزامی است",
-        "notFound": "درس {id} پیدا نشد",
-        "noVideo": "این درس ویدیو ندارد",
-        "videoNotFound": "ویدیو پیدا نشد"
-    },
-    "passwordReset": {
-        "subject": "بازنشانی رمز عبور TeachHub",
-        "greeting": "سلام {name}",
-        "request": "ما درخواستی برای بازنشانی رمز عبور TeachHub شما دریافت کردیم.",
-        "instruction": "برای بازنشانی رمز عبور، روی لینک زیر کلیک کنید:",
-        "resetPassword": "بازنشانی رمز عبور",
-        "expires": "این لینک تا ۱۵ دقیقه اعتبار دارد.",
-        "ignore": "اگر شما درخواست بازنشانی رمز عبور نداده‌اید، می‌توانید این ایمیل را نادیده بگیرید.",
-        "sendFailed": "ارسال ایمیل بازنشانی رمز عبور ناموفق بود"
-    },
-    "outcome": {
-        "notFound": "هدفی پیدا نشد"
-    },
-    "mission": {
-        "notFound": "ماموریت پیدا نشد",
-        "maximumAttemptsReached": "حداکثر تعداد تلاش‌ها انجام شده است"
-    },
-    "assignment": {
-        "notFound": "تکلیف {id} پیدا نشد"
-    },
-    "submission": {
-        "fileRequired": "فایل الزامی است",
-        "alreadyCorrected": "شما نمی‌توانید دوباره تکلیف را ارسال کنید، زیرا قبلاً تصحیح شده است",
-        "notFound": " تکلیف ارسال {id} پیدا نشد",
-        "correctedFileRequired": "فایل تصحیح‌شده الزامی است",
-        "correctedFileNotFound": "فایل تصحیح‌شده‌ای برای این ارسال پیدا نشد",
-        "correctedFileNotUploaded": "فایل تصحیح‌شده هنوز آپلود نشده است"
-    },
-    "auth": {
-        "emailAlreadyExists": "این ایمیل قبلاً ثبت شده است",
-        "invalidCredentials": "ایمیل یا رمز عبور نامعتبر است",
-        "registrationSuccessful": "ثبت‌نام با موفقیت انجام شد",
-        "adminCreated": "ادمین با موفقیت ایجاد شد",
-        "loginSuccessful": "ورود با موفقیت انجام شد",
-        "passwordResetRequest": "اگر حسابی با این ایمیل وجود داشته باشد، لینک بازنشانی رمز عبور ارسال خواهد شد.",
-        "passwordResetSuccessful": "رمز عبور با موفقیت بازنشانی شد"
-    }
+  "welcome": "به اپلیکیشن خوش آمدید",
+  "hello": "سلام {name}",
+  "user": {
+    "notFound": "کاربر {id} پیدا نشد"
+  },
+  "course": {
+    "notFound": "دوره {id} پیدا نشد"
+  },
+  "enrollment": {
+    "alreadyEnrolled": "کاربر قبلاً در این دوره ثبت‌نام کرده است",
+    "notEnrolled": "کاربر در این دوره ثبت‌نام نکرده است"
+  },
+  "lesson": {
+    "liveMeetingUrlRequired": "برای درس زنده، meetingUrl الزامی است",
+    "recordedMeetingUrlNotAllowed": "برای درس ضبط‌شده، meetingUrl مجاز نیست",
+    "recordedContentOrVideoRequired": "برای درس ضبط‌شده، حداقل یکی از محتوا یا ویدیو الزامی است",
+    "notFound": "درس {id} پیدا نشد",
+    "noVideo": "این درس ویدیو ندارد",
+    "videoNotFound": "ویدیو پیدا نشد"
+  },
+  "passwordReset": {
+    "subject": "بازنشانی رمز عبور TeachHub",
+    "greeting": "سلام {name}",
+    "request": "ما درخواستی برای بازنشانی رمز عبور TeachHub شما دریافت کردیم.",
+    "instruction": "برای بازنشانی رمز عبور، روی لینک زیر کلیک کنید:",
+    "resetPassword": "بازنشانی رمز عبور",
+    "expires": "این لینک تا ۱۵ دقیقه اعتبار دارد.",
+    "ignore": "اگر شما درخواست بازنشانی رمز عبور نداده‌اید، می‌توانید این ایمیل را نادیده بگیرید.",
+    "sendFailed": "ارسال ایمیل بازنشانی رمز عبور ناموفق بود"
+  },
+  "outcome": {
+    "notFound": "هدفی پیدا نشد"
+  },
+  "mission": {
+    "notFound": "ماموریت پیدا نشد",
+    "maximumAttemptsReached": "حداکثر تعداد تلاش‌ها انجام شده است"
+  },
+  "assignment": {
+    "notFound": "تکلیف {id} پیدا نشد"
+  },
+  "submission": {
+    "fileRequired": "فایل الزامی است",
+    "alreadyCorrected": "شما نمی‌توانید دوباره تکلیف را ارسال کنید، زیرا قبلاً تصحیح شده است",
+    "notFound": " تکلیف ارسال {id} پیدا نشد",
+    "correctedFileRequired": "فایل تصحیح‌شده الزامی است",
+    "correctedFileNotFound": "فایل تصحیح‌شده‌ای برای این ارسال پیدا نشد",
+    "correctedFileNotUploaded": "فایل تصحیح‌شده هنوز آپلود نشده است"
+  },
+  "auth": {
+    "emailAlreadyExists": "این ایمیل قبلاً ثبت شده است",
+    "invalidCredentials": "ایمیل یا رمز عبور نامعتبر است",
+    "registrationSuccessful": "ثبت‌نام با موفقیت انجام شد",
+    "adminCreated": "ادمین با موفقیت ایجاد شد",
+    "teacherCreated": "معلم با موفقیت ایجاد شد",
+    "loginSuccessful": "ورود با موفقیت انجام شد",
+    "passwordResetRequest": "اگر حسابی با این ایمیل وجود داشته باشد، لینک بازنشانی رمز عبور ارسال خواهد شد.",
+    "passwordResetSuccessful": "رمز عبور با موفقیت بازنشانی شد"
+  }
 }

@@ -17,8 +17,9 @@ datasource db {
 // NOTE: this is a Prisma enum. It becomes a real Postgres enum type in the DB and
 // a TypeScript `Role` union in the generated client — so you can write `Role.ADMIN`.
 enum Role {
-  STUDENT
   ADMIN
+  TEACHER
+  STUDENT
 }
 
 model User {

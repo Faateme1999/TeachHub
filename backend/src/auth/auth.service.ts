@@ -18,6 +18,7 @@ import { createHash, randomBytes } from 'crypto';
 import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { I18nService } from 'nestjs-i18n';
+import { CreateTeacherDto } from 'src/users/dto/create-teacher.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,7 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
     private readonly i18n: I18nService,
-  ) { }
+  ) {}
 
   async register(createUserDto: CreateUserDto) {
     // 1. Call findByEmail()
@@ -107,6 +108,34 @@ export class AuthService {
     };
   }
 
+  async createTeacher(createTeacherDto: CreateTeacherDto) {
+    const existingUser = await this.usersService.findByEmail(
+      createTeacherDto.email,
+    );
+
+    if (existingUser) {
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.emailAlreadyExists'),
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(createTeacherDto.password, 10);
+
+    const user = await this.usersService.create({
+      name: createTeacherDto.name,
+      email: createTeacherDto.email,
+      password: hashedPassword,
+      role: Role.TEACHER,
+    });
+
+    const { password, ...safeUser } = user;
+
+    return {
+      message: await this.i18n.translate('common.auth.teacherCreated'),
+      safeUser,
+    };
+  }
+
   async login(loginDto: LoginDto) {
     // 1. Find the user
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -160,9 +189,7 @@ export class AuthService {
 
     if (!user) {
       return {
-        message: await this.i18n.translate(
-          'common.auth.passwordResetRequest',
-        ),
+        message: await this.i18n.translate('common.auth.passwordResetRequest'),
       };
     }
 
@@ -191,9 +218,7 @@ export class AuthService {
     );
 
     return {
-      message: await this.i18n.translate(
-        'common.auth.passwordResetRequest',
-      ),
+      message: await this.i18n.translate('common.auth.passwordResetRequest'),
     };
   }
 
