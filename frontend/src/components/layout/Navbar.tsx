@@ -53,12 +53,12 @@ export function Navbar() {
           <NavLink to="/courses" className={linkClass}>
             <span>{t("navbar.courses")}</span>
           </NavLink>
-          {isStaff && (
+          {isStaff && !isAdmin && (
             <NavLink to="/teacher" className={linkClass}>
               Dashboard
             </NavLink>
           )}
-          {isAuthenticated && !isAdmin && (
+          {user?.role === "STUDENT" && (
             <NavLink to="/me" className={linkClass}>
               My Learning
             </NavLink>
