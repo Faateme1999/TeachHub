@@ -20,7 +20,7 @@ export class AssignmentsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post()
   create(
     @Param('lessonId', ParseIntPipe) lessonId: number,

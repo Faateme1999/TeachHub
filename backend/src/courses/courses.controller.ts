@@ -31,7 +31,7 @@ export class CoursesController {
   // Creating a course is an ADMIN-only action. JwtAuthGuard runs first (verifies
   // the token and sets req.user), then RolesGuard checks req.user.role === ADMIN.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post()
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
@@ -54,7 +54,7 @@ export class CoursesController {
 
   // Editing a course is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -65,7 +65,7 @@ export class CoursesController {
 
   // Deleting a course is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.coursesService.remove(id);
