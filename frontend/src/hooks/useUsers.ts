@@ -4,6 +4,7 @@ import { queryKeys } from "../lib/queryKeys";
 import type {
   Course,
   CreateAdminInput,
+  CreateTeacherInput,
   RegisterResponse,
   User,
   UserSubmission,
@@ -125,6 +126,27 @@ export function useCreateAdmin() {
     onSuccess: () => {
       // The user list changed — refresh it so the new admin appears.
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    },
+  });
+}
+
+export function useCreateTeacher() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateTeacherInput) => {
+      const { data } = await apiClient.post<RegisterResponse>(
+        "/auth/teachers",
+        input,
+      );
+
+      return data;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.all,
+      });
     },
   });
 }

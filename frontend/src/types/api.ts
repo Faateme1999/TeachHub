@@ -9,7 +9,7 @@
 // NOTE: this is a string-union type, NOT a TS `enum` — this project has
 // `erasableSyntaxOnly` on, which forbids enums. Compare with string literals:
 // `user.role === 'ADMIN'`.
-export type Role = "STUDENT" | "ADMIN";
+export type Role = "STUDENT" | "TEACHER" | "ADMIN";
 
 export interface User {
   id: number;
@@ -165,6 +165,12 @@ export interface UserSubmission {
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface CreateTeacherInput {
   name: string;
   email: string;
   password: string;
