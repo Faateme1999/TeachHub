@@ -35,7 +35,8 @@ export function CourseDetailPage() {
   const { id } = useParams();
   const courseId = Number(id);
   const navigate = useNavigate();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
+  const isStaff = isAdmin || user?.role === "TEACHER";
   const { showToast } = useToast();
 
   // Two separate queries: the course, and its lessons (backend doesn't nest them).
@@ -187,11 +188,12 @@ export function CourseDetailPage() {
               {enroll.isPending ? "Enrolling…" : "Enroll in this course"}
             </Button>
           )}
-          {isAdmin && (
+          {isStaff && (
             <>
               <Link to={`/courses/${courseId}/edit`}>
                 <Button variant="secondary">Edit</Button>
               </Link>
+
               <Button
                 variant="danger"
                 onClick={() => setConfirmDeleteCourse(true)}
@@ -212,7 +214,7 @@ export function CourseDetailPage() {
       <section className="detail__section">
         <div className="page-header">
           <h2 className="page-header__title">Lessons</h2>
-          {isAdmin && <Button onClick={openAddLesson}>+ Add lesson</Button>}
+          {isStaff && <Button onClick={openAddLesson}>+ Add lesson</Button>}
         </div>
 
         {lessonsQuery.isLoading && <Spinner center />}
@@ -225,7 +227,7 @@ export function CourseDetailPage() {
             icon="📝"
             title="No lessons yet"
             message={
-              isAdmin
+              isStaff
                 ? "Add the first lesson to this course."
                 : "Check back later."
             }
@@ -238,7 +240,7 @@ export function CourseDetailPage() {
                 key={lesson.id}
                 lesson={lesson}
                 index={index}
-                isAdmin={isAdmin}
+                isAdmin={isStaff}
                 onEdit={openEditLesson}
                 onDelete={setLessonToDelete}
               />
