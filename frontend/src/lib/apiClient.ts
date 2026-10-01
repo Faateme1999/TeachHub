@@ -14,21 +14,10 @@ export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "/api",
 });
 
-// --- Request interceptor -------------------------------------------------
-// Runs before every request leaves the browser. If we have a saved token,
-// attach it as "Authorization: Bearer <token>" so protected routes accept us.
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// --- Response interceptor ------------------------------------------------
+// --- Request  interceptor ------------------------------------------------
 // Runs after every response. If the server says 401 (token missing/expired),
 // we clear the bad token and send the user to the login page.
-//
+
 // Important details:
 //  - We do NOT redirect if the failing call was the login request itself, so a
 //    "wrong password" 401 shows an inline error instead of reloading the page.

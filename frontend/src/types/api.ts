@@ -30,6 +30,16 @@ export interface Course {
   lessons?: Lesson[];
 }
 
+export interface TeacherCourse extends Course {
+  enrollments: {
+    user: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  }[];
+}
+
 // The backend returns this from POST /auth/login.
 export interface LoginResponse {
   message: string;

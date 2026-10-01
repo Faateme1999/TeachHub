@@ -12,7 +12,7 @@ import { t } from "../../i18n/i18n";
 // - Right: the logged-in user's name + Logout, OR Login/Sign up buttons.
 // On small screens the center links collapse behind a ☰ button.
 export function Navbar() {
-  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, isStaff, user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [language, setCurrentLanguage] = useState<Language>(getLanguage());
@@ -53,6 +53,11 @@ export function Navbar() {
           <NavLink to="/courses" className={linkClass}>
             <span>{t("navbar.courses")}</span>
           </NavLink>
+          {isStaff && (
+            <NavLink to="/teacher" className={linkClass}>
+              Dashboard
+            </NavLink>
+          )}
           {isAuthenticated && !isAdmin && (
             <NavLink to="/me" className={linkClass}>
               My Learning

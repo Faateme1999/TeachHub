@@ -24,6 +24,7 @@ import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { CreateTeacherPage } from "./pages/admin/CreateTeacherPage";
 import { StaffRoute } from "./components/StaffRoute";
+import { TeacherDashboardPage } from "./pages/Teacher/TeacherDashboardPage";
 
 // This is the "route table" — it maps URLs to pages.
 // Everything renders inside <Layout /> (navbar + footer). Pages that need a
@@ -92,6 +93,15 @@ function App() {
           element={
             <StaffRoute>
               <EditCoursePage />
+            </StaffRoute>
+          }
+        />
+
+        <Route
+          path="/teacher"
+          element={
+            <StaffRoute>
+              <TeacherDashboardPage />
             </StaffRoute>
           }
         />
