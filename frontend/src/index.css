@@ -721,3 +721,126 @@ code {
   display: flex;
   justify-content: flex-end;
 }
+
+.role-dropdown {
+  position: relative;
+  width: 140px;
+}
+
+.role-dropdown__trigger {
+  width: 100%;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  background: var(--surface);
+  color: var(--text);
+
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.role-dropdown__trigger:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.role-dropdown__trigger:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+.role-dropdown__arrow {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.role-dropdown__arrow.is-open {
+  transform: rotate(180deg);
+}
+
+.role-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+
+  width: 100%;
+  padding: 6px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  box-shadow: var(--shadow-lg);
+
+  z-index: 50;
+
+  animation: role-dropdown-menu-in 0.15s ease-out;
+}
+
+.role-dropdown__menu button {
+  width: 100%;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 11px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+  color: var(--text);
+
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.role-dropdown__menu button:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.role-dropdown__menu button.is-selected {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+@keyframes role-dropdown-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -12,18 +12,18 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "../../components/ui/Badge";
 import { useUsers, useUpdateUserRole } from "../../hooks/useUsers";
 import type { User } from "../../types/api";
+import { useState } from "react";
 
 export function AdminUsersPage() {
   const { data: users } = useUsers();
   const updateUserRole = useUpdateUserRole();
+  const [openRoleUserId, setOpenRoleUserId] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const handleRoleChange = (userId: number, currentRole: User["role"]) => {
-    const newRole = currentRole === "STUDENT" ? "ADMIN" : "STUDENT";
-
+  const handleRoleChange = (userId: number, role: User["role"]) => {
     updateUserRole.mutate({
       userId,
-      role: newRole,
+      role,
     });
   };
 
@@ -52,13 +52,45 @@ export function AdminUsersPage() {
                 </button>
               )}
 
-              <button
-                onClick={() => handleRoleChange(user.id, user.role)}
-                disabled={updateUserRole.isPending}
-                className="admin-action-button admin-action-button--secondary"
-              >
-                {user.role === "STUDENT" ? "Make Admin" : "Make Student"}
-              </button>
+              <div className="role-dropdown">
+                <button
+                  type="button"
+                  className="role-dropdown__trigger"
+                  onClick={() =>
+                    setOpenRoleUserId(
+                      openRoleUserId === user.id ? null : user.id,
+                    )
+                  }
+                  disabled={updateUserRole.isPending}
+                >
+                  <span>{user.role}</span>
+
+                  <span
+                    className={`role-dropdown__arrow ${
+                      openRoleUserId === user.id ? "is-open" : ""
+                    }`}
+                  >
+                    ⌄
+                  </span>
+                </button>
+
+                {openRoleUserId === user.id && (
+                  <div className="role-dropdown__menu">
+                    {(["STUDENT", "TEACHER", "ADMIN"] as User["role"][]).map(
+                      (role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          className={user.role === role ? "is-selected" : ""}
+                          onClick={() => handleRoleChange(user.id, role)}
+                        >
+                          {role}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
