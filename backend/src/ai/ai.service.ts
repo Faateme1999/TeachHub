@@ -174,11 +174,30 @@ export class AiService {
   async generateLessonReview(
     dto: GenerateLessonReviewInputDto,
   ): Promise<GeneratedLessonReviewOutputDto> {
-    console.log('AI METHOD START');
-    console.log(dto);
+    console.log('>>> AI METHOD START');
+    console.log('>>> BEFORE GROQ');
 
-    return {
-      concepts: [],
-    };
+    const response = await this.groq.chat.completions.create({
+      model: 'openai/gpt-oss-20b',
+      max_tokens: 100,
+      messages: [
+        {
+          role: 'user',
+          content: 'Return exactly this JSON: {"concepts":[]}',
+        },
+      ],
+    });
+
+    console.log('>>> AFTER GROQ');
+
+    const content = response.choices[0].message.content;
+
+    console.log('>>> GROQ CONTENT:', content);
+
+    if (!content) {
+      throw new Error('AI returned empty response');
+    }
+
+    return JSON.parse(content);
   }
 }
