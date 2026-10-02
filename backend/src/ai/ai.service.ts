@@ -174,46 +174,19 @@ export class AiService {
   async generateLessonReview(
     dto: GenerateLessonReviewInputDto,
   ): Promise<GeneratedLessonReviewOutputDto> {
-    console.log('========== AI REVIEW START ==========');
-    console.log('>>> DTO:', JSON.stringify(dto));
+    const response = await this.groq.chat.completions.create({
+      model: 'openai/gpt-oss-20b',
+      max_tokens: 1000,
 
-    try {
-      console.log('>>> BEFORE GROQ REQUEST');
+      messages: [
+        {
+          role: 'system',
+          content: `
+Create a short lesson review.
 
-      const response = await this.groq.chat.completions.create({
-        model: 'openai/gpt-oss-20b',
-        max_tokens: 1000,
+Use the lesson title, content, and learning outcomes.
 
-        messages: [
-          {
-            role: 'system',
-            content: `
-You are an educational content reviewer.
-
-Create a clear and useful review of the lesson.
-
-Rules:
-- Use only the lesson content and learning outcomes as the source.
-- Focus on the most important concepts students need to understand.
-- Combine related learning outcomes into the same concept when appropriate.
-- Do not create a separate concept for every learning outcome.
-- Avoid duplicate concepts.
-- Do not create quiz questions.
-- Do not test the student.
-- Do not assign scores.
-- Do not introduce unrelated topics.
-- Create 3 to 5 concepts.
-- Keep each explanation short and clear.
-- Add useful examples when they help understanding.
-- Each concept must have one short key takeaway.
-- Write the review in the same language as the lesson content.
-
-Example types:
-- "code" = a programming/code example
-- "analogy" = an analogy
-- "real_world" = a real-world example
-
-Return ONLY valid JSON.
+Return only valid JSON.
 
 Return exactly this structure:
 
@@ -233,60 +206,25 @@ Return exactly this structure:
   ]
 }
 `,
-          },
-          {
-            role: 'user',
-            content: JSON.stringify(dto),
-          },
-        ],
-      });
+        },
+        {
+          role: 'user',
+          content: JSON.stringify(dto),
+        },
+      ],
+    });
 
-      console.log('>>> AFTER GROQ REQUEST');
-      console.log('>>> GROQ RESPONSE RECEIVED');
+    const content = response.choices[0].message.content;
 
-      console.log('>>> CHOICES LENGTH:', response.choices?.length);
+    if (!content) {
+      throw new Error('AI returned empty response');
+    }
 
-      console.log(
-        '>>> MESSAGE:',
-        JSON.stringify(response.choices?.[0]?.message),
-      );
-
-      const content = response.choices?.[0]?.message?.content;
-
-      console.log('>>> CONTENT EXISTS:', !!content);
-      console.log('>>> CONTENT LENGTH:', content?.length);
-      console.log('>>> RAW CONTENT:', content);
-
-      if (!content) {
-        console.error('>>> AI RETURNED EMPTY CONTENT');
-        throw new Error('AI returned empty response');
-      }
-
-      console.log('>>> BEFORE JSON PARSE');
-
-      try {
-        const parsed = JSON.parse(content);
-
-        console.log('>>> JSON PARSE SUCCESS');
-        console.log('>>> CONCEPTS COUNT:', parsed?.concepts?.length);
-
-        console.log('========== AI REVIEW SUCCESS ==========');
-
-        return parsed;
-      } catch (error) {
-        console.error('>>> JSON PARSE ERROR:', error);
-        console.error('>>> INVALID CONTENT:', content);
-
-        throw new Error('AI returned invalid JSON');
-      }
+    try {
+      return JSON.parse(content);
     } catch (error) {
-      console.error('========== AI REVIEW ERROR ==========');
-      console.error('>>> ERROR TYPE:', error?.constructor?.name);
-      console.error('>>> ERROR MESSAGE:', error?.message);
-      console.error('>>> FULL ERROR:', error);
-      console.error('======================================');
-
-      throw error;
+      console.error('>>> JSON PARSE ERROR:', error);
+      throw new Error('AI returned invalid JSON');
     }
   }
 }
