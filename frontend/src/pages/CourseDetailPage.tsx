@@ -6,6 +6,7 @@ import {
   useCreateLesson,
   useUpdateLesson,
   useDeleteLesson,
+  useGenerateLessonReview,
 } from "../hooks/useLessons";
 import { useAuth } from "../context/auth-context";
 import { getApiErrorMessage } from "../lib/apiClient";
@@ -48,6 +49,7 @@ export function CourseDetailPage() {
   const createLesson = useCreateLesson(courseId);
   const updateLesson = useUpdateLesson(courseId);
   const deleteLesson = useDeleteLesson(courseId);
+  const generateReview = useGenerateLessonReview();
 
   // Local UI state for the modals/dialogs on this page.
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
@@ -55,6 +57,7 @@ export function CourseDetailPage() {
   const [lessonError, setLessonError] = useState("");
   const [confirmDeleteCourse, setConfirmDeleteCourse] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
+  const [reviewLessonId, setReviewLessonId] = useState<number | null>(null);
 
   if (courseQuery.isLoading) return <Spinner center />;
   if (courseQuery.isError || !courseQuery.data) {
@@ -157,6 +160,12 @@ export function CourseDetailPage() {
     });
   }
 
+  const handleGenerateReview = (lessonId: number) => {
+    generateReview.reset();
+    setReviewLessonId(lessonId);
+    generateReview.mutate(lessonId);
+  };
+
   const lessons = lessonsQuery.data ?? [];
   const savingLesson = createLesson.isPending || updateLesson.isPending;
 
@@ -236,14 +245,73 @@ export function CourseDetailPage() {
         {lessons.length > 0 && (
           <div className="lesson-list">
             {lessons.map((lesson, index) => (
-              <LessonItem
-                key={lesson.id}
-                lesson={lesson}
-                index={index}
-                isAdmin={isStaff}
-                onEdit={openEditLesson}
-                onDelete={setLessonToDelete}
-              />
+              <div key={lesson.id}>
+                <LessonItem
+                  lesson={lesson}
+                  index={index}
+                  isAdmin={isStaff}
+                  onEdit={openEditLesson}
+                  onDelete={setLessonToDelete}
+                />
+
+                <div style={{ marginTop: "var(--space-2)" }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleGenerateReview(lesson.id)}
+                    disabled={generateReview.isPending}
+                  >
+                    {generateReview.isPending && reviewLessonId === lesson.id
+                      ? "Generating review…"
+                      : "Start Review"}
+                  </Button>
+                </div>
+
+                {reviewLessonId === lesson.id && generateReview.data && (
+                  <div
+                    style={{
+                      marginTop: "var(--space-4)",
+                      padding: "var(--space-4)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <h3>Lesson Review</h3>
+
+                    {generateReview.data.concepts.map(
+                      (concept, conceptIndex) => (
+                        <div
+                          key={conceptIndex}
+                          style={{ marginTop: "var(--space-4)" }}
+                        >
+                          <h4>{concept.title}</h4>
+
+                          <p>{concept.explanation}</p>
+
+                          {concept.examples.map((example, exampleIndex) => (
+                            <div
+                              key={exampleIndex}
+                              style={{
+                                marginTop: "var(--space-2)",
+                                padding: "var(--space-3)",
+                                background: "var(--surface-secondary)",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              <strong>{example.type}</strong>
+                              <p>{example.content}</p>
+                            </div>
+                          ))}
+
+                          <div style={{ marginTop: "var(--space-2)" }}>
+                            <strong>Key Takeaway:</strong>
+                            <p>{concept.keyTakeaway}</p>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}

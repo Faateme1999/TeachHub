@@ -192,3 +192,21 @@ export interface PaginatedCourses {
   totalPages: number;
   total: number;
 }
+
+export type ReviewExampleType = "code" | "analogy" | "real_world";
+
+export interface ReviewExample {
+  type: ReviewExampleType;
+  content: string;
+}
+
+export interface ReviewConcept {
+  title: string;
+  explanation: string;
+  examples: ReviewExample[];
+  keyTakeaway: string;
+}
+
+export interface LessonReview {
+  concepts: ReviewConcept[];
+}
