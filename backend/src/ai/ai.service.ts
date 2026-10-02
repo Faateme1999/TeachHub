@@ -182,13 +182,13 @@ export class AiService {
         {
           role: 'system',
           content: `
-Create a short lesson review.
+You are an educational content reviewer.
 
-Use the lesson title, content, and learning outcomes.
+Return ONLY valid JSON.
 
-Return only valid JSON.
+Create a review of the lesson using the lesson content and learning outcomes.
 
-Return exactly this structure:
+Return exactly:
 
 {
   "concepts": [
@@ -205,6 +205,8 @@ Return exactly this structure:
     }
   ]
 }
+
+The example type must be "code", "analogy", or "real_world".
 `,
         },
         {
@@ -220,11 +222,6 @@ Return exactly this structure:
       throw new Error('AI returned empty response');
     }
 
-    try {
-      return JSON.parse(content);
-    } catch (error) {
-      console.error('>>> JSON PARSE ERROR:', error);
-      throw new Error('AI returned invalid JSON');
-    }
+    return JSON.parse(content);
   }
 }
