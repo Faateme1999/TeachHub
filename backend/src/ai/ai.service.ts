@@ -174,14 +174,20 @@ export class AiService {
   async generateLessonReview(
     dto: GenerateLessonReviewInputDto,
   ): Promise<GeneratedLessonReviewOutputDto> {
-    const response = await this.groq.chat.completions.create({
-      model: 'openai/gpt-oss-20b',
-      max_tokens: 1000,
+    console.log('========== AI REVIEW START ==========');
+    console.log('>>> DTO:', JSON.stringify(dto));
 
-      messages: [
-        {
-          role: 'system',
-          content: `
+    try {
+      console.log('>>> BEFORE GROQ REQUEST');
+
+      const response = await this.groq.chat.completions.create({
+        model: 'openai/gpt-oss-20b',
+        max_tokens: 1000,
+
+        messages: [
+          {
+            role: 'system',
+            content: `
 You are an educational content reviewer.
 
 Create a clear and useful review of the lesson.
@@ -227,20 +233,60 @@ Return exactly this structure:
   ]
 }
 `,
-        },
-        {
-          role: 'user',
-          content: JSON.stringify(dto),
-        },
-      ],
-    });
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(dto),
+          },
+        ],
+      });
 
-    const content = response.choices[0].message.content;
+      console.log('>>> AFTER GROQ REQUEST');
+      console.log('>>> GROQ RESPONSE RECEIVED');
 
-    if (!content) {
-      throw new Error('AI returned empty response');
+      console.log('>>> CHOICES LENGTH:', response.choices?.length);
+
+      console.log(
+        '>>> MESSAGE:',
+        JSON.stringify(response.choices?.[0]?.message),
+      );
+
+      const content = response.choices?.[0]?.message?.content;
+
+      console.log('>>> CONTENT EXISTS:', !!content);
+      console.log('>>> CONTENT LENGTH:', content?.length);
+      console.log('>>> RAW CONTENT:', content);
+
+      if (!content) {
+        console.error('>>> AI RETURNED EMPTY CONTENT');
+        throw new Error('AI returned empty response');
+      }
+
+      console.log('>>> BEFORE JSON PARSE');
+
+      try {
+        const parsed = JSON.parse(content);
+
+        console.log('>>> JSON PARSE SUCCESS');
+        console.log('>>> CONCEPTS COUNT:', parsed?.concepts?.length);
+
+        console.log('========== AI REVIEW SUCCESS ==========');
+
+        return parsed;
+      } catch (error) {
+        console.error('>>> JSON PARSE ERROR:', error);
+        console.error('>>> INVALID CONTENT:', content);
+
+        throw new Error('AI returned invalid JSON');
+      }
+    } catch (error) {
+      console.error('========== AI REVIEW ERROR ==========');
+      console.error('>>> ERROR TYPE:', error?.constructor?.name);
+      console.error('>>> ERROR MESSAGE:', error?.message);
+      console.error('>>> FULL ERROR:', error);
+      console.error('======================================');
+
+      throw error;
     }
-
-    return JSON.parse(content);
   }
 }
