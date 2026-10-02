@@ -174,23 +174,42 @@ export class AiService {
   async generateLessonReview(
     dto: GenerateLessonReviewInputDto,
   ): Promise<GeneratedLessonReviewOutputDto> {
-    console.log('>>> AI METHOD START');
-    console.log('>>> BEFORE GROQ');
-
     const response = await this.groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
       max_tokens: 1000,
+
       messages: [
         {
           role: 'system',
           content: `
 You are an educational content reviewer.
 
+Create a clear and useful review of the lesson.
+
+Rules:
+- Use only the lesson content and learning outcomes as the source.
+- Focus on the most important concepts students need to understand.
+- Combine related learning outcomes into the same concept when appropriate.
+- Do not create a separate concept for every learning outcome.
+- Avoid duplicate concepts.
+- Do not create quiz questions.
+- Do not test the student.
+- Do not assign scores.
+- Do not introduce unrelated topics.
+- Create 3 to 5 concepts.
+- Keep each explanation short and clear.
+- Add useful examples when they help understanding.
+- Each concept must have one short key takeaway.
+- Write the review in the same language as the lesson content.
+
+Example types:
+- "code" = a programming/code example
+- "analogy" = an analogy
+- "real_world" = a real-world example
+
 Return ONLY valid JSON.
 
-Create a review of the lesson using the lesson content and learning outcomes.
-
-Return exactly:
+Return exactly this structure:
 
 {
   "concepts": [
@@ -207,8 +226,6 @@ Return exactly:
     }
   ]
 }
-
-The example type must be "code", "analogy", or "real_world".
 `,
         },
         {
@@ -217,11 +234,8 @@ The example type must be "code", "analogy", or "real_world".
         },
       ],
     });
-    console.log('>>> AFTER GROQ');
 
     const content = response.choices[0].message.content;
-
-    console.log('>>> GROQ CONTENT:', content);
 
     if (!content) {
       throw new Error('AI returned empty response');

@@ -144,8 +144,6 @@ export class LessonsController {
 
   @Post('lessons/:lessonId/review')
   generateReview(@Param('lessonId', ParseIntPipe) lessonId: number) {
-    console.log('>>> REVIEW CONTROLLER HIT:', lessonId);
-
     return this.lessonsService.generateReview(lessonId);
   }
 }
