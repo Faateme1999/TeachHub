@@ -138,4 +138,22 @@ export class LessonsRepository {
       },
     });
   }
+
+  async findLessonWithOutcomes(lessonId: number) {
+    return this.prisma.lesson.findUnique({
+      where: {
+        id: lessonId,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        outcomes: {
+          select: {
+            text: true,
+          },
+        },
+      },
+    });
+  }
 }

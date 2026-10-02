@@ -14,18 +14,20 @@ export class OutcomesService {
   ) {}
 
   async create(lessonId: number, dto: CreateOutcomeDto) {
-    const outcome = await this.outcomesRepository.create(lessonId, dto);
-    const generatedMissions = await this.aiService.generateMissions(
-      outcome.text,
-    );
+    // const outcome = await this.outcomesRepository.create(lessonId, dto);
+    // const generatedMissions = await this.aiService.generateMissions(
+    //   outcome.text,
+    // );
 
-    const missions = await Promise.all(
-      generatedMissions.missions.map((mission, index) =>
-        this.missionsService.createMission(outcome.id, mission, index + 1),
-      ),
-    );
+    // const missions = await Promise.all(
+    //   generatedMissions.missions.map((mission, index) =>
+    //     this.missionsService.createMission(outcome.id, mission, index + 1),
+    //   ),
+    // );
 
-    return { outcome, missions };
+    // return { outcome, missions };
+
+    return this.outcomesRepository.create(lessonId, dto);
   }
 
   findAllOutcomesByLesson(lessonId: number) {
