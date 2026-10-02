@@ -206,19 +206,7 @@ Return exactly:
   ]
 }
 
-Example types:
-
-- "code": ONLY for actual programming code.
-  Do not use "code" for normal sentences, grammar examples,
-  formulas, explanations, or non-programming content.
-
-- "analogy": for explaining a concept by comparing it
-  to something familiar.
-
-- "real_world": for a realistic example from everyday life
-  or a real situation.
-
-Choose the type based on the actual content of the example.
+The example type must be "code", "analogy", or "real_world".
 `,
         },
         {
