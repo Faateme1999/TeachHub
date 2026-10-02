@@ -196,10 +196,17 @@ export class LessonsService {
 
     console.log('>>> CALLING AI');
 
-    return this.aiService.generateLessonReview({
-      lessonTitle: lesson.title,
-      lessonContent: lesson.content ?? '',
-      learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
-    });
+    // return this.aiService.generateLessonReview({
+    //   lessonTitle: lesson.title,
+    //   lessonContent: lesson.content ?? '',
+    //   learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
+    // });
+
+    return {
+      message: 'Review endpoint works',
+      lessonId,
+      title: lesson.title,
+      outcomes: lesson.outcomes.map((outcome) => outcome.text),
+    };
   }
 }
