@@ -183,11 +183,19 @@ export class LessonsService {
   }
 
   async generateReview(lessonId: number) {
+    console.log('>>> REVIEW SERVICE START:', lessonId);
+
     const lesson =
       await this.lessonsRepository.findLessonWithOutcomes(lessonId);
+
+    console.log('>>> LESSON FOUND:', !!lesson);
+
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
     }
+
+    console.log('>>> CALLING AI');
+
     return this.aiService.generateLessonReview({
       lessonTitle: lesson.title,
       lessonContent: lesson.content ?? '',
