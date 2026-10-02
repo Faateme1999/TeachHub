@@ -115,13 +115,21 @@ model Lesson {
   outcomes Outcome[]
 
   assignments Assignment[]
+  review LessonReview?
 }
-
 
 // One-to-Many relationship
 // Course (1) ──────< Lesson (Many)
 // Foreign key lives on the "Many" side.
 
+model LessonReview {
+  id Int             @id @default(autoincrement())
+  lessonId Int       @unique
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  content Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model Outcome{
   id        Int     @id @default(autoincrement())

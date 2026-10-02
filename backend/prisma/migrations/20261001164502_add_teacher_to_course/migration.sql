@@ -1,19 +1,11 @@
--- Add teacherId temporarily nullable
-ALTER TABLE "Course"
-ADD COLUMN "teacherId" INTEGER;
+/*
+  Warnings:
 
--- Assign existing courses to Admin id 4
-UPDATE "Course"
-SET "teacherId" = 4;
+  - Added the required column `teacherId` to the `Course` table without a default value. This is not possible if the table is not empty.
 
--- Make teacherId required
-ALTER TABLE "Course"
-ALTER COLUMN "teacherId" SET NOT NULL;
+*/
+-- AlterTable
+ALTER TABLE "Course" ADD COLUMN     "teacherId" INTEGER NOT NULL;
 
--- Add foreign key
-ALTER TABLE "Course"
-ADD CONSTRAINT "Course_teacherId_fkey"
-FOREIGN KEY ("teacherId")
-REFERENCES "User"("id")
-ON DELETE RESTRICT
-ON UPDATE CASCADE;
+-- AddForeignKey
+ALTER TABLE "Course" ADD CONSTRAINT "Course_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

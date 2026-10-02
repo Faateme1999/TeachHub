@@ -190,10 +190,19 @@ export class LessonsService {
       throw new NotFoundException('Lesson not found');
     }
 
-    return this.aiService.generateLessonReview({
+    const existingReview = await this.lessonsRepository.findReview(lessonId);
+
+    if (existingReview) {
+      return existingReview.content;
+    }
+
+    const review = await this.aiService.generateLessonReview({
       lessonTitle: lesson.title,
       lessonContent: lesson.content ?? '',
       learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
     });
+
+    await this.lessonsRepository.saveReview(lessonId, review);
+    return review;
   }
 }

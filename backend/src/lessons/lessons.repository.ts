@@ -156,4 +156,27 @@ export class LessonsRepository {
       },
     });
   }
+
+  async saveReview(lessonId: number, content: object) {
+    return this.prisma.lessonReview.upsert({
+      where: {
+        lessonId,
+      },
+      create: {
+        lessonId,
+        content,
+      },
+      update: {
+        content,
+      },
+    });
+  }
+
+  async findReview(lessonId: number) {
+    return this.prisma.lessonReview.findUnique({
+      where: {
+        lessonId,
+      },
+    });
+  }
 }
