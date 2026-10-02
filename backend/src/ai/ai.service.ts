@@ -183,7 +183,33 @@ export class AiService {
       messages: [
         {
           role: 'system',
-          content: 'Return only valid JSON.',
+          content: `
+You are an educational content reviewer.
+
+Return ONLY valid JSON.
+
+Create a review of the lesson using the lesson content and learning outcomes.
+
+Return exactly:
+
+{
+  "concepts": [
+    {
+      "title": "string",
+      "explanation": "string",
+      "examples": [
+        {
+          "type": "code",
+          "content": "string"
+        }
+      ],
+      "keyTakeaway": "string"
+    }
+  ]
+}
+
+The example type must be "code", "analogy", or "real_world".
+`,
         },
         {
           role: 'user',
