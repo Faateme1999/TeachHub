@@ -90,84 +90,95 @@ export class AiService {
   //     return JSON.parse(content);
   //   }
 
+  //   async generateLessonReview(
+  //     dto: GenerateLessonReviewInputDto,
+  //   ): Promise<GeneratedLessonReviewOutputDto> {
+  //     const response = await this.groq.chat.completions.create({
+  //       model: 'openai/gpt-oss-20b',
+  //       max_tokens: 4000,
+
+  //       messages: [
+  //         {
+  //           role: 'system',
+  //           content: `
+  // You are an educational content reviewer.
+
+  // Your task is to create a short, clear and useful review of a lesson.
+
+  // The review must help a student understand and remember the most important concepts
+  // needed to achieve the lesson's learning outcomes.
+
+  // Rules:
+  // - Return ONLY valid JSON.
+  // - No markdown outside JSON.
+  // - Do not create quiz questions.
+  // - Do not test the student.
+  // - Do not assign scores.
+  // - Do not teach topics that are unrelated to the lesson.
+  // - Use the lesson content and learning outcomes as the source.
+  // - Identify the most important concepts from the lesson.
+  // - Do not create a separate concept for every learning outcome.
+  // - If multiple learning outcomes are related to the same concept, combine them.
+  // - Avoid duplicate concepts.
+  // - Create between 3 and 7 concepts depending on the lesson.
+  // - Each concept explanation must be only 2 or 3 sentences.
+  // - Each concept must have between 1 and 3 useful examples.
+  // - An example can be:
+  //   - a short code example,
+  //   - a real-world example,
+  //   - or an analogy.
+  // - Examples should only be included when they genuinely help understanding.
+  // - Each concept must have exactly one or two key takeaways.
+  // - The key takeaway must be one or two short sentences.
+  // - Do not simply copy the lesson text.
+  // - Rewrite the concepts in clear student-friendly language.
+
+  // Return exactly this JSON structure:
+
+  // {
+  //   "concepts": [
+  //     {
+  //       "title": "string",
+  //       "explanation": "string",
+  //       "examples": [
+  //         {
+  //           "type": "code",
+  //           "content": "string"
+  //         }
+  //       ],
+  //       "keyTakeaway": "string"
+  //     }
+  //   ]
+  // }
+
+  // The value of "type" must be exactly one of:
+  // "code", "analogy", "real_world".
+  // `,
+  //         },
+  //         {
+  //           role: 'user',
+  //           content: JSON.stringify(dto),
+  //         },
+  //       ],
+  //     });
+
+  //     const content = response.choices[0].message.content;
+  //     console.log('GROQ REVIEW RESPONSE:', JSON.stringify(response, null, 2));
+  //     if (!content) {
+  //       throw new Error('AI returned empty response');
+  //     }
+
+  //     return JSON.parse(content);
+  //   }
+
   async generateLessonReview(
     dto: GenerateLessonReviewInputDto,
   ): Promise<GeneratedLessonReviewOutputDto> {
-    const response = await this.groq.chat.completions.create({
-      model: 'openai/gpt-oss-20b',
-      max_tokens: 4000,
+    console.log('AI METHOD START');
+    console.log(dto);
 
-      messages: [
-        {
-          role: 'system',
-          content: `
-You are an educational content reviewer.
-
-Your task is to create a short, clear and useful review of a lesson.
-
-The review must help a student understand and remember the most important concepts
-needed to achieve the lesson's learning outcomes.
-
-Rules:
-- Return ONLY valid JSON.
-- No markdown outside JSON.
-- Do not create quiz questions.
-- Do not test the student.
-- Do not assign scores.
-- Do not teach topics that are unrelated to the lesson.
-- Use the lesson content and learning outcomes as the source.
-- Identify the most important concepts from the lesson.
-- Do not create a separate concept for every learning outcome.
-- If multiple learning outcomes are related to the same concept, combine them.
-- Avoid duplicate concepts.
-- Create between 3 and 7 concepts depending on the lesson.
-- Each concept explanation must be only 2 or 3 sentences.
-- Each concept must have between 1 and 3 useful examples.
-- An example can be:
-  - a short code example,
-  - a real-world example,
-  - or an analogy.
-- Examples should only be included when they genuinely help understanding.
-- Each concept must have exactly one or two key takeaways.
-- The key takeaway must be one or two short sentences.
-- Do not simply copy the lesson text.
-- Rewrite the concepts in clear student-friendly language.
-
-Return exactly this JSON structure:
-
-{
-  "concepts": [
-    {
-      "title": "string",
-      "explanation": "string",
-      "examples": [
-        {
-          "type": "code",
-          "content": "string"
-        }
-      ],
-      "keyTakeaway": "string"
-    }
-  ]
-}
-
-The value of "type" must be exactly one of:
-"code", "analogy", "real_world".
-`,
-        },
-        {
-          role: 'user',
-          content: JSON.stringify(dto),
-        },
-      ],
-    });
-
-    const content = response.choices[0].message.content;
-    console.log('GROQ REVIEW RESPONSE:', JSON.stringify(response, null, 2));
-    if (!content) {
-      throw new Error('AI returned empty response');
-    }
-
-    return JSON.parse(content);
+    return {
+      concepts: [],
+    };
   }
 }
