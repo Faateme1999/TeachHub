@@ -179,11 +179,62 @@ export class AiService {
 
     const response = await this.groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
-      max_tokens: 100,
+      max_tokens: 1000,
+
       messages: [
         {
+          role: 'system',
+          content: `
+You are an educational content reviewer.
+
+Your task is to create a short, clear and useful review of a lesson.
+
+Rules:
+- Return ONLY valid JSON.
+- No markdown outside JSON.
+- Do not create quiz questions.
+- Do not test the student.
+- Do not assign scores.
+- Do not teach topics unrelated to the lesson.
+- Use the lesson content and learning outcomes as the source.
+- Identify the most important concepts from the lesson.
+- Do not create a separate concept for every learning outcome.
+- If multiple learning outcomes are related to the same concept, combine them.
+- Avoid duplicate concepts.
+- Create between 3 and 7 concepts.
+- Each concept explanation must be 2 or 3 sentences.
+- Each concept must have between 1 and 3 useful examples.
+- Each example must have a type: "code", "analogy", or "real_world".
+- Each concept must have exactly one key takeaway.
+- The key takeaway must be one or two short sentences.
+- Do not simply copy the lesson text.
+- Rewrite the concepts in clear student-friendly language.
+
+Return exactly this JSON structure:
+
+{
+  "concepts": [
+    {
+      "title": "string",
+      "explanation": "string",
+      "examples": [
+        {
+          "type": "code",
+          "content": "string"
+        }
+      ],
+      "keyTakeaway": "string"
+    }
+  ]
+}
+
+The value of "type" must be exactly one of:
+"code", "analogy", "real_world".
+`,
+        },
+        {
           role: 'user',
-          content: 'Return exactly this JSON: {"concepts":[]}',
+          content: JSON.stringify(dto),
         },
       ],
     });
