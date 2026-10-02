@@ -176,7 +176,7 @@ export class AiService {
   ): Promise<GeneratedLessonReviewOutputDto> {
     const response = await this.groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
-      max_tokens: 1000,
+      max_tokens: 4000,
 
       messages: [
         {
