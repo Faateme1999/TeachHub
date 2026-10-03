@@ -24,6 +24,7 @@ import { LessonForm } from "../components/LessonForm";
 import type { Lesson, LessonInput } from "../types/api";
 import "../components/components.css";
 import { LessonItem } from "../components/LessonItem";
+import { DiagnosticTest } from "../components/DiagnosticTest";
 
 // The course detail page. It shows:
 //  - the course info + Enroll button (for any logged-in user / student)
@@ -333,33 +334,7 @@ export function CourseDetailPage() {
                     </div>
                     {diagnosticLessonId === lesson.id &&
                       generateDiagnosticTest.data && (
-                        <div style={{ marginTop: "var(--space-4)" }}>
-                          <h3>Diagnostic Test</h3>
-
-                          {generateDiagnosticTest.data.questions.map(
-                            (question, questionIndex) => (
-                              <div
-                                key={questionIndex}
-                                style={{
-                                  marginTop: "var(--space-4)",
-                                  padding: "var(--space-4)",
-                                  border: "1px solid var(--border-color)",
-                                  borderRadius: "12px",
-                                }}
-                              >
-                                <h4>
-                                  {questionIndex + 1}. {question.question}
-                                </h4>
-
-                                {question.options.map((option, optionIndex) => (
-                                  <div key={optionIndex}>{option.text}</div>
-                                ))}
-
-                                <small>Topic: {question.topic}</small>
-                              </div>
-                            ),
-                          )}
-                        </div>
+                        <DiagnosticTest test={generateDiagnosticTest.data} />
                       )}
                   </div>
                 )}
