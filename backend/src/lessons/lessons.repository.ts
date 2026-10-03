@@ -150,6 +150,7 @@ export class LessonsRepository {
         content: true,
         outcomes: {
           select: {
+            id: true,
             text: true,
           },
         },

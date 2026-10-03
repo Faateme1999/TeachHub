@@ -146,4 +146,9 @@ export class LessonsController {
   generateReview(@Param('lessonId', ParseIntPipe) lessonId: number) {
     return this.lessonsService.generateReview(lessonId);
   }
+
+  @Post('lessons/:lessonId/diagnostic-test')
+  generateDiagnosticTest(@Param('lessonId', ParseIntPipe) lessonId: number) {
+    return this.lessonsService.generateDiagnosticTest(lessonId);
+  }
 }

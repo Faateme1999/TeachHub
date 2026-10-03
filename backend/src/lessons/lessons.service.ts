@@ -26,6 +26,17 @@ export class LessonsService {
     return this.configService.get<string>('NODE_ENV') === 'production';
   }
 
+  private async findLessonWithOutcomesOrThrow(lessonId: number) {
+    const lesson =
+      await this.lessonsRepository.findLessonWithOutcomes(lessonId);
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    return lesson;
+  }
+
   private async validateLessonData(
     data: {
       type?: LessonType | null;
@@ -183,12 +194,7 @@ export class LessonsService {
   }
 
   async generateReview(lessonId: number) {
-    const lesson =
-      await this.lessonsRepository.findLessonWithOutcomes(lessonId);
-
-    if (!lesson) {
-      throw new NotFoundException('Lesson not found');
-    }
+    const lesson = await this.findLessonWithOutcomesOrThrow(lessonId);
 
     const existingReview = await this.lessonsRepository.findReview(lessonId);
 
@@ -204,5 +210,14 @@ export class LessonsService {
 
     await this.lessonsRepository.saveReview(lessonId, review);
     return review;
+  }
+
+  async generateDiagnosticTest(lessonId: number) {
+    const lesson = await this.findLessonWithOutcomesOrThrow(lessonId);
+
+    const diagnosticTest = await this.aiService.generateDiagnosticQuestions({
+      learningOutcomes: lesson.outcomes,
+    });
+    return diagnosticTest;
   }
 }
