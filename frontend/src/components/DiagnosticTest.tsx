@@ -9,42 +9,53 @@ interface DiagnosticTestProps {
 export function DiagnosticTest({ test }: DiagnosticTestProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  // Answers for all questions.
+  // Each item contains the selected option indexes for that question.
+  const [answers, setAnswers] = useState<number[][]>(() =>
+    test.questions.map(() => []),
+  );
 
   const question = test.questions[currentQuestionIndex];
+
+  const selectedOptions = answers[currentQuestionIndex] ?? [];
 
   const isLastQuestion = currentQuestionIndex === test.questions.length - 1;
 
   function handleOptionChange(optionIndex: number) {
-    if (question.type === "SINGLE_CHOICE") {
-      setSelectedOptions([optionIndex]);
-      return;
-    }
+    setAnswers((currentAnswers) => {
+      const newAnswers = [...currentAnswers];
 
-    setSelectedOptions((current) => {
-      if (current.includes(optionIndex)) {
-        return current.filter((index) => index !== optionIndex);
+      if (question.type === "SINGLE_CHOICE") {
+        newAnswers[currentQuestionIndex] = [optionIndex];
+      } else {
+        const currentSelected = newAnswers[currentQuestionIndex] ?? [];
+
+        if (currentSelected.includes(optionIndex)) {
+          newAnswers[currentQuestionIndex] = currentSelected.filter(
+            (index) => index !== optionIndex,
+          );
+        } else {
+          newAnswers[currentQuestionIndex] = [...currentSelected, optionIndex];
+        }
       }
 
-      return [...current, optionIndex];
+      return newAnswers;
     });
   }
 
   function handleNext() {
     if (isLastQuestion) {
-      console.log("Diagnostic answers:", selectedOptions);
+      console.log("Diagnostic answers:", answers);
       return;
     }
 
     setCurrentQuestionIndex((current) => current + 1);
-    setSelectedOptions([]);
   }
 
   function handlePrevious() {
     if (currentQuestionIndex === 0) return;
 
     setCurrentQuestionIndex((current) => current - 1);
-    setSelectedOptions([]);
   }
 
   return (
