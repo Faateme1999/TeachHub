@@ -7,6 +7,7 @@ import {
   useUpdateLesson,
   useDeleteLesson,
   useGenerateLessonReview,
+  useGenerateDiagnosticTest,
 } from "../hooks/useLessons";
 import { useAuth } from "../context/auth-context";
 import { getApiErrorMessage } from "../lib/apiClient";
@@ -50,6 +51,7 @@ export function CourseDetailPage() {
   const updateLesson = useUpdateLesson(courseId);
   const deleteLesson = useDeleteLesson(courseId);
   const generateReview = useGenerateLessonReview();
+  const generateDiagnosticTest = useGenerateDiagnosticTest();
 
   // Local UI state for the modals/dialogs on this page.
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
@@ -58,6 +60,9 @@ export function CourseDetailPage() {
   const [confirmDeleteCourse, setConfirmDeleteCourse] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
   const [reviewLessonId, setReviewLessonId] = useState<number | null>(null);
+  const [diagnosticLessonId, setDiagnosticLessonId] = useState<number | null>(
+    null,
+  );
 
   if (courseQuery.isLoading) return <Spinner center />;
   if (courseQuery.isError || !courseQuery.data) {
@@ -164,6 +169,12 @@ export function CourseDetailPage() {
     generateReview.reset();
     setReviewLessonId(lessonId);
     generateReview.mutate(lessonId);
+  };
+
+  const handleGenerateDiagnosticTest = (lessonId: number) => {
+    generateDiagnosticTest.reset();
+    setDiagnosticLessonId(lessonId);
+    generateDiagnosticTest.mutate(lessonId);
   };
 
   const lessons = lessonsQuery.data ?? [];
@@ -309,6 +320,47 @@ export function CourseDetailPage() {
                         </div>
                       ),
                     )}
+                    <div style={{ marginTop: "var(--space-4)" }}>
+                      <Button
+                        onClick={() => handleGenerateDiagnosticTest(lesson.id)}
+                        disabled={generateDiagnosticTest.isPending}
+                      >
+                        {generateDiagnosticTest.isPending &&
+                        diagnosticLessonId === lesson.id
+                          ? "Generating diagnostic test…"
+                          : "Start Diagnostic Test →"}
+                      </Button>
+                    </div>
+                    {diagnosticLessonId === lesson.id &&
+                      generateDiagnosticTest.data && (
+                        <div style={{ marginTop: "var(--space-4)" }}>
+                          <h3>Diagnostic Test</h3>
+
+                          {generateDiagnosticTest.data.questions.map(
+                            (question, questionIndex) => (
+                              <div
+                                key={questionIndex}
+                                style={{
+                                  marginTop: "var(--space-4)",
+                                  padding: "var(--space-4)",
+                                  border: "1px solid var(--border-color)",
+                                  borderRadius: "12px",
+                                }}
+                              >
+                                <h4>
+                                  {questionIndex + 1}. {question.question}
+                                </h4>
+
+                                {question.options.map((option, optionIndex) => (
+                                  <div key={optionIndex}>{option.text}</div>
+                                ))}
+
+                                <small>Topic: {question.topic}</small>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
                   </div>
                 )}
               </div>

@@ -210,3 +210,22 @@ export interface ReviewConcept {
 export interface LessonReview {
   concepts: ReviewConcept[];
 }
+
+export type DiagnosticQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+
+export interface DiagnosticOption {
+  text: string;
+  isCorrect: boolean;
+}
+
+export interface DiagnosticQuestion {
+  question: string;
+  type: DiagnosticQuestionType;
+  options: DiagnosticOption[];
+  learningOutcomeId: number;
+  topic: string;
+}
+
+export interface DiagnosticTest {
+  questions: DiagnosticQuestion[];
+}
