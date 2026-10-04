@@ -32,7 +32,6 @@ model User {
 
   enrollments Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
-  missionResults MissionResult[]
   submissions Submission[]
   passwordResetTokens  PasswordResetToken[]
   createdCourses Course[]
@@ -115,21 +114,12 @@ model Lesson {
   outcomes Outcome[]
 
   assignments Assignment[]
-  review LessonReview?
+  missionReview MissionReview?
 }
 
 // One-to-Many relationship
 // Course (1) ──────< Lesson (Many)
 // Foreign key lives on the "Many" side.
-
-model LessonReview {
-  id Int             @id @default(autoincrement())
-  lessonId Int       @unique
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  content Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model Outcome{
   id        Int     @id @default(autoincrement())
@@ -137,20 +127,39 @@ model Outcome{
   lessonId  Int
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   
-  missions Mission[]
+  diagnosticQuestions DiagnosticQuestion[]
 }
 
-model  Mission{
+enum MissionType {
+  REVIEW
+  DIAGNOSTIC
+}
+
+model MissionReview {
   id        Int      @id @default(autoincrement())
   title     String
+  type      MissionType
   order     Int
-  passingScore   Int
-  maxAttempts   Int
-  outcomeId    Int
-  outcome   Outcome  @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
 
-  questions Question[]
-  missionResults MissionResult[]
+  lessonId Int    @unique
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  content  Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MissionDiagnosticTest {
+  id  Int  @id @default(autoincrement())
+  title     String
+  type      MissionType
+  order     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions  DiagnosticQuestion[]
 }
 
 enum QuestionType {
@@ -158,41 +167,32 @@ enum QuestionType {
   MULTIPLE_CHOICE
 }
 
-model Question{
-  id  Int  @id @default(autoincrement())
-  text String
-  type    QuestionType
-  order Int
-  missionId  Int
-  mission  Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
-  options Option[]
+model DiagnosticQuestion{
+  id     Int   @id @default(autoincrement())
+  text   String
+  type   QuestionType
+  order  Int
+
+  testId   Int
+  test  MissionDiagnosticTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  outcomeId Int
+  outcome   Outcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  options DiagnosticOption[]
 }
 
-model Option{
-  id Int @id @default(autoincrement())
-  text String
-  isCorrect  Boolean
-  order Int
-  questionId Int
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+model DiagnosticOption{
+  id           Int    @id @default(autoincrement())
+  text         String
+  isCorrect    Boolean
+  order        Int
+
+  questionId   Int
+  question     DiagnosticQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
-model MissionResult{
-  id      Int       @id @default(autoincrement())
-  passed  Boolean   @default(false)
-  bestScore   Int   @default(0)
-  attemptsUsed Int  @default(0)
-  userId      Int
-  missionId   Int
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, missionId])
-  // یک کاربر نمی‌تواند برای یک Mission بیشتر از یک MissionResult داشته باشد.
-  // @@unique([userId, missionId], name: "user_mission_unique")
-}
 
 model Assignment{
 id  Int       @id @default(autoincrement())
@@ -229,5 +229,6 @@ correctedFileData Bytes?
 createdAt DateTime  @default(now())
 
 @@unique([userId, assignmentId])
+  // @@unique([userId, assignmentId], name: "user_assignment_unique")
 }
 
