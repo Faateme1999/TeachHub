@@ -159,11 +159,14 @@ export class LessonsRepository {
   }
 
   async saveReview(lessonId: number, content: object) {
-    return this.prisma.lessonReview.upsert({
+    return this.prisma.missionReview.upsert({
       where: {
         lessonId,
       },
       create: {
+        title: 'Lesson Review',
+        type: 'REVIEW',
+        order: 1,
         lessonId,
         content,
       },
@@ -174,7 +177,7 @@ export class LessonsRepository {
   }
 
   async findReview(lessonId: number) {
-    return this.prisma.lessonReview.findUnique({
+    return this.prisma.missionReview.findUnique({
       where: {
         lessonId,
       },
