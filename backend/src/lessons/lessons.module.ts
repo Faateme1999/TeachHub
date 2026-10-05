@@ -5,11 +5,11 @@ import { LessonsController } from './lessons.controller';
 import { LessonsRepository } from './lessons.repository';
 import { OutcomesModule } from 'src/outcomes/outcomes.module';
 import { StorageModule } from 'src/storage/storage.module';
-import { AiModule } from 'src/ai/ai.module';
 
 @Module({
-  imports: [PrismaModule, OutcomesModule, StorageModule, AiModule],
+  imports: [PrismaModule, OutcomesModule, StorageModule],
   providers: [LessonsService, LessonsRepository],
   controllers: [LessonsController],
+  exports: [LessonsService],
 })
 export class LessonsModule {}

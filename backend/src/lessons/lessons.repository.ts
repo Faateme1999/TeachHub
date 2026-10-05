@@ -157,30 +157,4 @@ export class LessonsRepository {
       },
     });
   }
-
-  async saveReview(lessonId: number, content: object) {
-    return this.prisma.missionReview.upsert({
-      where: {
-        lessonId,
-      },
-      create: {
-        title: 'Lesson Review',
-        type: 'REVIEW',
-        order: 1,
-        lessonId,
-        content,
-      },
-      update: {
-        content,
-      },
-    });
-  }
-
-  async findReview(lessonId: number) {
-    return this.prisma.missionReview.findUnique({
-      where: {
-        lessonId,
-      },
-    });
-  }
 }

@@ -10,7 +10,6 @@ import { LessonType } from '@prisma/client';
 import { I18nService } from 'nestjs-i18n';
 import { StorageService } from 'src/storage/storage.service';
 import { ConfigService } from '@nestjs/config';
-import { AiService } from 'src/ai/ai.service';
 
 @Injectable()
 export class LessonsService {
@@ -18,7 +17,6 @@ export class LessonsService {
     private readonly lessonsRepository: LessonsRepository,
     private readonly storageService: StorageService,
     private readonly configService: ConfigService,
-    private readonly aiService: AiService,
     private readonly i18n: I18nService,
   ) {}
 
@@ -26,7 +24,7 @@ export class LessonsService {
     return this.configService.get<string>('NODE_ENV') === 'production';
   }
 
-  private async findLessonWithOutcomesOrThrow(lessonId: number) {
+  async findLessonWithOutcomesOrThrow(lessonId: number) {
     const lesson =
       await this.lessonsRepository.findLessonWithOutcomes(lessonId);
 
@@ -191,33 +189,5 @@ export class LessonsService {
       );
     }
     return video.videoData;
-  }
-
-  async generateReview(lessonId: number) {
-    const lesson = await this.findLessonWithOutcomesOrThrow(lessonId);
-
-    const existingReview = await this.lessonsRepository.findReview(lessonId);
-
-    if (existingReview) {
-      return existingReview.content;
-    }
-
-    const review = await this.aiService.generateLessonReview({
-      lessonTitle: lesson.title,
-      lessonContent: lesson.content ?? '',
-      learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
-    });
-
-    await this.lessonsRepository.saveReview(lessonId, review);
-    return review;
-  }
-
-  async generateDiagnosticTest(lessonId: number) {
-    const lesson = await this.findLessonWithOutcomesOrThrow(lessonId);
-
-    const diagnosticTest = await this.aiService.generateDiagnosticQuestions({
-      learningOutcomes: lesson.outcomes,
-    });
-    return diagnosticTest;
   }
 }
