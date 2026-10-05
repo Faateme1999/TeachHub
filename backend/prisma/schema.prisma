@@ -115,6 +115,7 @@ model Lesson {
 
   assignments Assignment[]
   missionReview MissionReview?
+  missionDiagnosticTests   MissionDiagnosticTest[]
 }
 
 // One-to-Many relationship
@@ -155,6 +156,9 @@ model MissionDiagnosticTest {
   title     String
   type      MissionType
   order     Int
+    
+  lessonId  Int      
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -171,6 +175,7 @@ enum QuestionType {
 model DiagnosticQuestion{
   id     Int   @id @default(autoincrement())
   text   String
+  topic     String
   type   QuestionType
   order  Int
 

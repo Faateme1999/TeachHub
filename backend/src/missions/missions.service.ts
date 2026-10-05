@@ -35,9 +35,22 @@ export class MissionsService {
     const lesson =
       await this.lessonsService.findLessonWithOutcomesOrThrow(lessonId);
 
+    const existingTest =
+      await this.missionsRepository.findDiagnosticTest(lessonId);
+
+    if (existingTest) {
+      return existingTest;
+    }
+
     const diagnosticTest = await this.aiService.generateDiagnosticQuestions({
       learningOutcomes: lesson.outcomes,
     });
-    return diagnosticTest;
+
+    const savedTest = await this.missionsRepository.saveDiagnosticTest(
+      lessonId,
+      diagnosticTest,
+    );
+
+    return savedTest;
   }
 }

@@ -6,7 +6,7 @@ export class DiagnosticOptionDto {
 }
 
 export class DiagnosticQuestionDto {
-  questions: string;
+  question: string;
   type: DiagnosticQuestionType;
   options: DiagnosticOptionDto[];
   learningOutcomeId: number;
