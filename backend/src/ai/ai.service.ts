@@ -72,7 +72,7 @@ The example type must be "code", "analogy", or "real_world".
     return JSON.parse(content);
   }
 
-  async generateDiagnosticQuestions(
+  async generateDiagnosticTest(
     dto: GenerateDiagnosticTestInputDto,
   ): Promise<GeneratedDiagnosticTestOutputDto> {
     const response = await this.groq.chat.completions.create({

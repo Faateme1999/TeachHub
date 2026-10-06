@@ -1,6 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// npx prisma format
+
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
@@ -30,36 +32,35 @@ model User {
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now())
 
-  enrollments Enrollment[]
+  enrollments            Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
-  submissions Submission[]
-  passwordResetTokens  PasswordResetToken[]
-  createdCourses Course[]
+  submissions            Submission[]
+  passwordResetTokens    PasswordResetToken[]
+  createdCourses         Course[]
   diagnosticTestAttempts DiagnosticTestAttempt[]
 }
+
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
 
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
-model PasswordResetToken{
-  id           Int        @id @default(autoincrement())
-  userId       Int  
-  token        String     @unique
-  expiresAt    DateTime
-  createdAt    DateTime   @default(now())
-
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  createdAt   DateTime @default(now())
 
-model Course{
-  id            Int       @id  @default(autoincrement()) 
-  title         String
-  description   String
-  price         Float
-  createdAt     DateTime  @default(now())
-
-  createdById   Int
-  createdBy     User      @relation(fields: [createdById], references: [id])
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
 
   //No enrollments column,It tells Prisma: A User can have many Enrollments
   // do NOT appear as columns anywhere.
@@ -69,66 +70,65 @@ model Course{
   // One Course has many Lessons.
 }
 
-
 model Enrollment {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  userId    Int
-  courseId  Int
+  userId   Int
+  courseId Int
 
-// Because Prisma wants to know: userId points to which table?
-// These are NOT columns, These are Prisma relation fields, They help Prisma understand: How tables are connected
+  // Because Prisma wants to know: userId points to which table?
+  // These are NOT columns, These are Prisma relation fields, They help Prisma understand: How tables are connected
 
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
   //course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
-enum LessonType{
+enum LessonType {
   RECORDED
   LIVE
 }
 
 model Lesson {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  videoData   Bytes?
-  videoKey    String?
-  hasVideo    Boolean    @default(false)
-  meetingUrl  String?
-  type      LessonType  
+  id         Int        @id @default(autoincrement())
+  title      String
+  content    String?
+  videoData  Bytes?
+  videoKey   String?
+  hasVideo   Boolean    @default(false)
+  meetingUrl String?
+  type       LessonType
 
-// Each Lesson belongs to one Course.
-// courseId (foreign key)
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+  // Each Lesson belongs to one Course.
+  // courseId (foreign key)
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
 
   //course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   // Then create a migration so the database is updated:
   //   npx prisma migrate dev --name cascade_delete
-  
-  createdAt DateTime @default(now())
-  outcomes Outcome[]
 
-  assignments Assignment[]
-  missionReview MissionReview?
-  missionDiagnosticTests   MissionDiagnosticTest[]
+  createdAt DateTime  @default(now())
+  outcomes  Outcome[]
+
+  assignments            Assignment[]
+  missionReview          MissionReview?
+  missionDiagnosticTests MissionDiagnosticTest[]
 }
 
 // One-to-Many relationship
 // Course (1) ──────< Lesson (Many)
 // Foreign key lives on the "Many" side.
 
-model Outcome{
-  id        Int     @id @default(autoincrement())
-  text      String
-  lessonId  Int
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
+model Outcome {
+  id       Int    @id @default(autoincrement())
+  text     String
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
   diagnosticQuestions DiagnosticQuestion[]
 }
 
@@ -138,34 +138,34 @@ enum MissionType {
 }
 
 model MissionReview {
-  id        Int      @id @default(autoincrement())
-  title     String
-  type      MissionType
-  order     Int
+  id    Int         @id @default(autoincrement())
+  title String
+  type  MissionType
+  order Int
 
   lessonId Int    @unique
   lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-  content  Json
+  content Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model MissionDiagnosticTest {
-  id        Int      @id @default(autoincrement())
-  title     String
-  type      MissionType
-  order     Int
-    
-  lessonId  Int      
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  id    Int         @id @default(autoincrement())
+  title String
+  type  MissionType
+  order Int
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  questions  DiagnosticQuestion[]
-  attempts DiagnosticTestAttempt[]
+  questions DiagnosticQuestion[]
+  attempts  DiagnosticTestAttempt[]
 }
 
 enum QuestionType {
@@ -173,111 +173,109 @@ enum QuestionType {
   MULTIPLE_CHOICE
 }
 
+model DiagnosticQuestion {
+  id    Int          @id @default(autoincrement())
+  text  String
+  topic String
+  type  QuestionType
+  order Int
 
-model DiagnosticQuestion{
-  id     Int   @id @default(autoincrement())
-  text   String
-  topic     String
-  type   QuestionType
-  order  Int
-
-  testId   Int
-  test  MissionDiagnosticTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+  testId Int
+  test   MissionDiagnosticTest @relation(fields: [testId], references: [id], onDelete: Cascade)
 
   outcomeId Int
   outcome   Outcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
 
-  options  DiagnosticOption[]
-  answers  DiagnosticUserAnswer[]
+  options DiagnosticOption[]
+  answers DiagnosticUserAnswer[]
 }
 
-model DiagnosticOption{
-  id           Int    @id @default(autoincrement())
-  text         String
-  isCorrect    Boolean
-  order        Int
+model DiagnosticOption {
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean
+  order     Int
 
-  questionId   Int
-  question     DiagnosticQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId       Int
+  question         DiagnosticQuestion           @relation(fields: [questionId], references: [id], onDelete: Cascade)
   answerSelections DiagnosticUserAnswerOption[]
 }
 
+model DiagnosticTestAttempt {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  testId        Int
+  attemptNumber Int      @default(1)
+  score         Float?
+  submittedAt   DateTime @default(now())
 
-model DiagnosticTestAttempt{
- id        Int    @id @default(autoincrement())
- userId    Int
- testId    Int
- attemptNumber Int      @default(1)
- score   Float?
- submittedAt   DateTime @default(now())
+  user User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test MissionDiagnosticTest @relation(fields: [testId], references: [id], onDelete: Cascade)
 
-user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-test MissionDiagnosticTest  @relation(fields: [testId], references: [id], onDelete: Cascade)
+  answers DiagnosticUserAnswer[]
 
-answers  DiagnosticUserAnswer[]
-
-@@unique([userId, testId])
+  @@unique([userId, testId])
 }
 
-model DiagnosticUserAnswer{
-  id          Int    @id @default(autoincrement())
-  attemptId   Int
-  questionId  Int
-  isCorrect   Boolean
+model DiagnosticUserAnswer {
+  id         Int     @id @default(autoincrement())
+  attemptId  Int
+  questionId Int
+  isCorrect  Boolean
 
-  attempt   DiagnosticTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question  DiagnosticQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt  DiagnosticTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question DiagnosticQuestion    @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  selectedOptions  DiagnosticUserAnswerOption[]
+  selectedOptions DiagnosticUserAnswerOption[]
+
   @@unique([attemptId, questionId])
 }
 
-model DiagnosticUserAnswerOption{
-   id          Int    @id @default(autoincrement())
-   answerId    Int
-   optionId    Int 
+model DiagnosticUserAnswerOption {
+  id       Int @id @default(autoincrement())
+  answerId Int
+  optionId Int
 
-   answer   DiagnosticUserAnswer  @relation(fields: [answerId], references: [id], onDelete: Cascade)
-   option   DiagnosticOption  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  answer DiagnosticUserAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  option DiagnosticOption     @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   @@unique([answerId, optionId])
 }
 
-model Assignment{
-id  Int       @id @default(autoincrement())
-title String
-description String? 
-deadline   DateTime?
-lessonId Int
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  deadline    DateTime?
+  lessonId    Int
 
-lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-submissions Submission[]
+  submissions Submission[]
 
-createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
-model Submission{
-id Int   @id @default(autoincrement())  
+model Submission {
+  id Int @id @default(autoincrement())
 
-assignmentId Int
-assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  assignmentId Int
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
-userId Int
-user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-fileName String
-fileData Bytes
+  fileName String
+  fileData Bytes
 
-submittedAt   DateTime  @default(now())
+  submittedAt DateTime @default(now())
 
-feedback   String?
-correctedFileName String?
-correctedFileData Bytes?
+  feedback          String?
+  correctedFileName String?
+  correctedFileData Bytes?
 
-createdAt DateTime  @default(now())
-
-@@unique([userId, assignmentId])
+  createdAt DateTime @default(now())
   // @@unique([userId, assignmentId], name: "user_assignment_unique")
-}
 
+  @@unique([userId, assignmentId])
+}

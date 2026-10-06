@@ -2,14 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { OutcomesRepository } from './outcomes.repository';
 import { CreateOutcomeDto } from './dto/create-outcome-dto';
 import { UpdateOutcomeDto } from './dto/update-outcome.dto';
-import { AiService } from '../ai/ai.service';
 
 @Injectable()
 export class OutcomesService {
-  constructor(
-    private readonly outcomesRepository: OutcomesRepository,
-    private readonly aiService: AiService,
-  ) {}
+  constructor(private readonly outcomesRepository: OutcomesRepository) {}
 
   async create(lessonId: number, dto: CreateOutcomeDto) {
     return this.outcomesRepository.create(lessonId, dto);

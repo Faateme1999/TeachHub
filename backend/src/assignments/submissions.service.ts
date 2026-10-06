@@ -14,7 +14,7 @@ export class SubmissionsService {
     private readonly submissionsRepository: SubmissionsRepository,
     private readonly prisma: PrismaService,
     private readonly i18n: I18nService,
-  ) { }
+  ) {}
 
   async findAssignment(assignmentId: number) {
     const assignment = await this.prisma.assignment.findUnique({

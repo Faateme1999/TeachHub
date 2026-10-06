@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeneratedDiagnosticTestOutputDto } from 'src/ai/dto/generated-diagnostic-test-output.dto';
-import { text } from 'stream/consumers';
 
 @Injectable()
 export class MissionsRepository {
@@ -81,6 +80,64 @@ export class MissionsRepository {
               })),
             },
           })),
+        },
+      },
+    });
+  }
+
+  async saveDiagnosticAttempt(
+    userId: number,
+    testId: number,
+    answers: {
+      questionId: number;
+      selectedOptionIds: number[];
+      isCorrect: boolean;
+    }[],
+    score: number,
+  ) {
+    return this.prisma.diagnosticTestAttempt.create({
+      data: {
+        userId,
+        testId,
+        attemptNumber: 1,
+        score,
+        answers: {
+          create: answers.map((answer) => ({
+            questionId: answer.questionId,
+            isCorrect: answer.isCorrect,
+            selectedOptions: {
+              create: answer.selectedOptionIds.map((optionId) => ({
+                optionId,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        answers: {
+          include: {
+            selectedOptions: true,
+          },
+        },
+      },
+    });
+  }
+
+  async findDiagnosticTestForSubmission(testId: number) {
+    return this.prisma.missionDiagnosticTest.findUnique({
+      where: { id: testId },
+      include: {
+        questions: {
+          orderBy: {
+            order: 'asc',
+          },
+          include: {
+            options: {
+              orderBy: {
+                order: 'asc',
+              },
+            },
+          },
         },
       },
     });

@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MissionsRepository } from './missions.repository';
 import { AiService } from '../ai/ai.service';
 import { LessonsService } from 'src/lessons/lessons.service';
+import { SubmitDiagnosticTestDto } from './dto/submit-diagnostic-test.dto';
 
 @Injectable()
 export class MissionsService {
@@ -42,7 +47,7 @@ export class MissionsService {
       return existingTest;
     }
 
-    const diagnosticTest = await this.aiService.generateDiagnosticQuestions({
+    const diagnosticTest = await this.aiService.generateDiagnosticTest({
       learningOutcomes: lesson.outcomes,
     });
 
@@ -52,5 +57,61 @@ export class MissionsService {
     );
 
     return savedTest;
+  }
+
+  async submitDiagnosticTest(
+    userId: number,
+    testId: number,
+    dto: SubmitDiagnosticTestDto,
+  ) {
+    const test =
+      await this.missionsRepository.findDiagnosticTestForSubmission(testId);
+    if (!test) {
+      throw new NotFoundException('Diagnostic test not found');
+    }
+
+    const submittedAnswers = dto.answers.map((answer) => {
+      const question = test.questions.find((q) => q.id === answer.questionId);
+
+      if (!question) {
+        throw new BadRequestException(
+          `Question ${answer.questionId} does not belong to this test`,
+        );
+      }
+
+      const correctOptionIds = question.options
+        .filter((option) => option.isCorrect)
+        .map((option) => option.id)
+        .sort((a, b) => a - b);
+
+      const selectedOptionIds = [...answer.selectedOptionIds].sort(
+        (a, b) => a - b,
+      );
+
+      const isCorrect =
+        selectedOptionIds.length == correctOptionIds.length &&
+        selectedOptionIds.every(
+          (optionId, index) => optionId === correctOptionIds[index],
+        );
+
+      return {
+        questionId: question.id,
+        selectedOptionIds: answer.selectedOptionIds,
+        isCorrect,
+      };
+    });
+
+    const correctAnswers = submittedAnswers.filter(
+      (answer) => answer.isCorrect,
+    ).length;
+
+    const score = (correctAnswers / test.questions.length) * 100;
+
+    return this.missionsRepository.saveDiagnosticAttempt(
+      userId,
+      testId,
+      submittedAnswers,
+      score,
+    );
   }
 }
