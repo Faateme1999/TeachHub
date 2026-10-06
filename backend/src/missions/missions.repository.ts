@@ -142,4 +142,22 @@ export class MissionsRepository {
       },
     });
   }
+
+  async findDiagnosticAttempt(userId: number, testId: number) {
+    return this.prisma.diagnosticTestAttempt.findUnique({
+      where: {
+        userId_testId: {
+          userId,
+          testId,
+        },
+      },
+      include: {
+        answers: {
+          include: {
+            question: true,
+          },
+        },
+      },
+    });
+  }
 }

@@ -114,4 +114,53 @@ export class MissionsService {
       score,
     );
   }
+
+  async findWeaknesses(userId: number, testId: number) {
+    const attempt = await this.missionsRepository.findDiagnosticAttempt(
+      userId,
+      testId,
+    );
+
+    if (!attempt) {
+      throw new NotFoundException('Diagnostic test attempt not found');
+    }
+
+    const wrongAnswers = attempt.answers.filter((answer) => !answer.isCorrect);
+
+    const weaknesses: {
+      outcomeId: number;
+      topics: {
+        topic: string;
+        wrongQuestionIds: number[];
+      }[];
+    }[] = [];
+
+    for (const answer of wrongAnswers) {
+      const outcomeId = answer.question.outcomeId;
+      const topic = answer.question.topic;
+      const questionId = answer.questionId;
+
+      let outcome = weaknesses.find((item) => item.outcomeId === outcomeId);
+      if (!outcome) {
+        outcome = {
+          outcomeId,
+          topics: [],
+        };
+
+        weaknesses.push(outcome);
+      }
+
+      let topicGroup = outcome.topics.find((item) => item.topic === topic);
+      if (!topicGroup) {
+        topicGroup = {
+          topic,
+          wrongQuestionIds: [],
+        };
+        outcome.topics.push(topicGroup);
+      }
+      topicGroup.wrongQuestionIds.push(questionId);
+    }
+
+    return weaknesses;
+  }
 }

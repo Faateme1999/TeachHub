@@ -34,4 +34,13 @@ export class MissionsController {
   ) {
     return this.missionsService.submitDiagnosticTest(req.user.id, testId, dto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('diagnostic-tests/:testId/weaknesses')
+  findWeaknesses(
+    @Param('testId', ParseIntPipe) testId: number,
+    @Req() req: any,
+  ) {
+    return this.missionsService.findWeaknesses(req.user.id, testId);
+  }
 }
