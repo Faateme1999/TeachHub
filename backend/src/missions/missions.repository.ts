@@ -154,7 +154,13 @@ export class MissionsRepository {
       include: {
         answers: {
           include: {
-            question: true,
+            question: {
+              include: {
+                options: true,
+                outcome: true,
+              },
+            },
+            selectedOptions: true,
           },
         },
       },

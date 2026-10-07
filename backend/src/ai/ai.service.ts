@@ -5,6 +5,8 @@ import { GenerateLessonReviewInputDto } from './dto/generate-lesson-review-input
 import { GeneratedLessonReviewOutputDto } from './dto/generated-lesson-review-output.dto';
 import { GenerateDiagnosticTestInputDto } from './dto/generate-diagnostic-test-input.dto';
 import { GeneratedDiagnosticTestOutputDto } from './dto/generated-diagnostic-test-output.dto';
+import { GenerateWeaknessInputDto } from './dto/generate-weakness-input.dto';
+import { GeneratedWeaknessOutputDto } from './dto/generated-weakness-output.dto';
 
 @Injectable()
 export class AiService {
@@ -146,6 +148,87 @@ Return exactly this JSON structure:
       ],
     });
 
+    const content = response.choices[0].message.content;
+
+    if (!content) {
+      throw new Error('AI returned empty response');
+    }
+
+    return JSON.parse(content);
+  }
+
+  async generateWeaknessRemediation(
+    dto: GenerateWeaknessInputDto,
+  ): Promise<GeneratedWeaknessOutputDto> {
+    const response = await this.groq.chat.completions.create({
+      model: 'openai/gpt-oss-20b',
+      max_tokens: 4000,
+
+      messages: [
+        {
+          role: 'system',
+          content: `You are an educational remediation assistant.
+
+Your task is to help a student understand and correct their mistakes.
+
+Return ONLY valid JSON.
+No markdown.
+No explanations outside JSON.
+
+Rules:
+
+- The provided learning outcome is the main learning context.
+- The provided topic is the specific area where the student has weakness.
+- Explain why the student's selected answer was wrong for each question.
+- Use the provided correct options as the source of truth.
+- Do not change or invent correct answers.
+- Do not invent question IDs.
+- Teach the topic clearly and simply in the context of the learning outcome.
+- Provide one simple example.
+- Provide one short takeaway.
+
+Field requirements:
+
+- "explanations": An array containing one explanation for each wrong question.
+  Each explanation must clearly explain why the student's selected answer was wrong
+  and why the correct answer is correct.
+  Keep each explanation focused on that specific question.
+- Keep each question explanation under 2 sentences.
+
+- "teaching.explanation": A clear and simple explanation of the topic
+  in the context of the learning outcome.
+- Keep the teaching explanation under 2 sentences.  
+
+- "teaching.example": One simple example that helps the student understand
+  and apply the topic.
+- Provide only one short example.  
+
+- "teaching.takeaway": One short key point that the student should remember.
+- Keep the takeaway to one sentence.
+
+
+Return exactly this JSON structure:
+
+{
+  "explanations": [
+    {
+      "questionId": 1,
+      "explanation": "string"
+    }
+  ],
+  "teaching": {
+    "explanation": "string",
+    "example": "string",
+    "takeaway": "string"
+  }
+}`,
+        },
+        {
+          role: 'user',
+          content: JSON.stringify(dto),
+        },
+      ],
+    });
     const content = response.choices[0].message.content;
 
     if (!content) {

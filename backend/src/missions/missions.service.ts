@@ -132,6 +132,7 @@ export class MissionsService {
       topics: {
         topic: string;
         wrongQuestionIds: number[];
+        answers: typeof wrongAnswers;
       }[];
     }[] = [];
 
@@ -155,12 +156,64 @@ export class MissionsService {
         topicGroup = {
           topic,
           wrongQuestionIds: [],
+          answers: [],
         };
         outcome.topics.push(topicGroup);
       }
       topicGroup.wrongQuestionIds.push(questionId);
+      topicGroup.answers.push(answer);
     }
 
-    return weaknesses;
+    const aiRemediations: {
+      learningOutcome: string;
+      remediations: {
+        explanations: {
+          questionId: number;
+          question: string | undefined;
+          explanation: string;
+        }[];
+        teaching: {
+          explanation: string;
+          example: string;
+          takeaway: string;
+        };
+      };
+    }[] = [];
+
+    for (const outcome of weaknesses) {
+      for (const topic of outcome.topics) {
+        const remediations = await this.aiService.generateWeaknessRemediation({
+          learningOutcome: topic.answers[0].question.outcome.text,
+          topic: topic.topic,
+          questions: topic.answers.map((answer) => ({
+            questionId: answer.questionId,
+            question: answer.question.text,
+            options: answer.question.options.map((option) => ({
+              id: option.id,
+              text: option.text,
+              isCorrect: option.isCorrect,
+            })),
+            selectedOptionIds: answer.selectedOptions.map(
+              (option) => option.optionId,
+            ),
+          })),
+        });
+
+        aiRemediations.push({
+          learningOutcome: topic.answers[0].question.outcome.text,
+          remediations: {
+            explanations: remediations.explanations.map((explanation) => ({
+              questionId: explanation.questionId,
+              question: topic.answers.find(
+                (answer) => answer.questionId === explanation.questionId,
+              )?.question.text,
+              explanation: explanation.explanation,
+            })),
+            teaching: remediations.teaching,
+          },
+        });
+      }
+    }
+    return aiRemediations;
   }
 }
