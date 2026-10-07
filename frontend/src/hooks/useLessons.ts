@@ -121,7 +121,7 @@ export function useGenerateLessonReview() {
   return useMutation({
     mutationFn: async (lessonId: number) => {
       const { data } = await apiClient.post<LessonReview>(
-        `/lessons/${lessonId}/review`,
+        `/missions/lessons/${lessonId}/review`,
       );
 
       return data;
@@ -133,12 +133,10 @@ export function useGenerateDiagnosticTest() {
   return useMutation({
     mutationFn: async (lessonId: number) => {
       const { data } = await apiClient.post<DiagnosticTest>(
-        `/lessons/${lessonId}/diagnostic-test`,
+        `/missions/lessons/${lessonId}/diagnostic-test`,
       );
 
       return data;
     },
   });
 }
-
-
