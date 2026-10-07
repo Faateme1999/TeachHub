@@ -16,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
 import { OutcomesModule } from './outcomes/outcomes.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { AiModule } from './ai/ai.module';
+import { MissionsModule } from './missions/missions.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AiModule } from './ai/ai.module';
     OutcomesModule,
     AssignmentsModule,
     AiModule,
+    MissionsModule,
     // Using isGlobal: true means every module can access ConfigService without importing ConfigModule again.
     // Create one ConfigService and make it available everywhere.
   ],
