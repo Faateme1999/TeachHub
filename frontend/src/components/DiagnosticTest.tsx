@@ -13,13 +13,17 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const [answers, setAnswers] = useState<number[][]>(() =>
-    test.questions.map(() => []),
+    (test?.questions ?? []).map(() => []),
   );
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const submitDiagnosticTest = useSubmitDiagnosticTest();
   const findWeaknesses = useDiagnosticWeaknesses();
+
+  if (!test || !test.questions || test.questions.length === 0) {
+    return <p>No diagnostic questions available.</p>;
+  }
 
   const question = test.questions[currentQuestionIndex];
 
