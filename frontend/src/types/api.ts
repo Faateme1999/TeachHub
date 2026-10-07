@@ -214,18 +214,61 @@ export interface LessonReview {
 export type DiagnosticQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
 
 export interface DiagnosticOption {
+  id: number;
   text: string;
-  isCorrect: boolean;
+  isCorrect?: boolean;
+  order: number;
 }
 
 export interface DiagnosticQuestion {
-  question: string;
+  id: number;
+  text: string;
   type: DiagnosticQuestionType;
-  options: DiagnosticOption[];
-  learningOutcomeId: number;
+  order: number;
   topic: string;
+  outcomeId: number;
+  options: DiagnosticOption[];
 }
 
 export interface DiagnosticTest {
+  id: number;
+  title: string;
+  type: "DIAGNOSTIC";
+  order: number;
+  lessonId: number;
   questions: DiagnosticQuestion[];
+}
+
+export interface SubmitDiagnosticAnswer {
+  questionId: number;
+  selectedOptionIds: number[];
+}
+
+export interface SubmitDiagnosticTestResponse {
+  id: number;
+  userId: number;
+  testId: number;
+  attemptNumber: number;
+  score: number;
+  submittedAt: string;
+}
+
+export interface DiagnosticWeaknessExplanation {
+  questionId: number;
+  question: string;
+  explanation: string;
+}
+
+export interface DiagnosticWeaknessTeaching {
+  explanation: string;
+  example: string;
+  takeaway: string;
+}
+
+export interface DiagnosticWeaknessRemediation {
+  learningOutcome: string;
+  remediations: {
+    explanations: DiagnosticWeaknessExplanation[];
+    teaching: DiagnosticWeaknessTeaching;
+  };
 }

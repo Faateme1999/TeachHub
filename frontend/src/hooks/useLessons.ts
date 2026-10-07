@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/apiClient";
 import { queryKeys } from "../lib/queryKeys";
-import type { DiagnosticTest, Lesson, LessonInput, LessonReview } from "../types/api";
+import type {
+  DiagnosticTest,
+  Lesson,
+  LessonInput,
+  LessonReview,
+} from "../types/api";
 
 // Hooks for a course's lessons. The course-detail page uses these alongside
 // useCourse() — the backend's course detail doesn't include lessons yet, so we
@@ -135,3 +140,5 @@ export function useGenerateDiagnosticTest() {
     },
   });
 }
+
+
