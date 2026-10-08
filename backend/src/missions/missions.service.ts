@@ -7,6 +7,7 @@ import { MissionsRepository } from './missions.repository';
 import { AiService } from '../ai/ai.service';
 import { LessonsService } from 'src/lessons/lessons.service';
 import { SubmitDiagnosticTestDto } from './dto/submit-diagnostic-test.dto';
+import { FindWeaknessesOutputDto } from './dto/find-weaknesses-output.dto';
 
 @Injectable()
 export class MissionsService {
@@ -163,40 +164,11 @@ export class MissionsService {
       topicGroup.answers.push(answer);
     }
 
-    const aiRemediations: {
-      outcomeId: number;
-      learningOutcome: string;
-      remediations: {
-        explanations: {
-          questionId: number;
-          question: string;
-          selectedAnswers: string[];
-          correctAnswers: string[];
-          explanation: string;
-        }[];
-        teaching: {
-          explanation: string;
-          example: string;
-          takeaway: string;
-        };
-      }[];
-    }[] = [];
+    const aiRemediations: FindWeaknessesOutputDto[] = [];
 
     for (const outcome of weaknesses) {
-      const outcomeRemediations: {
-        explanations: {
-          questionId: number;
-          question: string;
-          selectedAnswers: string[];
-          correctAnswers: string[];
-          explanation: string;
-        }[];
-        teaching: {
-          explanation: string;
-          example: string;
-          takeaway: string;
-        };
-      }[] = [];
+      const outcomeRemediations: FindWeaknessesOutputDto['remediations'] = [];
+
       for (const topic of outcome.topics) {
         const remediations = await this.aiService.generateWeaknessRemediation({
           learningOutcome: outcome.learningOutcome,
