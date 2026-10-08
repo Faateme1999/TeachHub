@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Groq from 'groq-sdk';
-import { GenerateLessonReviewInputDto } from './dto/generate-lesson-review-input.dto';
-import { GeneratedLessonReviewOutputDto } from './dto/generated-lesson-review-output.dto';
-import { GenerateDiagnosticTestInputDto } from './dto/generate-diagnostic-test-input.dto';
-import { GeneratedDiagnosticTestOutputDto } from './dto/generated-diagnostic-test-output.dto';
-import { GenerateWeaknessInputDto } from './dto/generate-weakness-input.dto';
-import { GeneratedWeaknessOutputDto } from './dto/generated-weakness-output.dto';
+import { GenerateDiagnosticTestInputDto } from './dto/missions/diagnostic-test/generate-diagnostic-test-input.dto';
+import { GeneratedDiagnosticTestOutputDto } from './dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
+import { GenerateWeaknessInputDto } from './dto/missions/weakness/generate-weakness-input.dto';
+import { GeneratedWeaknessOutputDto } from './dto/missions/weakness/generated-weakness-output.dto';
+import { GenerateLessonReviewInputDto } from './dto/missions/review/generate-lesson-review-input.dto';
+import { GeneratedLessonReviewOutputDto } from './dto/missions/review/generated-lesson-review-output.dto';
 
 @Injectable()
 export class AiService {

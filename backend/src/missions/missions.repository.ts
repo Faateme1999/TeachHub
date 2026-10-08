@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GeneratedDiagnosticTestOutputDto } from 'src/ai/dto/generated-diagnostic-test-output.dto';
+import { GeneratedDiagnosticTestOutputDto } from 'src/ai/dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
 
 @Injectable()
 export class MissionsRepository {
