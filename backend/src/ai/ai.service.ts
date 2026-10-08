@@ -177,35 +177,34 @@ No explanations outside JSON.
 
 Rules:
 
-- The provided learning outcome is the main learning context.
-- The provided topic is the specific area where the student has weakness.
+- The learning outcome is the main learning context.
+- The topic is the specific area where the student has weakness.
 - Explain why the student's selected answer was wrong for each question.
-- Use the provided correct options as the source of truth.
+- Use the provided correct answers as the source of truth.
 - Do not change or invent correct answers.
 - Do not invent question IDs.
+- Never mention question IDs, option IDs, option numbers, or database IDs.
+- Never write phrases such as "Option 1", "Option 8", or "Question 1".
+- Refer naturally to the student's answer and the correct answer.
 - Teach the topic clearly and simply in the context of the learning outcome.
 - Provide one simple example.
 - Provide one short takeaway.
 
 Field requirements:
 
-- "explanations": An array containing one explanation for each wrong question.
-  Each explanation must clearly explain why the student's selected answer was wrong
-  and why the correct answer is correct.
-  Keep each explanation focused on that specific question.
-- Keep each question explanation under 2 sentences.
+- "explanations": one explanation for each wrong question.
+- Each explanation must use the questionId provided in the input.
+- The questionId is only for internal matching and must never appear inside the explanation text.
+- Keep each explanation under 2 sentences.
 
-- "teaching.explanation": A clear and simple explanation of the topic
-  in the context of the learning outcome.
-- Keep the teaching explanation under 2 sentences.  
+- "teaching.explanation": a clear and simple explanation of the topic.
+- Keep the teaching explanation under 2 sentences.
 
-- "teaching.example": One simple example that helps the student understand
-  and apply the topic.
-- Provide only one short example.  
+- "teaching.example": one simple example.
+- Keep it short.
 
-- "teaching.takeaway": One short key point that the student should remember.
-- Keep the takeaway to one sentence.
-
+- "teaching.takeaway": one short key point.
+- Keep it to one sentence.
 
 Return exactly this JSON structure:
 

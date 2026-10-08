@@ -129,22 +129,23 @@ export class MissionsService {
 
     const weaknesses: {
       outcomeId: number;
+      learningOutcome: string;
       topics: {
         topic: string;
-        wrongQuestionIds: number[];
         answers: typeof wrongAnswers;
       }[];
     }[] = [];
 
     for (const answer of wrongAnswers) {
       const outcomeId = answer.question.outcomeId;
+      const learningOutcome = answer.question.outcome.text;
       const topic = answer.question.topic;
-      const questionId = answer.questionId;
 
       let outcome = weaknesses.find((item) => item.outcomeId === outcomeId);
       if (!outcome) {
         outcome = {
           outcomeId,
+          learningOutcome,
           topics: [],
         };
 
@@ -155,21 +156,22 @@ export class MissionsService {
       if (!topicGroup) {
         topicGroup = {
           topic,
-          wrongQuestionIds: [],
           answers: [],
         };
         outcome.topics.push(topicGroup);
       }
-      topicGroup.wrongQuestionIds.push(questionId);
       topicGroup.answers.push(answer);
     }
 
     const aiRemediations: {
+      outcomeId: number;
       learningOutcome: string;
       remediations: {
         explanations: {
           questionId: number;
-          question: string | undefined;
+          question: string;
+          selectedAnswers: string[];
+          correctAnswers: string[];
           explanation: string;
         }[];
         teaching: {
@@ -177,42 +179,76 @@ export class MissionsService {
           example: string;
           takeaway: string;
         };
-      };
+      }[];
     }[] = [];
 
     for (const outcome of weaknesses) {
+      const outcomeRemediations: {
+        explanations: {
+          questionId: number;
+          question: string;
+          selectedAnswers: string[];
+          correctAnswers: string[];
+          explanation: string;
+        }[];
+        teaching: {
+          explanation: string;
+          example: string;
+          takeaway: string;
+        };
+      }[] = [];
       for (const topic of outcome.topics) {
         const remediations = await this.aiService.generateWeaknessRemediation({
-          learningOutcome: topic.answers[0].question.outcome.text,
+          learningOutcome: outcome.learningOutcome,
           topic: topic.topic,
           questions: topic.answers.map((answer) => ({
             questionId: answer.questionId,
             question: answer.question.text,
-            options: answer.question.options.map((option) => ({
-              id: option.id,
-              text: option.text,
-              isCorrect: option.isCorrect,
-            })),
-            selectedOptionIds: answer.selectedOptions.map(
-              (option) => option.optionId,
-            ),
+            selectedAnswers: answer.selectedOptions.map((selectedOption) => {
+              const option = answer.question.options.find(
+                (option) => option.id === selectedOption.optionId,
+              );
+              return option?.text ?? '';
+            }),
+            correctAnswers: answer.question.options
+              .filter((option) => option.isCorrect)
+              .map((option) => option.text),
           })),
         });
 
-        aiRemediations.push({
-          learningOutcome: topic.answers[0].question.outcome.text,
-          remediations: {
-            explanations: remediations.explanations.map((explanation) => ({
+        outcomeRemediations.push({
+          explanations: remediations.explanations.map((explanation) => {
+            const answer = topic.answers.find(
+              (answer) => answer.questionId === explanation.questionId,
+            );
+
+            return {
               questionId: explanation.questionId,
-              question: topic.answers.find(
-                (answer) => answer.questionId === explanation.questionId,
-              )?.question.text,
+              question: answer?.question.text ?? '',
+              selectedAnswers:
+                answer?.selectedOptions.map((selectedOption) => {
+                  const option = answer.question.options.find(
+                    (option) => option.id === selectedOption.optionId,
+                  );
+
+                  return option?.text ?? '';
+                }) ?? [],
+              correctAnswers:
+                answer?.question.options
+                  .filter((option) => option.isCorrect)
+                  .map((option) => option.text) ?? [],
               explanation: explanation.explanation,
-            })),
-            teaching: remediations.teaching,
-          },
+            };
+          }),
+
+          teaching: remediations.teaching,
         });
       }
+      aiRemediations.push({
+        outcomeId: outcome.outcomeId,
+        learningOutcome: outcome.learningOutcome,
+        remediations: outcomeRemediations,
+      });
     }
     return aiRemediations;
   }

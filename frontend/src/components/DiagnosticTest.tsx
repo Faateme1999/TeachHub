@@ -26,7 +26,6 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
   }
 
   const question = test.questions[currentQuestionIndex];
-
   const selectedOptions = answers[currentQuestionIndex] ?? [];
 
   const isLastQuestion = currentQuestionIndex === test.questions.length - 1;
@@ -96,6 +95,10 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
     setCurrentQuestionIndex((current) => current - 1);
   }
 
+  // --------------------------------
+  // Test submitted
+  // --------------------------------
+
   if (isSubmitted && !findWeaknesses.data) {
     return (
       <div style={{ marginTop: "var(--space-4)" }}>
@@ -119,22 +122,30 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
     );
   }
 
+  // --------------------------------
+  // Finding weaknesses
+  // --------------------------------
+
   if (findWeaknesses.isPending) {
     return <Spinner center />;
   }
 
+  // --------------------------------
+  // Weakness result
+  // --------------------------------
+
   if (findWeaknesses.data) {
     return (
       <div style={{ marginTop: "var(--space-4)" }}>
-        <h3>My Weaknesses</h3>
+        <h3>Topics to Review</h3>
 
         {findWeaknesses.data.length === 0 && (
           <p>Great job! No weaknesses were found in your diagnostic test.</p>
         )}
 
-        {findWeaknesses.data.map((weakness, index) => (
+        {findWeaknesses.data.map((weakness) => (
           <div
-            key={`${weakness.learningOutcome}-${index}`}
+            key={weakness.outcomeId}
             style={{
               marginTop: "var(--space-4)",
               padding: "var(--space-4)",
@@ -142,39 +153,94 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
               borderRadius: "12px",
             }}
           >
+            {/* Learning Outcome */}
+
             <h4>{weakness.learningOutcome}</h4>
 
-            {weakness.remediations.explanations.map((item) => (
-              <div
-                key={item.questionId}
-                style={{
-                  marginTop: "var(--space-3)",
-                  padding: "var(--space-3)",
-                  background: "var(--surface-secondary)",
-                  borderRadius: "8px",
-                }}
-              >
-                <strong>{item.question}</strong>
-                <p>{item.explanation}</p>
+            {/* Remediations */}
+
+            {weakness.remediations.map((remediation, index) => (
+              <div key={index}>
+                {/* Wrong Questions */}
+
+                {remediation.explanations.map((item) => (
+                  <div
+                    key={item.questionId}
+                    style={{
+                      marginTop: "var(--space-3)",
+                      padding: "var(--space-3)",
+                      background: "var(--surface-secondary)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <strong>{item.question}</strong>
+
+                    <div
+                      style={{
+                        marginTop: "var(--space-2)",
+                      }}
+                    >
+                      <strong>Your answer</strong>
+
+                      {item.selectedAnswers.map((answer, answerIndex) => (
+                        <p key={answerIndex}>❌ {answer}</p>
+                      ))}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: "var(--space-2)",
+                      }}
+                    >
+                      <strong>Correct answer</strong>
+
+                      {item.correctAnswers.map((answer, answerIndex) => (
+                        <p key={answerIndex}>✓ {answer}</p>
+                      ))}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: "var(--space-2)",
+                      }}
+                    >
+                      <strong>Why?</strong>
+
+                      <p>{item.explanation}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Teaching */}
+
+                <div
+                  style={{
+                    marginTop: "var(--space-4)",
+                  }}
+                >
+                  <h4>Learn This</h4>
+
+                  <p>{remediation.teaching.explanation}</p>
+
+                  <strong>Example</strong>
+
+                  <p>{remediation.teaching.example}</p>
+
+                  <strong>Remember</strong>
+
+                  <p>{remediation.teaching.takeaway}</p>
+                </div>
               </div>
             ))}
-
-            <div style={{ marginTop: "var(--space-4)" }}>
-              <h4>Learn This Topic</h4>
-
-              <p>{weakness.remediations.teaching.explanation}</p>
-
-              <strong>Example</strong>
-              <p>{weakness.remediations.teaching.example}</p>
-
-              <strong>Remember</strong>
-              <p>{weakness.remediations.teaching.takeaway}</p>
-            </div>
           </div>
         ))}
       </div>
     );
   }
+
+  // --------------------------------
+  // Diagnostic test
+  // --------------------------------
 
   return (
     <div style={{ marginTop: "var(--space-4)" }}>
@@ -220,7 +286,9 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
                   name={`question-${currentQuestionIndex}`}
                   checked={isSelected}
                   onChange={() => handleOptionChange(optionIndex)}
-                  style={{ marginRight: "var(--space-2)" }}
+                  style={{
+                    marginRight: "var(--space-2)",
+                  }}
                 />
 
                 {option.text}

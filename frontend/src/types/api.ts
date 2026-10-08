@@ -256,6 +256,8 @@ export interface SubmitDiagnosticTestResponse {
 export interface DiagnosticWeaknessExplanation {
   questionId: number;
   question: string;
+  selectedAnswers: string[];
+  correctAnswers: string[];
   explanation: string;
 }
 
@@ -266,9 +268,12 @@ export interface DiagnosticWeaknessTeaching {
 }
 
 export interface DiagnosticWeaknessRemediation {
+  explanations: DiagnosticWeaknessExplanation[];
+  teaching: DiagnosticWeaknessTeaching;
+}
+
+export interface DiagnosticWeakness {
+  outcomeId: number;
   learningOutcome: string;
-  remediations: {
-    explanations: DiagnosticWeaknessExplanation[];
-    teaching: DiagnosticWeaknessTeaching;
-  };
+  remediations: DiagnosticWeaknessRemediation[];
 }
