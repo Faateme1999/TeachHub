@@ -2,6 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // npx prisma format
+// npx prisma validate
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
@@ -38,6 +39,7 @@ model User {
   passwordResetTokens    PasswordResetToken[]
   createdCourses         Course[]
   diagnosticTestAttempts DiagnosticTestAttempt[]
+  mistakes               StudentMistake[]
 }
 
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
@@ -68,6 +70,7 @@ model Course {
   enrollments Enrollment[]
   lessons     Lesson[]
   // One Course has many Lessons.
+  mistakes    StudentMistake[]
 }
 
 model Enrollment {
@@ -117,6 +120,7 @@ model Lesson {
   assignments            Assignment[]
   missionReview          MissionReview?
   missionDiagnosticTests MissionDiagnosticTest[]
+  mistakes               StudentMistake[]
 }
 
 // One-to-Many relationship
@@ -130,6 +134,7 @@ model Outcome {
   lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   diagnosticQuestions DiagnosticQuestion[]
+  mistakes            StudentMistake[]
 }
 
 enum MissionType {
@@ -186,8 +191,9 @@ model DiagnosticQuestion {
   outcomeId Int
   outcome   Outcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
 
-  options DiagnosticOption[]
-  answers DiagnosticUserAnswer[]
+  options  DiagnosticOption[]
+  answers  DiagnosticUserAnswer[]
+  mistakes StudentMistake[]
 }
 
 model DiagnosticOption {
@@ -240,6 +246,27 @@ model DiagnosticUserAnswerOption {
   option DiagnosticOption     @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   @@unique([answerId, optionId])
+}
+
+model StudentMistake {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  courseId   Int
+  lessonId   Int
+  questionId Int
+  outcomeId  Int
+  topic      String
+  createdAt  DateTime @default(now())
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson   Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question DiagnosticQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  outcome  Outcome            @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, courseId])
+  @@index([userId, lessonId])
+  @@index([userId, outcomeId])
 }
 
 model Assignment {
