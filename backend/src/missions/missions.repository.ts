@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeneratedDiagnosticTestOutputDto } from 'src/ai/dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MissionsRepository {
@@ -94,8 +95,10 @@ export class MissionsRepository {
       isCorrect: boolean;
     }[],
     score: number,
+    tx?: Prisma.TransactionClient,
   ) {
-    return this.prisma.diagnosticTestAttempt.create({
+    const db = tx ?? this.prisma;
+    return db.diagnosticTestAttempt.create({
       data: {
         userId,
         testId,
@@ -127,6 +130,11 @@ export class MissionsRepository {
     return this.prisma.missionDiagnosticTest.findUnique({
       where: { id: testId },
       include: {
+        lesson: {
+          select: {
+            courseId: true,
+          },
+        },
         questions: {
           orderBy: {
             order: 'asc',
@@ -164,6 +172,66 @@ export class MissionsRepository {
           },
         },
       },
+    });
+  }
+
+  async saveStudentMistakes(
+    userId: number,
+    mistakes: {
+      questionId: number;
+      courseId: number;
+      lessonId: number;
+      outcomeId: number;
+      topic: string;
+    }[],
+    tx?: Prisma.TransactionClient,
+  ) {
+    if (mistakes.length === 0) {
+      return;
+    }
+
+    const db = tx ?? this.prisma;
+    return db.studentMistake.createMany({
+      data: mistakes.map((mistake) => ({
+        userId,
+        questionId: mistake.questionId,
+        courseId: mistake.courseId,
+        lessonId: mistake.lessonId,
+        outcomeId: mistake.outcomeId,
+        topic: mistake.topic,
+      })),
+    });
+  }
+
+  async saveDiagnosticAttemptWithMistakes(
+    userId: number,
+    testId: number,
+    answers: {
+      questionId: number;
+      selectedOptionIds: number[];
+      isCorrect: boolean;
+    }[],
+    score: number,
+    mistakes: {
+      questionId: number;
+      courseId: number;
+      lessonId: number;
+      outcomeId: number;
+      topic: string;
+    }[],
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const attempt = await this.saveDiagnosticAttempt(
+        userId,
+        testId,
+        answers,
+        score,
+        tx,
+      );
+
+      await this.saveStudentMistakes(userId, mistakes, tx);
+
+      return attempt;
     });
   }
 }

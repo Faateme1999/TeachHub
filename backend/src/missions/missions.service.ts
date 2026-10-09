@@ -108,11 +108,30 @@ export class MissionsService {
 
     const score = (correctAnswers / test.questions.length) * 100;
 
-    return this.missionsRepository.saveDiagnosticAttempt(
+    const mistakes = submittedAnswers
+      .filter((answer) => !answer.isCorrect)
+      .map((answer) => {
+        const question = test.questions.find((q) => q.id === answer.questionId);
+
+        if (!question) {
+          throw new BadRequestException('Question not found');
+        }
+
+        return {
+          questionId: question.id,
+          courseId: test.lesson.courseId,
+          lessonId: test.lessonId,
+          outcomeId: question.outcomeId,
+          topic: question.topic,
+        };
+      });
+
+    return this.missionsRepository.saveDiagnosticAttemptWithMistakes(
       userId,
       testId,
       submittedAnswers,
       score,
+      mistakes,
     );
   }
 
