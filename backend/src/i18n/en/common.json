@@ -45,7 +45,10 @@
     "notFound": "Submission {id} not found",
     "correctedFileRequired": "Corrected file is required",
     "correctedFileNotFound": "Corrected file not found for this submission",
-    "correctedFileNotUploaded": "Corrected file has not been uploaded yet"
+    "correctedFileNotUploaded": "Corrected file has not been uploaded yet",
+    "aiAssignmentNotForUser": "This AI assignment does not belong to you",
+    "answerTextRequired": "A text answer is required",
+    "alreadySubmitted": "You have already submitted an answer for this AI assignment"
   },
   "auth": {
     "emailAlreadyExists": "Email already exists",

@@ -5,7 +5,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SubmissionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUniqueSubmissionByUserAndAssignment(assignmentId: number, userId: number) {
+  async findUniqueSubmissionByUserAndAssignment(
+    assignmentId: number,
+    userId: number,
+  ) {
     return this.prisma.submission.findUnique({
       where: {
         userId_assignmentId: {
@@ -23,8 +26,9 @@ export class SubmissionsRepository {
   async upsert(
     assignmentId: number,
     userId: number,
-    fileName: string,
-    fileData: Uint8Array,
+    answerText?: string,
+    fileName?: string,
+    fileData?: Uint8Array,
     // A type used to store binary data such as file contents
   ) {
     return this.prisma.submission.upsert({
@@ -37,12 +41,14 @@ export class SubmissionsRepository {
       create: {
         assignmentId,
         userId,
-        fileName,
-        fileData: fileData as any,
+        answerText: answerText ?? null,
+        fileName: fileName ?? null,
+        fileData: fileData ? (fileData as any) : null,
       },
       update: {
-        fileName,
-        fileData: fileData as any,
+        answerText: answerText ?? null,
+        fileName: fileName ?? null,
+        fileData: fileData ? (fileData as any) : null,
         submittedAt: new Date(),
       },
     });

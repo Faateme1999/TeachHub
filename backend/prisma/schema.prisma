@@ -40,6 +40,7 @@ model User {
   createdCourses         Course[]
   diagnosticTestAttempts DiagnosticTestAttempt[]
   mistakes               StudentMistake[]
+  personalAssignments    Assignment[]
 }
 
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
@@ -269,18 +270,30 @@ model StudentMistake {
   @@index([userId, outcomeId])
 }
 
+enum AssignmentSource {
+  TEACHER
+  AI
+}
+
 model Assignment {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
   deadline    DateTime?
-  lessonId    Int
 
-  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  source           AssignmentSource @default(TEACHER)
+  createdForUserId Int?
+  lessonId         Int
+
+  createdForUser User?  @relation(fields: [createdForUserId], references: [id], onDelete: Cascade)
+  lesson         Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   submissions Submission[]
 
   createdAt DateTime @default(now())
+
+  @@index([lessonId, source])
+  @@index([createdForUserId])
 }
 
 model Submission {
@@ -292,8 +305,10 @@ model Submission {
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  fileName String
-  fileData Bytes
+  answerText String?
+
+  fileName String?
+  fileData Bytes?
 
   submittedAt DateTime @default(now())
 

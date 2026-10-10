@@ -34,19 +34,44 @@ export class SubmissionsService {
     return assignment;
   }
 
-  async upsert(assignmentId: number, userId: number, file: any) {
-    if (!file) {
-      throw new BadRequestException(
-        await this.i18n.translate('common.submission.fileRequired'),
-      );
+  async upsert(
+    assignmentId: number,
+    userId: number,
+    file?: any,
+    answerText?: string,
+  ) {
+    const assignment = await this.findAssignment(assignmentId);
+
+    if (assignment.source === 'AI') {
+      if (assignment.createdForUserId !== userId) {
+        throw new BadRequestException(
+          await this.i18n.translate('common.submission.aiAssignmentNotForUser'),
+        );
+      }
+      if (!answerText?.trim()) {
+        throw new BadRequestException(
+          await this.i18n.translate('common.submission.answerTextRequired'),
+        );
+      }
+    } else {
+      if (!file) {
+        throw new BadRequestException(
+          await this.i18n.translate('common.submission.fileRequired'),
+        );
+      }
     }
-    await this.findAssignment(assignmentId);
 
     const existingSubmission =
       await this.submissionsRepository.findUniqueSubmissionByUserAndAssignment(
         assignmentId,
         userId,
       );
+
+    if (assignment.source === 'AI' && existingSubmission) {
+      throw new BadRequestException(
+        await this.i18n.translate('common.submission.alreadySubmitted'),
+      );
+    }
 
     if (existingSubmission?.correctedFileData) {
       throw new BadRequestException(
@@ -57,8 +82,9 @@ export class SubmissionsService {
     return this.submissionsRepository.upsert(
       assignmentId,
       userId,
-      file.originalname,
-      file.buffer,
+      assignment.source === 'AI' ? answerText : undefined,
+      file?.originalname,
+      file?.buffer,
       //   file.buffer contains the actual binary content of the uploaded file.
     );
   }

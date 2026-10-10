@@ -37,7 +37,7 @@
     "maximumAttemptsReached": "حداکثر تعداد تلاش‌ها انجام شده است"
   },
   "assignment": {
-    "notFound": "تکلیف {id} پیدا نشد"
+    "notFound": "ارسال پاسخ با شناسه {id} پیدا نشد"
   },
   "submission": {
     "fileRequired": "فایل الزامی است",
@@ -45,7 +45,10 @@
     "notFound": " تکلیف ارسال {id} پیدا نشد",
     "correctedFileRequired": "فایل تصحیح‌شده الزامی است",
     "correctedFileNotFound": "فایل تصحیح‌شده‌ای برای این ارسال پیدا نشد",
-    "correctedFileNotUploaded": "فایل تصحیح‌شده هنوز آپلود نشده است"
+    "correctedFileNotUploaded": "فایل تصحیح‌شده هنوز آپلود نشده است",
+    "aiAssignmentNotForUser": "این تمرین هوش مصنوعی متعلق به شما نیست",
+    "answerTextRequired": "وارد کردن پاسخ متنی الزامی است",
+    "alreadySubmitted": "پاسخ این تمرین هوش مصنوعی قبلاً ثبت شده است"
   },
   "auth": {
     "emailAlreadyExists": "این ایمیل قبلاً ثبت شده است",

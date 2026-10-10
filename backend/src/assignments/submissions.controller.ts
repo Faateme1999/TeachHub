@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -33,10 +34,16 @@ export class SubmissionsController {
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
     //  @UploadedFile() => NestJS parameter decorator
     @UploadedFile() file: any,
+    @Body('answerText') answerText: string,
     @Req()
     req: any,
   ) {
-    return this.submissionsService.upsert(assignmentId, req.user.id, file);
+    return this.submissionsService.upsert(
+      assignmentId,
+      req.user.id,
+      file,
+      answerText,
+    );
   }
 
   @Get(':submissionId/download')
@@ -49,6 +56,10 @@ export class SubmissionsController {
     const submission =
       await this.submissionsService.downloadAssignmentFile(submissionId);
 
+    if (!submission.fileData || !submission.fileName) {
+      throw new NotFoundException('File not Found');
+    }
+
     res.set({
       // Set the HTTP response headers before sending the file.
       // Content-Type tells the browser that the response is binary file data.
@@ -57,7 +68,6 @@ export class SubmissionsController {
       // Content-Disposition tells the browser to download the file and use the original file name.
       'Content-Disposition': `attachment; filename="${submission.fileName}"`,
     });
-
     // Convert the stored binary data into a Node.js Buffer and send the actual file data to the browser.
     res.send(Buffer.from(submission.fileData));
   }
