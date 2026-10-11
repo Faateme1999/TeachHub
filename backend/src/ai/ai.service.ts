@@ -7,6 +7,8 @@ import { GenerateWeaknessInputDto } from './dto/missions/weakness/generate-weakn
 import { GeneratedWeaknessOutputDto } from './dto/missions/weakness/generated-weakness-output.dto';
 import { GenerateLessonReviewInputDto } from './dto/missions/review/generate-lesson-review-input.dto';
 import { GeneratedLessonReviewOutputDto } from './dto/missions/review/generated-lesson-review-output.dto';
+import { GeneratePracticalAssignmentInputDto } from './dto/missions/practical-assignment/generate-practical-assignment-input.dto';
+import { GeneratedPracticalAssignmentOutputDto } from './dto/missions/practical-assignment/generated-practical-assignment-output.dto';
 
 @Injectable()
 export class AiService {
@@ -221,6 +223,61 @@ Return exactly this JSON structure:
     "takeaway": "string"
   }
 }`,
+        },
+        {
+          role: 'user',
+          content: JSON.stringify(dto),
+        },
+      ],
+    });
+    const content = response.choices[0].message.content;
+
+    if (!content) {
+      throw new Error('AI returned empty response');
+    }
+
+    return JSON.parse(content);
+  }
+
+  async generatePracticalAssignment(
+    dto: GeneratePracticalAssignmentInputDto,
+  ): Promise<GeneratedPracticalAssignmentOutputDto> {
+    const response = await this.groq.chat.completions.create({
+      model: 'openai/gpt-oss-20b',
+      max_tokens: 4000,
+
+      messages: [
+        {
+          role: 'system',
+          content: `
+You are an educational practical assignment designer.
+
+Create one practical assignment tailored to the student's mistakes.
+
+Rules:
+- Use the lesson title, content, and learning outcomes.
+- Use the student's mistake topics, incorrectly selected answers, and correct answers to identify misconceptions and personalize the practical assignment.
+- Focus on the student's demonstrated weaknesses.
+- Design a practical task that requires applying knowledge, not just recalling facts.
+- Make the task achievable for the student's learning level.
+- Provide clear, numbered instructions.
+- State exactly what the student must submit.
+- Provide objective evaluation criteria.
+- Include helpful hints without giving away the full solution.
+- Do not invent lesson facts.
+- Return ONLY valid JSON. No markdown.
+
+Return exactly this structure:
+{
+  "title": "string",
+  "objective": "string",
+  "description": "string",
+  "instructions": ["string"],
+  "expectedOutput": "string",
+  "evaluationCriteria": ["string"],
+  "hints": ["string"]
+}
+`,
         },
         {
           role: 'user',

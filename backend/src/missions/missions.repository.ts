@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeneratedDiagnosticTestOutputDto } from 'src/ai/dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
 import { Prisma } from '@prisma/client';
+import { GeneratedPracticalAssignmentOutputDto } from 'src/ai/dto/missions/practical-assignment/generated-practical-assignment-output.dto';
 
 @Injectable()
 export class MissionsRepository {
@@ -232,6 +233,63 @@ export class MissionsRepository {
       await this.saveStudentMistakes(userId, mistakes, tx);
 
       return attempt;
+    });
+  }
+
+  async findLessonAndMistakesForPracticalAssignment(
+    userId: number,
+    LessonId: number,
+  ) {
+    return this.prisma.lesson.findUnique({
+      where: {
+        id: LessonId,
+      },
+      include: {
+        outcomes: true,
+        mistakes: {
+          where: {
+            userId,
+          },
+          include: {
+            question: {
+              include: {
+                options: true,
+                answers: {
+                  where: {
+                    attempt: {
+                      userId,
+                    },
+                  },
+                  include: {
+                    selectedOptions: {
+                      include: {
+                        option: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            outcome: true,
+          },
+        },
+      },
+    });
+  }
+
+  async savePracticalAssignment(
+    userId: number,
+    lessonId: number,
+    assignment: GeneratedPracticalAssignmentOutputDto,
+  ) {
+    return this.prisma.assignment.create({
+      data: {
+        title: assignment.title,
+        description: assignment.description,
+        source: 'AI',
+        createdForUserId: userId,
+        lessonId,
+      },
     });
   }
 }

@@ -43,4 +43,16 @@ export class MissionsController {
   ) {
     return this.missionsService.findWeaknesses(req.user.id, testId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('lessons/:lessonId/practical-assignment')
+  generatePracticalAssignment(
+    @Param('lessonId', ParseIntPipe) lessonId: number,
+    @Req() req: any,
+  ) {
+    return this.missionsService.generatePracticalAssignment(
+      req.user.id,
+      lessonId,
+    );
+  }
 }

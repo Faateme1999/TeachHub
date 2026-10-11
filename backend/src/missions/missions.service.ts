@@ -243,4 +243,43 @@ export class MissionsService {
     }
     return aiRemediations;
   }
+
+  async generatePracticalAssignment(userId: number, lessonId: number) {
+    const lesson =
+      await this.missionsRepository.findLessonAndMistakesForPracticalAssignment(
+        userId,
+        lessonId,
+      );
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const input = {
+      lessonTitle: lesson.title,
+      lessonContent: lesson.content ?? '',
+      learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
+      mistakes: lesson.mistakes.map((mistake) => {
+        const answer = mistake.question.answers[0];
+        return {
+          learningOutcome: mistake.outcome.text,
+          topic: mistake.topic,
+          question: mistake.question.text,
+          selectedAnswers:
+            answer.selectedOptions.map((item) => item.option.text) ?? [],
+          correctAnswers: mistake.question.options
+            .filter((item) => item.isCorrect)
+            .map((option) => option.text),
+        };
+      }),
+    };
+
+    const assignment = await this.aiService.generatePracticalAssignment(input);
+
+    return this.missionsRepository.savePracticalAssignment(
+      userId,
+      lessonId,
+      assignment,
+    );
+  }
 }
