@@ -285,7 +285,7 @@ export class MissionsRepository {
     return this.prisma.assignment.create({
       data: {
         title: assignment.title,
-        description: assignment.description,
+        description: JSON.stringify(assignment.description),
         source: 'AI',
         createdForUserId: userId,
         lessonId,

@@ -255,6 +255,8 @@ You are an educational practical assignment designer.
 Create one practical assignment tailored to the student's mistakes.
 
 Rules:
+- Put all practical assignment content inside the description object.
+- Do not return objective, instructions, expectedOutput, evaluationCriteria, or hints as top-level fields.
 - Use the lesson title, content, and learning outcomes.
 - Use the student's mistake topics, incorrectly selected answers, and correct answers to identify misconceptions and personalize the practical assignment.
 - Focus on the student's demonstrated weaknesses.
@@ -267,15 +269,17 @@ Rules:
 - Do not invent lesson facts.
 - Return ONLY valid JSON. No markdown.
 
-Return exactly this structure:
+Return ONLY valid JSON with exactly this structure:
 {
   "title": "string",
-  "objective": "string",
-  "description": "string",
-  "instructions": ["string"],
-  "expectedOutput": "string",
-  "evaluationCriteria": ["string"],
-  "hints": ["string"]
+  "description": {
+    "objective": "string",
+    "description": "string",
+    "instructions": ["string"],
+    "expectedOutput": "string",
+    "evaluationCriteria": ["string"],
+    "hints": ["string"]
+  }
 }
 `,
         },
