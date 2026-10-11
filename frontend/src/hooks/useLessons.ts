@@ -3,6 +3,7 @@ import { apiClient } from "../lib/apiClient";
 import { queryKeys } from "../lib/queryKeys";
 import type {
   DiagnosticTest,
+  GeneratedPracticalAssignment,
   Lesson,
   LessonInput,
   LessonReview,
@@ -137,6 +138,19 @@ export function useGenerateDiagnosticTest() {
       );
 
       return data;
+    },
+  });
+}
+
+
+export function useGeneratePracticalAssignment(lessonId: number) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post<GeneratedPracticalAssignment>(
+        `/missions/lessons/${lessonId}/practical-assignment`,
+      );
+
+      return response.data;
     },
   });
 }

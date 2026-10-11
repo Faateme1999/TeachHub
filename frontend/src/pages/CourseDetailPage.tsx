@@ -334,7 +334,10 @@ export function CourseDetailPage() {
                     </div>
                     {diagnosticLessonId === lesson.id &&
                       generateDiagnosticTest.data && (
-                        <DiagnosticTest test={generateDiagnosticTest.data} />
+                        <DiagnosticTest
+                          test={generateDiagnosticTest.data}
+                          lessonId={lesson.id}
+                        />
                       )}
                   </div>
                 )}

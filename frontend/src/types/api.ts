@@ -277,3 +277,20 @@ export interface DiagnosticWeakness {
   learningOutcome: string;
   remediations: DiagnosticWeaknessRemediation[];
 }
+
+export interface PracticalAssignmentContent {
+  objective: string;
+  description: string;
+  instructions: string[];
+  expectedOutput: string;
+  evaluationCriteria: string[];
+  hints: string[];
+}
+
+export interface GeneratedPracticalAssignment {
+  id: number;
+  title: string;
+  description: string | null;
+  lessonId: number;
+  createdAt: string;
+}

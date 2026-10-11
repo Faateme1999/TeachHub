@@ -1,15 +1,21 @@
 import { useState } from "react";
-import type { DiagnosticTest } from "../types/api";
+import type {
+  DiagnosticTest as DiagnosticTestType,
+  PracticalAssignmentContent,
+} from "../types/api";
 import { Button } from "./ui/Button";
 import { Spinner } from "./ui/Spinner";
 import { useSubmitDiagnosticTest } from "../hooks/useSubmitDiagnosticTest";
 import { useDiagnosticWeaknesses } from "../hooks/useDiagnosticWeaknesses";
+import { useGeneratePracticalAssignment } from "../hooks/useLessons";
+import { getApiErrorMessage } from "../lib/apiClient";
 
 interface DiagnosticTestProps {
-  test: DiagnosticTest;
+  test: DiagnosticTestType;
+  lessonId: number;
 }
 
-export function DiagnosticTest({ test }: DiagnosticTestProps) {
+export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const [answers, setAnswers] = useState<number[][]>(() =>
@@ -18,16 +24,19 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const [practicalContent, setPracticalContent] =
+    useState<PracticalAssignmentContent | null>(null);
+
   const submitDiagnosticTest = useSubmitDiagnosticTest();
   const findWeaknesses = useDiagnosticWeaknesses();
+  const generatePracticalAssignment = useGeneratePracticalAssignment(lessonId);
 
-  if (!test || !test.questions || test.questions.length === 0) {
+  if (!test?.questions?.length) {
     return <p>No diagnostic questions available.</p>;
   }
 
   const question = test.questions[currentQuestionIndex];
   const selectedOptions = answers[currentQuestionIndex] ?? [];
-
   const isLastQuestion = currentQuestionIndex === test.questions.length - 1;
 
   function handleOptionChange(optionIndex: number) {
@@ -39,13 +48,9 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
       } else {
         const currentSelected = newAnswers[currentQuestionIndex] ?? [];
 
-        if (currentSelected.includes(optionIndex)) {
-          newAnswers[currentQuestionIndex] = currentSelected.filter(
-            (index) => index !== optionIndex,
-          );
-        } else {
-          newAnswers[currentQuestionIndex] = [...currentSelected, optionIndex];
-        }
+        newAnswers[currentQuestionIndex] = currentSelected.includes(optionIndex)
+          ? currentSelected.filter((index) => index !== optionIndex)
+          : [...currentSelected, optionIndex];
       }
 
       return newAnswers;
@@ -58,16 +63,18 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
       return;
     }
 
-    const formattedAnswers = test.questions.map((question, questionIndex) => {
-      const selectedIndexes = answers[questionIndex] ?? [];
+    const formattedAnswers = test.questions.map(
+      (currentQuestion, questionIndex) => {
+        const selectedIndexes = answers[questionIndex] ?? [];
 
-      return {
-        questionId: question.id,
-        selectedOptionIds: selectedIndexes.map(
-          (index) => question.options[index].id,
-        ),
-      };
-    });
+        return {
+          questionId: currentQuestion.id,
+          selectedOptionIds: selectedIndexes.map(
+            (index) => currentQuestion.options[index].id,
+          ),
+        };
+      },
+    );
 
     try {
       await submitDiagnosticTest.mutateAsync({
@@ -77,7 +84,7 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
 
       setIsSubmitted(true);
     } catch {
-      // Error is shown below.
+      // The error is displayed below.
     }
   }
 
@@ -85,19 +92,51 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
     try {
       await findWeaknesses.mutateAsync(test.id);
     } catch {
-      // Error is shown below.
+      // The error is displayed below.
     }
   }
 
   function handlePrevious() {
-    if (currentQuestionIndex === 0) return;
-
-    setCurrentQuestionIndex((current) => current - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((current) => current - 1);
+    }
   }
 
-  // --------------------------------
-  // Test submitted
-  // --------------------------------
+  async function handleGeneratePracticalAssignment() {
+    try {
+      const assignment = await generatePracticalAssignment.mutateAsync();
+
+      if (!assignment.description) {
+        setPracticalContent(null);
+        return;
+      }
+
+      try {
+        const parsed: unknown = JSON.parse(assignment.description);
+
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "objective" in parsed &&
+          "description" in parsed &&
+          "instructions" in parsed &&
+          "expectedOutput" in parsed &&
+          "evaluationCriteria" in parsed &&
+          "hints" in parsed
+        ) {
+          setPracticalContent(parsed as PracticalAssignmentContent);
+        } else {
+          setPracticalContent(null);
+        }
+      } catch {
+        setPracticalContent(null);
+      }
+    } catch {
+      // The error is displayed below.
+    }
+  }
+
+  // 1. Test submitted: ask to analyze weaknesses.
 
   if (isSubmitted && !findWeaknesses.data) {
     return (
@@ -122,17 +161,13 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
     );
   }
 
-  // --------------------------------
-  // Finding weaknesses
-  // --------------------------------
+  // 2. Analyzing weaknesses.
 
   if (findWeaknesses.isPending) {
     return <Spinner center />;
   }
 
-  // --------------------------------
-  // Weakness result
-  // --------------------------------
+  // 3. Display weaknesses and Mission 4.
 
   if (findWeaknesses.data) {
     return (
@@ -153,16 +188,10 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
               borderRadius: "12px",
             }}
           >
-            {/* Learning Outcome */}
-
             <h4>{weakness.learningOutcome}</h4>
-
-            {/* Remediations */}
 
             {weakness.remediations.map((remediation, index) => (
               <div key={index}>
-                {/* Wrong Questions */}
-
                 {remediation.explanations.map((item) => (
                   <div
                     key={item.questionId}
@@ -175,11 +204,7 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
                   >
                     <strong>{item.question}</strong>
 
-                    <div
-                      style={{
-                        marginTop: "var(--space-2)",
-                      }}
-                    >
+                    <div style={{ marginTop: "var(--space-2)" }}>
                       <strong>Your answer</strong>
 
                       {item.selectedAnswers.map((answer, answerIndex) => (
@@ -187,11 +212,7 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
                       ))}
                     </div>
 
-                    <div
-                      style={{
-                        marginTop: "var(--space-2)",
-                      }}
-                    >
+                    <div style={{ marginTop: "var(--space-2)" }}>
                       <strong>Correct answer</strong>
 
                       {item.correctAnswers.map((answer, answerIndex) => (
@@ -199,48 +220,99 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
                       ))}
                     </div>
 
-                    <div
-                      style={{
-                        marginTop: "var(--space-2)",
-                      }}
-                    >
+                    <div style={{ marginTop: "var(--space-2)" }}>
                       <strong>Why?</strong>
-
                       <p>{item.explanation}</p>
                     </div>
                   </div>
                 ))}
 
-                {/* Teaching */}
-
-                <div
-                  style={{
-                    marginTop: "var(--space-4)",
-                  }}
-                >
+                <div style={{ marginTop: "var(--space-4)" }}>
                   <h4>Learn This</h4>
-
                   <p>{remediation.teaching.explanation}</p>
 
                   <strong>Example</strong>
-
                   <p>{remediation.teaching.example}</p>
 
                   <strong>Remember</strong>
-
                   <p>{remediation.teaching.takeaway}</p>
                 </div>
               </div>
             ))}
           </div>
         ))}
+
+        {/* Mission 4: Practical Assignment */}
+
+        <section style={{ marginTop: "var(--space-5)" }}>
+          <h3>Mission 4: Practical Assignment</h3>
+
+          <p>
+            Apply what you learned by completing a practical assignment based on
+            your lesson and weaknesses.
+          </p>
+
+          <Button
+            onClick={handleGeneratePracticalAssignment}
+            disabled={generatePracticalAssignment.isPending}
+          >
+            {generatePracticalAssignment.isPending
+              ? "Generating Assignment..."
+              : "Generate Practical Assignment"}
+          </Button>
+
+          {generatePracticalAssignment.isError && (
+            <p>
+              {getApiErrorMessage(
+                generatePracticalAssignment.error,
+                "Could not generate the practical assignment. Please try again.",
+              )}
+            </p>
+          )}
+
+          {generatePracticalAssignment.isSuccess && !practicalContent && (
+            <p>
+              The assignment was generated, but its content could not be read.
+              Please check the response format.
+            </p>
+          )}
+
+          {practicalContent && (
+            <div style={{ marginTop: "var(--space-4)" }}>
+              <h4>{practicalContent.objective}</h4>
+              <p>{practicalContent.description}</p>
+
+              <strong>Instructions</strong>
+              <ol>
+                {practicalContent.instructions.map((instruction, index) => (
+                  <li key={index}>{instruction}</li>
+                ))}
+              </ol>
+
+              <strong>Expected Output</strong>
+              <p>{practicalContent.expectedOutput}</p>
+
+              <strong>Evaluation Criteria</strong>
+              <ul>
+                {practicalContent.evaluationCriteria.map((criterion, index) => (
+                  <li key={index}>{criterion}</li>
+                ))}
+              </ul>
+
+              <strong>Hints</strong>
+              <ul>
+                {practicalContent.hints.map((hint, index) => (
+                  <li key={index}>{hint}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
       </div>
     );
   }
 
-  // --------------------------------
-  // Diagnostic test
-  // --------------------------------
+  // 4. Diagnostic questions.
 
   return (
     <div style={{ marginTop: "var(--space-4)" }}>
@@ -283,12 +355,10 @@ export function DiagnosticTest({ test }: DiagnosticTestProps) {
                   type={
                     question.type === "SINGLE_CHOICE" ? "radio" : "checkbox"
                   }
-                  name={`question-${currentQuestionIndex}`}
+                  name={`question-${question.id}`}
                   checked={isSelected}
                   onChange={() => handleOptionChange(optionIndex)}
-                  style={{
-                    marginRight: "var(--space-2)",
-                  }}
+                  style={{ marginRight: "var(--space-2)" }}
                 />
 
                 {option.text}
