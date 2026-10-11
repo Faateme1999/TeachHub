@@ -9,6 +9,7 @@ import { useSubmitDiagnosticTest } from "../hooks/useSubmitDiagnosticTest";
 import { useDiagnosticWeaknesses } from "../hooks/useDiagnosticWeaknesses";
 import { useGeneratePracticalAssignment } from "../hooks/useLessons";
 import { getApiErrorMessage } from "../lib/apiClient";
+import { useSubmitAssignment } from "../hooks/useAssignments";
 
 interface DiagnosticTestProps {
   test: DiagnosticTestType;
@@ -27,9 +28,16 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
   const [practicalContent, setPracticalContent] =
     useState<PracticalAssignmentContent | null>(null);
 
+  const [practicalAssignmentId, setPracticalAssignmentId] = useState<
+    number | null
+  >(null);
+
+  const [studentAnswer, setStudentAnswer] = useState("");
+
   const submitDiagnosticTest = useSubmitDiagnosticTest();
   const findWeaknesses = useDiagnosticWeaknesses();
   const generatePracticalAssignment = useGeneratePracticalAssignment(lessonId);
+  const submitAnswer = useSubmitAssignment(practicalAssignmentId ?? 0);
 
   if (!test?.questions?.length) {
     return <p>No diagnostic questions available.</p>;
@@ -106,8 +114,12 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
     try {
       const assignment = await generatePracticalAssignment.mutateAsync();
 
+      setPracticalAssignmentId(assignment.id);
+      setStudentAnswer("");
+      setPracticalContent(null);
+      submitAnswer.reset();
+
       if (!assignment.description) {
-        setPracticalContent(null);
         return;
       }
 
@@ -125,11 +137,9 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
           "hints" in parsed
         ) {
           setPracticalContent(parsed as PracticalAssignmentContent);
-        } else {
-          setPracticalContent(null);
         }
       } catch {
-        setPracticalContent(null);
+        // The assignment description is not valid JSON.
       }
     } catch {
       // The error is displayed below.
@@ -242,8 +252,6 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
           </div>
         ))}
 
-        {/* Mission 4: Practical Assignment */}
-
         <section style={{ marginTop: "var(--space-5)" }}>
           <h3>Mission 4: Practical Assignment</h3>
 
@@ -252,14 +260,16 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
             your lesson and weaknesses.
           </p>
 
-          <Button
-            onClick={handleGeneratePracticalAssignment}
-            disabled={generatePracticalAssignment.isPending}
-          >
-            {generatePracticalAssignment.isPending
-              ? "Generating Assignment..."
-              : "Generate Practical Assignment"}
-          </Button>
+          {!practicalContent && (
+            <Button
+              onClick={handleGeneratePracticalAssignment}
+              disabled={generatePracticalAssignment.isPending}
+            >
+              {generatePracticalAssignment.isPending
+                ? "Generating Assignment..."
+                : "Generate Practical Assignment"}
+            </Button>
+          )}
 
           {generatePracticalAssignment.isError && (
             <p>
@@ -305,6 +315,62 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
                   <li key={index}>{hint}</li>
                 ))}
               </ul>
+
+              {/* Student's answer goes directly below the assignment. */}
+
+              <div style={{ marginTop: "var(--space-5)" }}>
+                <h4>Your Answer</h4>
+
+                <textarea
+                  value={studentAnswer}
+                  onChange={(event) => setStudentAnswer(event.target.value)}
+                  placeholder="Write your answer here..."
+                  rows={8}
+                  disabled={submitAnswer.isPending || submitAnswer.isSuccess}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "8px",
+                    boxSizing: "border-box",
+                    resize: "vertical",
+                  }}
+                />
+
+                <div style={{ marginTop: "var(--space-3)" }}>
+                  <Button
+                    onClick={() => {
+                      if (
+                        practicalAssignmentId !== null &&
+                        studentAnswer.trim()
+                      ) {
+                        submitAnswer.mutate(studentAnswer.trim());
+                      }
+                    }}
+                    disabled={
+                      practicalAssignmentId === null ||
+                      !studentAnswer.trim() ||
+                      submitAnswer.isPending ||
+                      submitAnswer.isSuccess
+                    }
+                  >
+                    {submitAnswer.isPending ? "Submitting..." : "Submit Answer"}
+                  </Button>
+                </div>
+
+                {submitAnswer.isSuccess && (
+                  <p>Your answer has been saved successfully.</p>
+                )}
+
+                {submitAnswer.isError && (
+                  <p>
+                    {getApiErrorMessage(
+                      submitAnswer.error,
+                      "Could not save your answer. Please try again.",
+                    )}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </section>

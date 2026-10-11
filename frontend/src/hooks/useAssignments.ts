@@ -42,9 +42,18 @@ export function useCreateAssignment(lessonId: number) {
 
 export function useSubmitAssignment(assignmentId: number) {
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (input: File | string) => {
+      if (typeof input === "string") {
+        const { data } = await apiClient.post(
+          `/assignments/${assignmentId}/submissions`,
+          { answerText: input },
+        );
+
+        return data;
+      }
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", input);
 
       const { data } = await apiClient.post(
         `/assignments/${assignmentId}/submissions`,
