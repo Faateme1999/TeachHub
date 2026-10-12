@@ -211,23 +211,23 @@ export interface LessonReview {
   concepts: ReviewConcept[];
 }
 
-export type DiagnosticQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+export type TestQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
 
-export interface DiagnosticOption {
+export interface TestOption {
   id: number;
   text: string;
   isCorrect?: boolean;
   order: number;
 }
 
-export interface DiagnosticQuestion {
+export interface TestQuestion {
   id: number;
   text: string;
-  type: DiagnosticQuestionType;
+  type: TestQuestionType;
   order: number;
   topic: string;
   outcomeId: number;
-  options: DiagnosticOption[];
+  options: TestOption[];
 }
 
 export interface DiagnosticTest {
@@ -236,7 +236,7 @@ export interface DiagnosticTest {
   type: "DIAGNOSTIC";
   order: number;
   lessonId: number;
-  questions: DiagnosticQuestion[];
+  questions: TestQuestion[];
 }
 
 export interface SubmitDiagnosticAnswer {

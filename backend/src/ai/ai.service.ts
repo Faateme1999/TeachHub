@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Groq from 'groq-sdk';
-import { GenerateDiagnosticTestInputDto } from './dto/missions/diagnostic-test/generate-diagnostic-test-input.dto';
-import { GeneratedDiagnosticTestOutputDto } from './dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
+import { GenerateDiagnosticTestInputDto } from './dto/missions/tests/generate-diagnostic-test-input.dto';
+import { GeneratedTestOutputDto } from './dto/missions/tests/generated-diagnostic-test-output.dto';
 import { GenerateWeaknessInputDto } from './dto/missions/weakness/generate-weakness-input.dto';
 import { GeneratedWeaknessOutputDto } from './dto/missions/weakness/generated-weakness-output.dto';
 import { GenerateLessonReviewInputDto } from './dto/missions/review/generate-lesson-review-input.dto';
@@ -78,7 +78,7 @@ The example type must be "code", "analogy", or "real_world".
 
   async generateDiagnosticTest(
     dto: GenerateDiagnosticTestInputDto,
-  ): Promise<GeneratedDiagnosticTestOutputDto> {
+  ): Promise<GeneratedTestOutputDto> {
     const response = await this.groq.chat.completions.create({
       model: 'openai/gpt-oss-20b',
       max_tokens: 4000,

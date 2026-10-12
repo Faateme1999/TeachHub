@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GeneratedDiagnosticTestOutputDto } from 'src/ai/dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
+import { GeneratedTestOutputDto } from 'src/ai/dto/missions/tests/generated-diagnostic-test-output.dto';
 import { Prisma } from '@prisma/client';
 import { GeneratedPracticalAssignmentOutputDto } from 'src/ai/dto/missions/practical-assignment/generated-practical-assignment-output.dto';
 
@@ -15,8 +15,6 @@ export class MissionsRepository {
       },
       create: {
         title: 'Lesson Review',
-        type: 'REVIEW',
-        order: 1,
         lessonId,
         content,
       },
@@ -35,7 +33,7 @@ export class MissionsRepository {
   }
 
   async findDiagnosticTest(lessonId: number) {
-    return this.prisma.missionDiagnosticTest.findFirst({
+    return this.prisma.missionTest.findFirst({
       where: {
         lessonId,
       },
@@ -58,15 +56,12 @@ export class MissionsRepository {
 
   async saveDiagnosticTest(
     lessonId: number,
-    diagnosticTest: GeneratedDiagnosticTestOutputDto,
+    diagnosticTest: GeneratedTestOutputDto,
   ) {
-    return this.prisma.missionDiagnosticTest.create({
+    return this.prisma.missionTest.create({
       data: {
         title: 'Diagnostic Test',
-        type: 'DIAGNOSTIC',
-        order: 2,
         lessonId,
-
         questions: {
           create: diagnosticTest.questions.map((question, questionIndex) => ({
             text: question.question,
@@ -99,7 +94,7 @@ export class MissionsRepository {
     tx?: Prisma.TransactionClient,
   ) {
     const db = tx ?? this.prisma;
-    return db.diagnosticTestAttempt.create({
+    return db.testAttempt.create({
       data: {
         userId,
         testId,
@@ -128,7 +123,7 @@ export class MissionsRepository {
   }
 
   async findDiagnosticTestForSubmission(testId: number) {
-    return this.prisma.missionDiagnosticTest.findUnique({
+    return this.prisma.missionTest.findUnique({
       where: { id: testId },
       include: {
         lesson: {
@@ -153,7 +148,7 @@ export class MissionsRepository {
   }
 
   async findDiagnosticAttempt(userId: number, testId: number) {
-    return this.prisma.diagnosticTestAttempt.findUnique({
+    return this.prisma.testAttempt.findUnique({
       where: {
         userId_testId: {
           userId,

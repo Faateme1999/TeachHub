@@ -33,14 +33,15 @@ model User {
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now())
 
-  enrollments            Enrollment[]
+  enrollments         Enrollment[]
   // A User has many Enrollments, The [] means: Array,Many,List
-  submissions            Submission[]
-  passwordResetTokens    PasswordResetToken[]
-  createdCourses         Course[]
-  diagnosticTestAttempts DiagnosticTestAttempt[]
-  mistakes               StudentMistake[]
-  personalAssignments    Assignment[]
+  submissions         Submission[]
+  passwordResetTokens PasswordResetToken[]
+  createdCourses      Course[]
+  testAttempts        TestAttempt[]
+  tests               MissionTest[]
+  mistakes            StudentMistake[]
+  personalAssignments Assignment[]
 }
 
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
@@ -118,10 +119,10 @@ model Lesson {
   createdAt DateTime  @default(now())
   outcomes  Outcome[]
 
-  assignments            Assignment[]
-  missionReview          MissionReview?
-  missionDiagnosticTests MissionDiagnosticTest[]
-  mistakes               StudentMistake[]
+  assignments   Assignment[]
+  missionReview MissionReview?
+  missionTests  MissionTest[]
+  mistakes      StudentMistake[]
 }
 
 // One-to-Many relationship
@@ -134,20 +135,13 @@ model Outcome {
   lessonId Int
   lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-  diagnosticQuestions DiagnosticQuestion[]
-  mistakes            StudentMistake[]
-}
-
-enum MissionType {
-  REVIEW
-  DIAGNOSTIC
+  testQuestions TestQuestion[]
+  mistakes      StudentMistake[]
 }
 
 model MissionReview {
-  id    Int         @id @default(autoincrement())
+  id    Int    @id @default(autoincrement())
   title String
-  type  MissionType
-  order Int
 
   lessonId Int    @unique
   lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -158,11 +152,17 @@ model MissionReview {
   updatedAt DateTime @updatedAt
 }
 
-model MissionDiagnosticTest {
-  id    Int         @id @default(autoincrement())
-  title String
-  type  MissionType
-  order Int
+enum TestType {
+  DIAGNOSTIC
+  REASSESSMENT
+}
+
+model MissionTest {
+  id               Int      @id @default(autoincrement())
+  title            String
+  testType         TestType @default(DIAGNOSTIC)
+  createdForUserId Int?
+  createdForUser   User?    @relation(fields: [createdForUserId], references: [id], onDelete: Cascade)
 
   lessonId Int
   lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -170,8 +170,8 @@ model MissionDiagnosticTest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  questions DiagnosticQuestion[]
-  attempts  DiagnosticTestAttempt[]
+  questions TestQuestion[]
+  attempts  TestAttempt[]
 }
 
 enum QuestionType {
@@ -179,7 +179,7 @@ enum QuestionType {
   MULTIPLE_CHOICE
 }
 
-model DiagnosticQuestion {
+model TestQuestion {
   id    Int          @id @default(autoincrement())
   text  String
   topic String
@@ -187,28 +187,28 @@ model DiagnosticQuestion {
   order Int
 
   testId Int
-  test   MissionDiagnosticTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+  test   MissionTest @relation(fields: [testId], references: [id], onDelete: Cascade)
 
   outcomeId Int
   outcome   Outcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
 
-  options  DiagnosticOption[]
-  answers  DiagnosticUserAnswer[]
+  options  TestOption[]
+  answers  UserAnswer[]
   mistakes StudentMistake[]
 }
 
-model DiagnosticOption {
+model TestOption {
   id        Int     @id @default(autoincrement())
   text      String
   isCorrect Boolean
   order     Int
 
   questionId       Int
-  question         DiagnosticQuestion           @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  answerSelections DiagnosticUserAnswerOption[]
+  question         TestQuestion       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerSelections UserAnswerOption[]
 }
 
-model DiagnosticTestAttempt {
+model TestAttempt {
   id            Int      @id @default(autoincrement())
   userId        Int
   testId        Int
@@ -216,35 +216,35 @@ model DiagnosticTestAttempt {
   score         Float?
   submittedAt   DateTime @default(now())
 
-  user User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  test MissionDiagnosticTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test MissionTest @relation(fields: [testId], references: [id], onDelete: Cascade)
 
-  answers DiagnosticUserAnswer[]
+  answers UserAnswer[]
 
   @@unique([userId, testId])
 }
 
-model DiagnosticUserAnswer {
+model UserAnswer {
   id         Int     @id @default(autoincrement())
   attemptId  Int
   questionId Int
   isCorrect  Boolean
 
-  attempt  DiagnosticTestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question DiagnosticQuestion    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt  TestAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  selectedOptions DiagnosticUserAnswerOption[]
+  selectedOptions UserAnswerOption[]
 
   @@unique([attemptId, questionId])
 }
 
-model DiagnosticUserAnswerOption {
+model UserAnswerOption {
   id       Int @id @default(autoincrement())
   answerId Int
   optionId Int
 
-  answer DiagnosticUserAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  option DiagnosticOption     @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  answer UserAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  option TestOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   @@unique([answerId, optionId])
 }
@@ -259,11 +259,11 @@ model StudentMistake {
   topic      String
   createdAt  DateTime @default(now())
 
-  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course   Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lesson   Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  question DiagnosticQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  outcome  Outcome            @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson   Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  outcome  Outcome      @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
 
   @@index([userId, courseId])
   @@index([userId, lessonId])
