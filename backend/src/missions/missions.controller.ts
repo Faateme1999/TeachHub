@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { MissionsService } from './missions.service';
-import { SubmitDiagnosticTestDto } from './dto/submit-diagnostic-test.dto';
+import { SubmitTestDto } from './dto/submit-test.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('missions')
@@ -20,23 +20,23 @@ export class MissionsController {
     return this.missionsService.generateReview(lessonId);
   }
 
-  @Post('lessons/:lessonId/diagnostic-test')
-  generateDiagnosticTest(@Param('lessonId', ParseIntPipe) lessonId: number) {
-    return this.missionsService.generateDiagnosticTest(lessonId);
+  @Post('lessons/:lessonId/test')
+  generateTest(@Param('lessonId', ParseIntPipe) lessonId: number) {
+    return this.missionsService.generateTest(lessonId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('diagnostic-tests/:testId/submit')
-  submitDiagnosticTest(
+  @Post('tests/:testId/submit')
+  submitTest(
     @Param('testId', ParseIntPipe) testId: number,
-    @Body() dto: SubmitDiagnosticTestDto,
+    @Body() dto: SubmitTestDto,
     @Req() req: any,
   ) {
-    return this.missionsService.submitDiagnosticTest(req.user.id, testId, dto);
+    return this.missionsService.submitTest(req.user.id, testId, dto);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('diagnostic-tests/:testId/weaknesses')
+  @Post('tests/:testId/weaknesses')
   findWeaknesses(
     @Param('testId', ParseIntPipe) testId: number,
     @Req() req: any,

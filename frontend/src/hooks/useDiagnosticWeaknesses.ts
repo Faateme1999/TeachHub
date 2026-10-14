@@ -6,7 +6,7 @@ export function useDiagnosticWeaknesses() {
   return useMutation({
     mutationFn: async (testId: number) => {
       const { data } = await apiClient.post<DiagnosticWeakness[]>(
-        `/missions/diagnostic-tests/${testId}/weaknesses`,
+        `/missions/tests/${testId}/weaknesses`,
       );
 
       return data;

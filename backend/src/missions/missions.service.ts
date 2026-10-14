@@ -6,8 +6,9 @@ import {
 import { MissionsRepository } from './missions.repository';
 import { AiService } from '../ai/ai.service';
 import { LessonsService } from 'src/lessons/lessons.service';
-import { SubmitDiagnosticTestDto } from './dto/submit-diagnostic-test.dto';
+import { SubmitTestDto } from './dto/submit-test.dto';
 import { FindWeaknessesOutputDto } from './dto/find-weaknesses-output.dto';
+import { TestType } from '@prisma/client';
 
 @Injectable()
 export class MissionsService {
@@ -37,38 +38,47 @@ export class MissionsService {
     return review;
   }
 
-  async generateDiagnosticTest(lessonId: number) {
+  async generateTest(lessonId: number) {
     const lesson =
       await this.lessonsService.findLessonWithOutcomesOrThrow(lessonId);
 
-    const existingTest =
-      await this.missionsRepository.findDiagnosticTest(lessonId);
+    const existingTest = await this.missionsRepository.findTest(
+      lessonId,
+      TestType.DIAGNOSTIC,
+      null,
+    );
 
     if (existingTest) {
       return existingTest;
     }
 
-    const diagnosticTest = await this.aiService.generateDiagnosticTest({
+    const test = await this.aiService.generateDiagnosticTest({
       learningOutcomes: lesson.outcomes,
     });
 
-    const savedTest = await this.missionsRepository.saveDiagnosticTest(
+    const savedTest = await this.missionsRepository.saveTest(
       lessonId,
-      diagnosticTest,
+      test,
+      TestType.DIAGNOSTIC,
+      null,
     );
 
     return savedTest;
   }
 
-  async submitDiagnosticTest(
-    userId: number,
-    testId: number,
-    dto: SubmitDiagnosticTestDto,
-  ) {
-    const test =
-      await this.missionsRepository.findDiagnosticTestForSubmission(testId);
+  async submitTest(userId: number, testId: number, dto: SubmitTestDto) {
+    const test = await this.missionsRepository.findTestForSubmission(testId);
     if (!test) {
-      throw new NotFoundException('Diagnostic test not found');
+      throw new NotFoundException('test not found');
+    }
+
+    const existingAttempt = await this.missionsRepository.findAttempt(
+      userId,
+      testId,
+    );
+
+    if (existingAttempt) {
+      throw new BadRequestException('You have already submitted this test');
     }
 
     const submittedAnswers = dto.answers.map((answer) => {
@@ -88,6 +98,18 @@ export class MissionsService {
       const selectedOptionIds = [...answer.selectedOptionIds].sort(
         (a, b) => a - b,
       );
+
+      const questionOptionIds = question.options.map((option) => option.id);
+
+      const hasInvalidOption = selectedOptionIds.some(
+        (optionId) => !questionOptionIds.includes(optionId),
+      );
+
+      if (hasInvalidOption) {
+        throw new BadRequestException(
+          `Invalid option selected for question ${question.id}`,
+        );
+      }
 
       const isCorrect =
         selectedOptionIds.length == correctOptionIds.length &&
@@ -126,7 +148,7 @@ export class MissionsService {
         };
       });
 
-    return this.missionsRepository.saveDiagnosticAttemptWithMistakes(
+    return this.missionsRepository.saveTestAttemptWithMistakes(
       userId,
       testId,
       submittedAnswers,
@@ -136,13 +158,10 @@ export class MissionsService {
   }
 
   async findWeaknesses(userId: number, testId: number) {
-    const attempt = await this.missionsRepository.findDiagnosticAttempt(
-      userId,
-      testId,
-    );
+    const attempt = await this.missionsRepository.findAttempt(userId, testId);
 
     if (!attempt) {
-      throw new NotFoundException('Diagnostic test attempt not found');
+      throw new NotFoundException('test attempt not found');
     }
 
     const wrongAnswers = attempt.answers.filter((answer) => !answer.isCorrect);
@@ -260,13 +279,15 @@ export class MissionsService {
       lessonContent: lesson.content ?? '',
       learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
       mistakes: lesson.mistakes.map((mistake) => {
-        const answer = mistake.question.answers[0];
+        const answer = mistake.question.answers.find(
+          (answer) => answer.attempt.testId === mistake.testId,
+        );
         return {
           learningOutcome: mistake.outcome.text,
           topic: mistake.topic,
           question: mistake.question.text,
           selectedAnswers:
-            answer.selectedOptions.map((item) => item.option.text) ?? [],
+            answer?.selectedOptions.map((item) => item.option.text) ?? [],
           correctAnswers: mistake.question.options
             .filter((item) => item.isCorrect)
             .map((option) => option.text),

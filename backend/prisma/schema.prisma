@@ -172,6 +172,7 @@ model MissionTest {
 
   questions TestQuestion[]
   attempts  TestAttempt[]
+  mistakes StudentMistake[]
 }
 
 enum QuestionType {
@@ -256,6 +257,7 @@ model StudentMistake {
   lessonId   Int
   questionId Int
   outcomeId  Int
+  testId Int
   topic      String
   createdAt  DateTime @default(now())
 
@@ -264,6 +266,7 @@ model StudentMistake {
   lesson   Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   question TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
   outcome  Outcome      @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  test   MissionTest    @relation(fields: [testId], references: [id], onDelete: Cascade)
 
   @@index([userId, courseId])
   @@index([userId, lessonId])

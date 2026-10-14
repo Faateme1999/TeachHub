@@ -457,9 +457,13 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
               : "Next"}
         </Button>
       </div>
-
       {submitDiagnosticTest.isError && (
-        <p>Could not submit the diagnostic test. Please try again.</p>
+        <p role="alert">
+          {getApiErrorMessage(
+            submitDiagnosticTest.error,
+            "Could not submit the diagnostic test. Please try again.",
+          )}
+        </p>
       )}
     </div>
   );

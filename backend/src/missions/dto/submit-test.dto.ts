@@ -1,7 +1,7 @@
 import { IsArray, IsInt, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class SubmitDiagnosticAnswerDto {
+export class SubmitAnswerDto {
   @IsInt()
   questionId: number;
 
@@ -10,9 +10,9 @@ export class SubmitDiagnosticAnswerDto {
   selectedOptionIds: number[];
 }
 
-export class SubmitDiagnosticTestDto {
+export class SubmitTestDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => SubmitDiagnosticAnswerDto)
-  answers: SubmitDiagnosticAnswerDto[];
+  @Type(() => SubmitAnswerDto)
+  answers: SubmitAnswerDto[];
 }

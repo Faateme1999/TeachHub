@@ -134,14 +134,13 @@ export function useGenerateDiagnosticTest() {
   return useMutation({
     mutationFn: async (lessonId: number) => {
       const { data } = await apiClient.post<DiagnosticTest>(
-        `/missions/lessons/${lessonId}/diagnostic-test`,
+        `/missions/lessons/${lessonId}/test`,
       );
 
       return data;
     },
   });
 }
-
 
 export function useGeneratePracticalAssignment(lessonId: number) {
   return useMutation({

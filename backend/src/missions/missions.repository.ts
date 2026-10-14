@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeneratedTestOutputDto } from 'src/ai/dto/missions/tests/generated-diagnostic-test-output.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, TestType } from '@prisma/client';
 import { GeneratedPracticalAssignmentOutputDto } from 'src/ai/dto/missions/practical-assignment/generated-practical-assignment-output.dto';
 
 @Injectable()
@@ -32,10 +32,16 @@ export class MissionsRepository {
     });
   }
 
-  async findDiagnosticTest(lessonId: number) {
+  async findTest(
+    lessonId: number,
+    testType: TestType,
+    createdForUserId: number | null,
+  ) {
     return this.prisma.missionTest.findFirst({
       where: {
         lessonId,
+        testType,
+        createdForUserId,
       },
       include: {
         questions: {
@@ -54,16 +60,23 @@ export class MissionsRepository {
     });
   }
 
-  async saveDiagnosticTest(
+  async saveTest(
     lessonId: number,
-    diagnosticTest: GeneratedTestOutputDto,
+    test: GeneratedTestOutputDto,
+    testType: TestType,
+    createdForUserId: number | null,
   ) {
     return this.prisma.missionTest.create({
       data: {
-        title: 'Diagnostic Test',
+        title:
+          testType === TestType.DIAGNOSTIC
+            ? 'Diagnostic Test'
+            : 'Reassessment Test',
+        testType,
+        createdForUserId,
         lessonId,
         questions: {
-          create: diagnosticTest.questions.map((question, questionIndex) => ({
+          create: test.questions.map((question, questionIndex) => ({
             text: question.question,
             type: question.type,
             topic: question.topic,
@@ -82,7 +95,7 @@ export class MissionsRepository {
     });
   }
 
-  async saveDiagnosticAttempt(
+  async saveTestAttempt(
     userId: number,
     testId: number,
     answers: {
@@ -122,7 +135,7 @@ export class MissionsRepository {
     });
   }
 
-  async findDiagnosticTestForSubmission(testId: number) {
+  async findTestForSubmission(testId: number) {
     return this.prisma.missionTest.findUnique({
       where: { id: testId },
       include: {
@@ -147,7 +160,7 @@ export class MissionsRepository {
     });
   }
 
-  async findDiagnosticAttempt(userId: number, testId: number) {
+  async findAttempt(userId: number, testId: number) {
     return this.prisma.testAttempt.findUnique({
       where: {
         userId_testId: {
@@ -173,6 +186,7 @@ export class MissionsRepository {
 
   async saveStudentMistakes(
     userId: number,
+    testId: number,
     mistakes: {
       questionId: number;
       courseId: number;
@@ -190,6 +204,7 @@ export class MissionsRepository {
     return db.studentMistake.createMany({
       data: mistakes.map((mistake) => ({
         userId,
+        testId,
         questionId: mistake.questionId,
         courseId: mistake.courseId,
         lessonId: mistake.lessonId,
@@ -199,7 +214,7 @@ export class MissionsRepository {
     });
   }
 
-  async saveDiagnosticAttemptWithMistakes(
+  async saveTestAttemptWithMistakes(
     userId: number,
     testId: number,
     answers: {
@@ -217,7 +232,7 @@ export class MissionsRepository {
     }[],
   ) {
     return this.prisma.$transaction(async (tx) => {
-      const attempt = await this.saveDiagnosticAttempt(
+      const attempt = await this.saveTestAttempt(
         userId,
         testId,
         answers,
@@ -225,7 +240,7 @@ export class MissionsRepository {
         tx,
       );
 
-      await this.saveStudentMistakes(userId, mistakes, tx);
+      await this.saveStudentMistakes(userId, testId, mistakes, tx);
 
       return attempt;
     });
@@ -244,6 +259,9 @@ export class MissionsRepository {
         mistakes: {
           where: {
             userId,
+            test: {
+              testType: TestType.DIAGNOSTIC,
+            },
           },
           include: {
             question: {
@@ -256,6 +274,11 @@ export class MissionsRepository {
                     },
                   },
                   include: {
+                    attempt: {
+                      select: {
+                        testId: true,
+                      },
+                    },
                     selectedOptions: {
                       include: {
                         option: true,
