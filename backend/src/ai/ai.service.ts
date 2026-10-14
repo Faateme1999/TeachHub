@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Groq from 'groq-sdk';
-import { GenerateDiagnosticTestInputDto } from './dto/missions/tests/generate-diagnostic-test-input.dto';
-import { GeneratedTestOutputDto } from './dto/missions/tests/generated-diagnostic-test-output.dto';
+
 import { GenerateWeaknessInputDto } from './dto/missions/weakness/generate-weakness-input.dto';
 import { GeneratedWeaknessOutputDto } from './dto/missions/weakness/generated-weakness-output.dto';
 import { GenerateLessonReviewInputDto } from './dto/missions/review/generate-lesson-review-input.dto';
 import { GeneratedLessonReviewOutputDto } from './dto/missions/review/generated-lesson-review-output.dto';
 import { GeneratePracticalAssignmentInputDto } from './dto/missions/practical-assignment/generate-practical-assignment-input.dto';
 import { GeneratedPracticalAssignmentOutputDto } from './dto/missions/practical-assignment/generated-practical-assignment-output.dto';
+import { GenerateReassessmentTestInputDto } from './dto/missions/reassessment-test/reassessment-test-input-dto';
+import { GenerateDiagnosticTestInputDto } from './dto/missions/diagnostic-test/generate-diagnostic-test-input.dto';
+import { GeneratedTestOutputDto } from './dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
 
 @Injectable()
 export class AiService {
@@ -289,6 +291,71 @@ Return ONLY valid JSON with exactly this structure:
         },
       ],
     });
+    const content = response.choices[0].message.content;
+
+    if (!content) {
+      throw new Error('AI returned empty response');
+    }
+
+    return JSON.parse(content);
+  }
+
+  async generateReassessmentTest(
+    dto: GenerateReassessmentTestInputDto,
+  ): Promise<GeneratedTestOutputDto> {
+    const response = await this.groq.chat.completions.create({
+      model: 'openai/gpt-oss-20b',
+      max_tokens: 4000,
+
+      messages: [
+        {
+          role: 'system',
+          content: `You are an educational reassessment test generator.
+
+Create exactly 5 new questions to evaluate whether the student has overcome previous weaknesses.
+
+Return ONLY valid JSON. No markdown.
+
+Rules:
+- Use only the provided lesson content and learning outcomes.
+- Focus primarily on the student's previous mistakes and weak topics.
+- Generate new questions. Do not repeat or merely rephrase previous questions.
+- Every question must assess exactly one learning outcome.
+- Copy learningOutcomeId exactly from the provided learning outcomes.
+- Every question must have a specific topic.
+- Use only SINGLE_CHOICE or MULTIPLE_CHOICE.
+- Every question must have exactly 4 options.
+- Every option must contain text and isCorrect.
+- isCorrect must be a boolean.
+- SINGLE_CHOICE must have exactly one correct option.
+- MULTIPLE_CHOICE must have at least two correct options.
+- Do not invent lesson facts or learning outcome IDs.
+
+Return exactly this structure:
+{
+  "questions": [
+    {
+      "question": "string",
+      "type": "SINGLE_CHOICE",
+      "options": [
+        { "text": "string", "isCorrect": true },
+        { "text": "string", "isCorrect": false },
+        { "text": "string", "isCorrect": false },
+        { "text": "string", "isCorrect": false }
+      ],
+      "learningOutcomeId": 1,
+      "topic": "string"
+    }
+  ]
+}`,
+        },
+        {
+          role: 'user',
+          content: JSON.stringify(dto),
+        },
+      ],
+    });
+
     const content = response.choices[0].message.content;
 
     if (!content) {

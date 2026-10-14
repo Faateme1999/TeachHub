@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GeneratedTestOutputDto } from 'src/ai/dto/missions/tests/generated-diagnostic-test-output.dto';
+import { GeneratedTestOutputDto } from 'src/ai/dto/missions/diagnostic-test/generated-diagnostic-test-output.dto';
 import { Prisma, TestType } from '@prisma/client';
 import { GeneratedPracticalAssignmentOutputDto } from 'src/ai/dto/missions/practical-assignment/generated-practical-assignment-output.dto';
 
@@ -246,10 +246,7 @@ export class MissionsRepository {
     });
   }
 
-  async findLessonAndMistakesForPracticalAssignment(
-    userId: number,
-    LessonId: number,
-  ) {
+  async findLessonAndMistakes(userId: number, LessonId: number) {
     return this.prisma.lesson.findUnique({
       where: {
         id: LessonId,

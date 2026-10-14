@@ -9,6 +9,7 @@ import { LessonsService } from 'src/lessons/lessons.service';
 import { SubmitTestDto } from './dto/submit-test.dto';
 import { FindWeaknessesOutputDto } from './dto/find-weaknesses-output.dto';
 import { TestType } from '@prisma/client';
+import { GenerateReassessmentTestInputDto } from 'src/ai/dto/missions/reassessment-test/reassessment-test-input-dto';
 
 @Injectable()
 export class MissionsService {
@@ -70,6 +71,15 @@ export class MissionsService {
     const test = await this.missionsRepository.findTestForSubmission(testId);
     if (!test) {
       throw new NotFoundException('test not found');
+    }
+
+    if (
+      test.testType === TestType.REASSESSMENT &&
+      test.createdForUserId !== userId
+    ) {
+      throw new BadRequestException(
+        'This reassessment test does not belong to you',
+      );
     }
 
     const existingAttempt = await this.missionsRepository.findAttempt(
@@ -264,11 +274,10 @@ export class MissionsService {
   }
 
   async generatePracticalAssignment(userId: number, lessonId: number) {
-    const lesson =
-      await this.missionsRepository.findLessonAndMistakesForPracticalAssignment(
-        userId,
-        lessonId,
-      );
+    const lesson = await this.missionsRepository.findLessonAndMistakes(
+      userId,
+      lessonId,
+    );
 
     if (!lesson) {
       throw new NotFoundException('Lesson not found');
@@ -301,6 +310,76 @@ export class MissionsService {
       userId,
       lessonId,
       assignment,
+    );
+  }
+
+  async generateReassessmentTest(userId: number, lessonId: number) {
+    const lesson = await this.missionsRepository.findLessonAndMistakes(
+      userId,
+      lessonId,
+    );
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const existingTest = await this.missionsRepository.findTest(
+      lessonId,
+      TestType.REASSESSMENT,
+      userId,
+    );
+
+    if (existingTest) {
+      const existingAttempt = await this.missionsRepository.findAttempt(
+        userId,
+        existingTest.id,
+      );
+
+      if (existingAttempt) {
+        throw new BadRequestException(
+          'You have already completed the reassessment test',
+        );
+      }
+
+      return existingTest;
+    }
+
+    const input: GenerateReassessmentTestInputDto = {
+      lessonTitle: lesson.title,
+      lessonContent: lesson.content ?? '',
+
+      learningOutcomes: lesson.outcomes.map((outcome) => ({
+        id: outcome.id,
+        text: outcome.text,
+      })),
+
+      mistakes: lesson.mistakes.map((mistake) => {
+        const answer = mistake.question.answers.find(
+          (answer) => answer.attempt.testId === mistake.testId,
+        );
+
+        return {
+          learningOutcome: mistake.outcome.text,
+          topic: mistake.topic,
+          question: mistake.question.text,
+          selectedAnswers:
+            answer?.selectedOptions.map((selected) => selected.option.text) ??
+            [],
+          correctAnswers: mistake.question.options
+            .filter((option) => option.isCorrect)
+            .map((option) => option.text),
+        };
+      }),
+    };
+
+    const reassessmentTest =
+      await this.aiService.generateReassessmentTest(input);
+
+    return this.missionsRepository.saveTest(
+      lessonId,
+      reassessmentTest,
+      TestType.REASSESSMENT,
+      userId,
     );
   }
 }

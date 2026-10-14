@@ -20,13 +20,13 @@ export class MissionsController {
     return this.missionsService.generateReview(lessonId);
   }
 
-  @Post('lessons/:lessonId/test')
+  @Post('lessons/:lessonId/diagnostic-test')
   generateTest(@Param('lessonId', ParseIntPipe) lessonId: number) {
     return this.missionsService.generateTest(lessonId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('tests/:testId/submit')
+  @Post('diagnostic-tests/:testId/submit')
   submitTest(
     @Param('testId', ParseIntPipe) testId: number,
     @Body() dto: SubmitTestDto,
@@ -36,7 +36,7 @@ export class MissionsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('tests/:testId/weaknesses')
+  @Post('diagnostic-tests/:testId/weaknesses')
   findWeaknesses(
     @Param('testId', ParseIntPipe) testId: number,
     @Req() req: any,
@@ -54,5 +54,14 @@ export class MissionsController {
       req.user.id,
       lessonId,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('lessons/:lessonId/reassessment-test')
+  generateReassessmentTest(
+    @Param('lessonId', ParseIntPipe) lessonId: number,
+    @Req() req: any,
+  ) {
+    return this.missionsService.generateReassessmentTest(req.user.id, lessonId);
   }
 }
