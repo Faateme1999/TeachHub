@@ -26,7 +26,7 @@ export class MissionsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('diagnostic-tests/:testId/submit')
+  @Post('tests/:testId/submit')
   submitTest(
     @Param('testId', ParseIntPipe) testId: number,
     @Body() dto: SubmitTestDto,

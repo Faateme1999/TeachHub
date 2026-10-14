@@ -92,6 +92,21 @@ export class MissionsRepository {
           })),
         },
       },
+      include: {
+        questions: {
+          orderBy: { order: 'asc' },
+          include: {
+            options: {
+              orderBy: { order: 'asc' },
+              select: {
+                id: true,
+                text: true,
+                order: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 

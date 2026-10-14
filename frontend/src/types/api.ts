@@ -294,3 +294,32 @@ export interface GeneratedPracticalAssignment {
   lessonId: number;
   createdAt: string;
 }
+
+export interface ReassessmentOption {
+  id: number;
+  text: string;
+  order: number;
+}
+
+export interface ReassessmentQuestion {
+  id: number;
+  text: string;
+  type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+  order: number;
+  topic: string;
+  outcomeId: number;
+  options: ReassessmentOption[];
+}
+
+export interface ReassessmentTest {
+  id: number;
+  title: string;
+  testType: "REASSESSMENT";
+  lessonId: number;
+  questions: ReassessmentQuestion[];
+}
+
+export interface ReassessmentAnswer {
+  questionId: number;
+  selectedOptionIds: number[];
+}

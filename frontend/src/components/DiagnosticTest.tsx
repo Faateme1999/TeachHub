@@ -10,6 +10,7 @@ import { useDiagnosticWeaknesses } from "../hooks/useDiagnosticWeaknesses";
 import { useGeneratePracticalAssignment } from "../hooks/useLessons";
 import { getApiErrorMessage } from "../lib/apiClient";
 import { useSubmitAssignment } from "../hooks/useAssignments";
+import { ReassessmentTest } from "./ReassessmentTest";
 
 interface DiagnosticTestProps {
   test: DiagnosticTestType;
@@ -359,7 +360,11 @@ export function DiagnosticTest({ test, lessonId }: DiagnosticTestProps) {
                 </div>
 
                 {submitAnswer.isSuccess && (
-                  <p>Your answer has been saved successfully.</p>
+                  <>
+                    <p>Your answer has been saved successfully.</p>
+
+                    <ReassessmentTest lessonId={lessonId} />
+                  </>
                 )}
 
                 {submitAnswer.isError && (
