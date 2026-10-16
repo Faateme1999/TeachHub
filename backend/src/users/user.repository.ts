@@ -77,11 +77,13 @@ export class UsersRepository {
         id: true,
         userId: true,
         assignmentId: true,
+        answerText: true,
         fileName: true,
         assignment: {
           select: {
             id: true,
             title: true,
+            source: true,
             lesson: {
               select: {
                 id: true,
@@ -116,11 +118,13 @@ export class UsersRepository {
         id: true,
         userId: true,
         assignmentId: true,
+        answerText: true,
         fileName: true,
         assignment: {
           select: {
             id: true,
             title: true,
+            source: true,
             lesson: {
               select: {
                 id: true,
