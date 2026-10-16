@@ -36,7 +36,7 @@ export class MissionsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('diagnostic-tests/:testId/weaknesses')
+  @Post('diagnostic-test/:testId/weaknesses')
   findWeaknesses(
     @Param('testId', ParseIntPipe) testId: number,
     @Req() req: any,
