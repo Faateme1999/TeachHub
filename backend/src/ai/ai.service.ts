@@ -232,13 +232,25 @@ Return exactly this JSON structure:
         },
       ],
     });
+    // const content = response.choices[0].message.content;
+
+    // if (!content) {
+    //   throw new Error('AI returned empty response');
+    // }
+
+    // return JSON.parse(content);
     const content = response.choices[0].message.content;
 
     if (!content) {
       throw new Error('AI returned empty response');
     }
 
-    return JSON.parse(content);
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      console.error('Invalid JSON from AI:', content);
+      throw new Error('AI returned invalid JSON');
+    }
   }
 
   async generatePracticalAssignment(
