@@ -15,7 +15,7 @@ export function useSubmitDiagnosticTest() {
       answers: SubmitDiagnosticAnswer[];
     }) => {
       const { data } = await apiClient.post<SubmitDiagnosticTestResponse>(
-        `/missions/diagnostic-test/${testId}/submit`,
+        `/missions/tests/${testId}/submit`,
         { answers },
       );
 
