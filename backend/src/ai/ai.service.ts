@@ -232,13 +232,7 @@ Return exactly this JSON structure:
         },
       ],
     });
-    // const content = response.choices[0].message.content;
 
-    // if (!content) {
-    //   throw new Error('AI returned empty response');
-    // }
-
-    // return JSON.parse(content);
     const content = response.choices[0].message.content;
 
     if (!content) {

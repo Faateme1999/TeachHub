@@ -154,11 +154,13 @@ export interface UserSubmission {
   id: number;
   userId: number;
   assignmentId: number;
-  fileName: string;
+  fileName: string | null;
+  answerText: string | null;
 
   assignment: {
     id: number;
     title: string;
+    source: "AI" | "TEACHER";
 
     lesson: {
       id: number;

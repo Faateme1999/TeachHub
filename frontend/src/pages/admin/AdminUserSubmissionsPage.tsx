@@ -183,138 +183,152 @@ export function AdminUserSubmissionsPage() {
                     <strong>{submission.assignment.title}</strong>
                   </div>
 
-                  <div className="admin-submission-detail">
-                    <span>Student file:</span>
-
-                    <strong>{submission.fileName}</strong>
-                  </div>
+                  {submission.assignment.source === "AI" ? (
+                    <div className="admin-submission-detail">
+                      <span>Student answer:</span>
+                      <strong style={{ whiteSpace: "pre-wrap" }}>
+                        {submission.answerText || "No answer submitted."}
+                      </strong>
+                    </div>
+                  ) : (
+                    <div className="admin-submission-detail">
+                      <span>Student file:</span>
+                      <strong>
+                        {submission.fileName || "No file submitted."}
+                      </strong>
+                    </div>
+                  )}
                 </div>
 
-                <div className="admin-submission-actions">
-                  <button
-                    type="button"
-                    className="admin-action-button admin-action-button--primary"
-                    onClick={() =>
-                      handleDownload(
-                        submission.assignment.id,
-                        submission.id,
-                        submission.fileName,
-                      )
-                    }
-                    disabled={downloadSubmission.isPending}
-                  >
-                    {downloadSubmission.isPending
-                      ? "Downloading..."
-                      : "View / Download"}
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    marginTop: "var(--space-5)",
-                    padding: "var(--space-4)",
-                    background: "var(--surface-2)",
-                    borderRadius: "var(--radius)",
-                  }}
-                >
-                  <h3>Correct this assignment</h3>
-
-                  <div style={{ marginTop: "var(--space-4)" }}>
-                    <label>
-                      <strong>Corrected file</strong>
-
-                      <input
-                        type="file"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0] ?? null;
-
-                          handleFileChange(submission.id, file);
-                        }}
-                        disabled={isUploading}
-                        style={{
-                          display: "block",
-                          marginTop: "var(--space-2)",
-                        }}
-                      />
-                    </label>
-
-                    {selectedFile && (
-                      <p
-                        style={{
-                          marginTop: "var(--space-2)",
-                        }}
-                      >
-                        Selected: {selectedFile.name}
-                      </p>
-                    )}
-                  </div>
-
-                  <div style={{ marginTop: "var(--space-4)" }}>
-                    <label>
-                      <strong>Feedback</strong>
-
-                      <textarea
-                        value={feedback}
-                        onChange={(event) =>
-                          handleFeedbackChange(
-                            submission.id,
-                            event.target.value,
-                          )
-                        }
-                        disabled={isUploading}
-                        rows={4}
-                        placeholder="Write feedback for the student..."
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          marginTop: "var(--space-2)",
-                          padding: "var(--space-3)",
-                          resize: "vertical",
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  <div style={{ marginTop: "var(--space-4)" }}>
+                {submission.assignment.source !== "AI" && (
+                  <div className="admin-submission-actions">
                     <button
                       type="button"
                       className="admin-action-button admin-action-button--primary"
                       onClick={() =>
-                        handleUploadCorrection(
+                        handleDownload(
                           submission.assignment.id,
                           submission.id,
+                          submission.fileName ?? "submission",
                         )
                       }
-                      disabled={!selectedFile || isUploading}
+                      disabled={downloadSubmission.isPending}
                     >
-                      {isUploading ? "Uploading..." : "Upload correction"}
+                      {downloadSubmission.isPending
+                        ? "Downloading..."
+                        : "View / Download"}
                     </button>
                   </div>
+                )}
 
-                  {uploadSucceeded && (
-                    <p
-                      style={{
-                        marginTop: "var(--space-3)",
-                        color: "var(--success)",
-                      }}
-                    >
-                      Correction uploaded successfully.
-                    </p>
-                  )}
+                {submission.assignment.source !== "AI" && (
+                  <div
+                    style={{
+                      marginTop: "var(--space-5)",
+                      padding: "var(--space-4)",
+                      background: "var(--surface-2)",
+                      borderRadius: "var(--radius)",
+                    }}
+                  >
+                    <h3>Correct this assignment</h3>
 
-                  {uploadCorrectedFile.isError &&
-                    uploadCorrectedFile.variables?.submissionId ===
-                      submission.id && (
+                    <div style={{ marginTop: "var(--space-4)" }}>
+                      <label>
+                        <strong>Corrected file</strong>
+
+                        <input
+                          type="file"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0] ?? null;
+
+                            handleFileChange(submission.id, file);
+                          }}
+                          disabled={isUploading}
+                          style={{
+                            display: "block",
+                            marginTop: "var(--space-2)",
+                          }}
+                        />
+                      </label>
+
+                      {selectedFile && (
+                        <p
+                          style={{
+                            marginTop: "var(--space-2)",
+                          }}
+                        >
+                          Selected: {selectedFile.name}
+                        </p>
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: "var(--space-4)" }}>
+                      <label>
+                        <strong>Feedback</strong>
+
+                        <textarea
+                          value={feedback}
+                          onChange={(event) =>
+                            handleFeedbackChange(
+                              submission.id,
+                              event.target.value,
+                            )
+                          }
+                          disabled={isUploading}
+                          rows={4}
+                          placeholder="Write feedback for the student..."
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            marginTop: "var(--space-2)",
+                            padding: "var(--space-3)",
+                            resize: "vertical",
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ marginTop: "var(--space-4)" }}>
+                      <button
+                        type="button"
+                        className="admin-action-button admin-action-button--primary"
+                        onClick={() =>
+                          handleUploadCorrection(
+                            submission.assignment.id,
+                            submission.id,
+                          )
+                        }
+                        disabled={!selectedFile || isUploading}
+                      >
+                        {isUploading ? "Uploading..." : "Upload correction"}
+                      </button>
+                    </div>
+
+                    {uploadSucceeded && (
                       <p
                         style={{
                           marginTop: "var(--space-3)",
-                          color: "var(--danger)",
+                          color: "var(--success)",
                         }}
                       >
-                        Failed to upload correction.
+                        Correction uploaded successfully.
                       </p>
                     )}
-                </div>
+
+                    {uploadCorrectedFile.isError &&
+                      uploadCorrectedFile.variables?.submissionId ===
+                        submission.id && (
+                        <p
+                          style={{
+                            marginTop: "var(--space-3)",
+                            color: "var(--danger)",
+                          }}
+                        >
+                          Failed to upload correction.
+                        </p>
+                      )}
+                  </div>
+                )}
               </article>
             );
           })}
