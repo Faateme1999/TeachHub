@@ -1,35 +1,35 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/auth-context'
-import { getApiErrorMessage } from '../lib/apiClient'
-import { Card } from '../components/ui/Card'
-import { Input } from '../components/ui/Input'
-import { Button } from '../components/ui/Button'
-import '../components/components.css'
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/auth-context";
+import { getApiErrorMessage } from "../lib/apiClient";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import "../components/components.css";
 
 // Login page. On submit we call auth.login(); on success we go to /courses,
 // on failure (e.g. wrong password) we show the backend's error message inline.
 export function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError('')
-    setSubmitting(true)
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
     try {
-      await login(email, password)
-      navigate('/courses')
+      await login(email, password);
+      navigate("/courses");
     } catch (err) {
       // The backend returns 401 "Invalid email or password" for bad credentials.
-      setError(getApiErrorMessage(err, 'Could not log in'))
+      setError(getApiErrorMessage(err, "Could not log in"));
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
@@ -57,13 +57,16 @@ export function LoginPage() {
             required
           />
           <Button type="submit" block disabled={submitting}>
-            {submitting ? 'Logging in…' : 'Log in'}
+            {submitting ? "Logging in…" : "Log in"}
           </Button>
         </form>
+        <p className="auth__switch">
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
         <p className="auth__switch">
           Don&apos;t have an account? <Link to="/register">Sign up</Link>
         </p>
       </Card>
     </div>
-  )
+  );
 }

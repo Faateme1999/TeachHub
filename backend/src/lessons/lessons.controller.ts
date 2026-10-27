@@ -7,8 +7,14 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
+
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -20,6 +26,7 @@ import { Role } from '@prisma/client';
 import { CreateOutcomeDto } from 'src/outcomes/dto/create-outcome-dto';
 import { OutcomesService } from 'src/outcomes/outcomes.service';
 import { UpdateOutcomeDto } from 'src/outcomes/dto/update-outcome.dto';
+import { Readable } from 'stream';
 
 @Controller()
 export class LessonsController {
@@ -32,13 +39,15 @@ export class LessonsController {
   // JwtAuthGuard verifies the token and sets req.user; RolesGuard then checks the
   // role. Reading lessons stays public so anyone can browse a course's curriculum.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post('courses/:courseId/lessons')
+  @UseInterceptors(FileInterceptor('video'))
   create(
     @Param('courseId', ParseIntPipe) courseId: number,
     @Body() createLessonDto: CreateLessonDto,
+    @UploadedFile() videoData?: any,
   ) {
-    return this.lessonsService.create(courseId, createLessonDto);
+    return this.lessonsService.create(courseId, createLessonDto, videoData);
   }
 
   @Get('courses/:courseId/lessons')
@@ -53,25 +62,27 @@ export class LessonsController {
 
   // Editing a lesson is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Patch('lessons/:id')
+  @UseInterceptors(FileInterceptor('video'))
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateLessonDto: UpdateLessonDto,
+    @UploadedFile() video?: any,
   ) {
-    return this.lessonsService.update(id, updateLessonDto);
+    return this.lessonsService.update(id, updateLessonDto, video);
   }
 
   // Deleting a lesson is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Delete('lessons/:id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.lessonsService.remove(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post('lessons/:lessonId/outcomes')
   createOutcome(
     @Param('lessonId', ParseIntPipe) lessonId: number,
@@ -86,7 +97,7 @@ export class LessonsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Patch('lessons/:lessonId/outcomes/:outcomeId')
   updateOutcome(
     @Param('lessonId', ParseIntPipe) lessonId: number,
@@ -97,12 +108,37 @@ export class LessonsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Delete('lessons/:lessonId/outcomes/:outcomeId')
   removeOutcome(
     @Param('lessonId', ParseIntPipe) lessonId: number,
     @Param('outcomeId', ParseIntPipe) outcomeId: number,
   ) {
     return this.outcomesService.remove(lessonId, outcomeId);
+  }
+
+  @Get('lessons/:lessonId/video')
+  async getVideo(
+    @Param('lessonId', ParseIntPipe) lessonId: number,
+    @Res() res: Response,
+  ) {
+    const video = await this.lessonsService.getVideo(lessonId);
+
+    res.set({
+      'Content-Type': 'video/mp4',
+    });
+
+    // Readable = a stream that can be read piece by piece.
+    // Send it to the response as a stream.
+    if (video instanceof Readable) {
+      return video.pipe(res);
+    }
+
+    const buffer = Buffer.from(video);
+    res.set({
+      'Content-Length': buffer.length,
+    });
+
+    return res.send(buffer);
   }
 }

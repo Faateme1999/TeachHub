@@ -243,3 +243,6 @@ const createUserDto = {
 
 - After changing the schema, the Prisma Client should be regenerated using:
   npx prisma generate
+
+
+-  ?? => Nullish Coalescing Operator

@@ -1,3 +1,5 @@
+import { I18nService } from 'nestjs-i18n';
+
 import { Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -6,10 +8,13 @@ import { CoursesRepository } from './courses.repository';
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly coursesRepository: CoursesRepository) {}
+  constructor(
+    private readonly coursesRepository: CoursesRepository,
+    private readonly i18n: I18nService,
+  ) {}
 
-  async create(createCourseDto: CreateCourseDto) {
-    return this.coursesRepository.create(createCourseDto);
+  async create(createCourseDto: CreateCourseDto, userId: number) {
+    return this.coursesRepository.create(createCourseDto, userId);
   }
 
   // Because Prisma's create() method is defined to expect an object with a property called data.
@@ -20,6 +25,10 @@ export class CoursesService {
   //     price: 49.99,
   //   }
   // });
+
+  async findMyCourses(userId: number) {
+    return this.coursesRepository.findCourseByCreatorId(userId);
+  }
 
   async findAll(page = '1') {
     //  Math.max(..., 1): This guarantees the page number is at least 1.
@@ -54,7 +63,11 @@ export class CoursesService {
     const course = await this.coursesRepository.findById(id);
 
     if (!course) {
-      throw new NotFoundException(`Course ${id} not found`);
+      throw new NotFoundException(
+        await this.i18n.translate('common.course.notFound', {
+          args: { id },
+        }),
+      );
     }
 
     return course;
@@ -72,19 +85,6 @@ export class CoursesService {
 
   async remove(id: number) {
     await this.findById(id);
-
-    // Two ways to fix it (pick one, see docs/junior-dev-tasks.md):
-    //   A) Schema-level cascade: add `onDelete: Cascade` to the relations in
-    //      schema.prisma, then run a migration. The DB deletes children for you.
-    //   B) App-level cleanup: delete the children first, inside a transaction so
-    //      it's all-or-nothing:
-    //
-    //        return this.prisma.$transaction([
-    //          this.prisma.lesson.deleteMany({ where: { courseId: id } }),
-    //          this.prisma.enrollment.deleteMany({ where: { courseId: id } }),
-    //          this.prisma.course.delete({ where: { id } }),
-    //        ]);
-    //
 
     // Delete all children before deleting the parent.
     return this.coursesRepository.deleteCourseWithChildren(id);

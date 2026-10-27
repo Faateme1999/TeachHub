@@ -31,10 +31,17 @@ export class CoursesController {
   // Creating a course is an ADMIN-only action. JwtAuthGuard runs first (verifies
   // the token and sets req.user), then RolesGuard checks req.user.role === ADMIN.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post()
-  create(@Body() createCourseDto: CreateCourseDto) {
-    return this.coursesService.create(createCourseDto);
+  create(@Body() createCourseDto: CreateCourseDto, @Request() req: any) {
+    return this.coursesService.create(createCourseDto, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Get('my-courses')
+  findMyCourses(@Request() req: any) {
+    return this.coursesService.findMyCourses(req.user.id);
   }
 
   // @Query() tells NestJS:"Get something from the URL's query parameters."
@@ -54,7 +61,7 @@ export class CoursesController {
 
   // Editing a course is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -65,7 +72,7 @@ export class CoursesController {
 
   // Deleting a course is ADMIN-only.
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.coursesService.remove(id);

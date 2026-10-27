@@ -1,6 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// npx prisma format
+// npx prisma validate
+
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
@@ -14,12 +17,12 @@ datasource db {
   provider = "postgresql"
 }
 
-
 // NOTE: this is a Prisma enum. It becomes a real Postgres enum type in the DB and
 // a TypeScript `Role` union in the generated client — so you can write `Role.ADMIN`.
 enum Role {
-  STUDENT
   ADMIN
+  TEACHER
+  STUDENT
 }
 
 model User {
@@ -29,21 +32,39 @@ model User {
   password  String
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now())
-  enrollments Enrollment[]
-  // A User has many Enrollments, The [] means: Array,Many,List
-  missionResults MissionResult[]
-}
 
+  enrollments         Enrollment[]
+  // A User has many Enrollments, The [] means: Array,Many,List
+  submissions         Submission[]
+  passwordResetTokens PasswordResetToken[]
+  createdCourses      Course[]
+  testAttempts        TestAttempt[]
+  tests               MissionTest[]
+  mistakes            StudentMistake[]
+  personalAssignments Assignment[]
+}
 
 // @id means: This is the Primary Key, Every value must be unique, It cannot be null,Prisma uses it to identify each row.
 
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
-model Course{
-  id            Int       @id  @default(autoincrement()) 
-  title         String
-  description   String
-  price         Float
-  createdAt     DateTime  @default(now())
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  createdAt   DateTime @default(now())
+
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
 
   //No enrollments column,It tells Prisma: A User can have many Enrollments
   // do NOT appear as columns anywhere.
@@ -51,70 +72,107 @@ model Course{
   enrollments Enrollment[]
   lessons     Lesson[]
   // One Course has many Lessons.
+  mistakes    StudentMistake[]
 }
 
-
 model Enrollment {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  userId    Int
-  courseId  Int
+  userId   Int
+  courseId Int
 
-// Because Prisma wants to know: userId points to which table?
-// These are NOT columns, These are Prisma relation fields, They help Prisma understand: How tables are connected
+  // Because Prisma wants to know: userId points to which table?
+  // These are NOT columns, These are Prisma relation fields, They help Prisma understand: How tables are connected
 
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
   //course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
-model Lesson {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
+enum LessonType {
+  RECORDED
+  LIVE
+}
 
-// Each Lesson belongs to one Course.
-// courseId (foreign key)
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+model Lesson {
+  id         Int        @id @default(autoincrement())
+  title      String
+  content    String?
+  videoData  Bytes?
+  videoKey   String?
+  hasVideo   Boolean    @default(false)
+  meetingUrl String?
+  type       LessonType
+
+  // Each Lesson belongs to one Course.
+  // courseId (foreign key)
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
 
   //course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   // Then create a migration so the database is updated:
   //   npx prisma migrate dev --name cascade_delete
-  
-  createdAt DateTime @default(now())
-  outcomes Outcome[]
-}
 
+  createdAt DateTime  @default(now())
+  outcomes  Outcome[]
+
+  assignments   Assignment[]
+  missionReview MissionReview?
+  missionTests  MissionTest[]
+  mistakes      StudentMistake[]
+}
 
 // One-to-Many relationship
 // Course (1) ──────< Lesson (Many)
 // Foreign key lives on the "Many" side.
 
+model Outcome {
+  id       Int    @id @default(autoincrement())
+  text     String
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-model Outcome{
-  id        Int     @id @default(autoincrement())
-  text      String
-  lessonId  Int
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
-  missions Mission[]
+  testQuestions TestQuestion[]
+  mistakes      StudentMistake[]
 }
 
-model  Mission{
-  id        Int      @id @default(autoincrement())
-  title     String
-  order     Int
-  passingScore   Int
-  maxAttempts   Int
-  outcomeId    Int
-  outcome   Outcome  @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+model MissionReview {
+  id    Int    @id @default(autoincrement())
+  title String
 
-  questions Question[]
-  missionResults MissionResult[]
+  lessonId Int    @unique
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TestType {
+  DIAGNOSTIC
+  REASSESSMENT
+}
+
+model MissionTest {
+  id               Int      @id @default(autoincrement())
+  title            String
+  testType         TestType @default(DIAGNOSTIC)
+  createdForUserId Int?
+  createdForUser   User?    @relation(fields: [createdForUserId], references: [id], onDelete: Cascade)
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions TestQuestion[]
+  attempts  TestAttempt[]
+  mistakes StudentMistake[]
 }
 
 enum QuestionType {
@@ -122,37 +180,147 @@ enum QuestionType {
   MULTIPLE_CHOICE
 }
 
-model Question{
-  id  Int  @id @default(autoincrement())
-  text String
-  type    QuestionType
+model TestQuestion {
+  id    Int          @id @default(autoincrement())
+  text  String
+  topic String
+  type  QuestionType
   order Int
-  missionId  Int
-  mission  Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
-  options Option[]
+  testId Int
+  test   MissionTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  outcomeId Int
+  outcome   Outcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  options  TestOption[]
+  answers  UserAnswer[]
+  mistakes StudentMistake[]
 }
 
-model Option{
-  id Int @id @default(autoincrement())
-  text String
-  isCorrect  Boolean
-  order Int
+model TestOption {
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean
+  order     Int
+
+  questionId       Int
+  question         TestQuestion       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerSelections UserAnswerOption[]
+}
+
+model TestAttempt {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  testId        Int
+  attemptNumber Int      @default(1)
+  score         Float?
+  submittedAt   DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test MissionTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  answers UserAnswer[]
+
+  @@unique([userId, testId])
+}
+
+model UserAnswer {
+  id         Int     @id @default(autoincrement())
+  attemptId  Int
   questionId Int
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  isCorrect  Boolean
+
+  attempt  TestAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  selectedOptions UserAnswerOption[]
+
+  @@unique([attemptId, questionId])
 }
 
-model MissionResult{
-  id      Int       @id @default(autoincrement())
-  passed  Boolean   @default(false)
-  bestScore   Int   @default(0)
-  attemptsUsed Int  @default(0)
-  userId      Int
-  missionId   Int
+model UserAnswerOption {
+  id       Int @id @default(autoincrement())
+  answerId Int
+  optionId Int
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  answer UserAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  option TestOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, missionId])
-  // یک کاربر نمی‌تواند برای یک Mission بیشتر از یک MissionResult داشته باشد.
+  @@unique([answerId, optionId])
+}
+
+model StudentMistake {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  courseId   Int
+  lessonId   Int
+  questionId Int
+  outcomeId  Int
+  testId Int
+  topic      String
+  createdAt  DateTime @default(now())
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson   Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question TestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  outcome  Outcome      @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  test   MissionTest    @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId, courseId])
+  @@index([userId, lessonId])
+  @@index([userId, outcomeId])
+}
+
+enum AssignmentSource {
+  TEACHER
+  AI
+}
+
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  deadline    DateTime?
+
+  source           AssignmentSource @default(TEACHER)
+  createdForUserId Int?
+  lessonId         Int
+
+  createdForUser User?  @relation(fields: [createdForUserId], references: [id], onDelete: Cascade)
+  lesson         Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+
+  @@index([lessonId, source])
+  @@index([createdForUserId])
+}
+
+model Submission {
+  id Int @id @default(autoincrement())
+
+  assignmentId Int
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  answerText String?
+
+  fileName String?
+  fileData Bytes?
+
+  submittedAt DateTime @default(now())
+
+  feedback          String?
+  correctedFileName String?
+  correctedFileData Bytes?
+
+  createdAt DateTime @default(now())
+  // @@unique([userId, assignmentId], name: "user_assignment_unique")
+
+  @@unique([userId, assignmentId])
 }

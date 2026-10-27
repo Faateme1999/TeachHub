@@ -4,10 +4,12 @@ import { LessonsService } from './lessons.service';
 import { LessonsController } from './lessons.controller';
 import { LessonsRepository } from './lessons.repository';
 import { OutcomesModule } from 'src/outcomes/outcomes.module';
+import { StorageModule } from 'src/storage/storage.module';
 
 @Module({
-  imports: [PrismaModule, OutcomesModule],
+  imports: [PrismaModule, OutcomesModule, StorageModule],
   providers: [LessonsService, LessonsRepository],
   controllers: [LessonsController],
+  exports: [LessonsService],
 })
 export class LessonsModule {}

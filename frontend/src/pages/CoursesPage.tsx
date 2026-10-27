@@ -13,8 +13,9 @@ import "../components/components.css";
 // The main landing page: a welcome hero + a grid of every course.
 // Admins also get a "New course" button.
 export function CoursesPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
+  const isStaff = isAdmin || user?.role === "TEACHER";
   // Search text
   const [search, setSearch] = useState("");
 
@@ -70,7 +71,7 @@ export function CoursesPage() {
           </p>
         </div>
 
-        {isAdmin && (
+        {isStaff && (
           <Link to="/courses/new">
             <Button>+ New course</Button>
           </Link>
@@ -121,12 +122,12 @@ export function CoursesPage() {
           icon="📚"
           title="No courses yet"
           message={
-            isAdmin
+            isStaff
               ? "Create the first course to get things started."
-              : "Check back soon — an admin will add courses."
+              : "Check back soon — a teacher or admin will add courses."
           }
           action={
-            isAdmin ? (
+            isStaff ? (
               <Link to="/courses/new">
                 <Button>Create a course</Button>
               </Link>

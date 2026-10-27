@@ -6,6 +6,8 @@ import {
   useCreateLesson,
   useUpdateLesson,
   useDeleteLesson,
+  useGenerateLessonReview,
+  useGenerateDiagnosticTest,
 } from "../hooks/useLessons";
 import { useAuth } from "../context/auth-context";
 import { getApiErrorMessage } from "../lib/apiClient";
@@ -22,6 +24,7 @@ import { LessonForm } from "../components/LessonForm";
 import type { Lesson, LessonInput } from "../types/api";
 import "../components/components.css";
 import { LessonItem } from "../components/LessonItem";
+import { DiagnosticTest } from "../components/DiagnosticTest";
 
 // The course detail page. It shows:
 //  - the course info + Enroll button (for any logged-in user / student)
@@ -35,7 +38,8 @@ export function CourseDetailPage() {
   const { id } = useParams();
   const courseId = Number(id);
   const navigate = useNavigate();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
+  const isStaff = isAdmin || user?.role === "TEACHER";
   const { showToast } = useToast();
 
   // Two separate queries: the course, and its lessons (backend doesn't nest them).
@@ -47,6 +51,8 @@ export function CourseDetailPage() {
   const createLesson = useCreateLesson(courseId);
   const updateLesson = useUpdateLesson(courseId);
   const deleteLesson = useDeleteLesson(courseId);
+  const generateReview = useGenerateLessonReview();
+  const generateDiagnosticTest = useGenerateDiagnosticTest();
 
   // Local UI state for the modals/dialogs on this page.
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
@@ -54,6 +60,10 @@ export function CourseDetailPage() {
   const [lessonError, setLessonError] = useState("");
   const [confirmDeleteCourse, setConfirmDeleteCourse] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
+  const [reviewLessonId, setReviewLessonId] = useState<number | null>(null);
+  const [diagnosticLessonId, setDiagnosticLessonId] = useState<number | null>(
+    null,
+  );
 
   if (courseQuery.isLoading) return <Spinner center />;
   if (courseQuery.isError || !courseQuery.data) {
@@ -156,6 +166,18 @@ export function CourseDetailPage() {
     });
   }
 
+  const handleGenerateReview = (lessonId: number) => {
+    generateReview.reset();
+    setReviewLessonId(lessonId);
+    generateReview.mutate(lessonId);
+  };
+
+  const handleGenerateDiagnosticTest = (lessonId: number) => {
+    generateDiagnosticTest.reset();
+    setDiagnosticLessonId(lessonId);
+    generateDiagnosticTest.mutate(lessonId);
+  };
+
   const lessons = lessonsQuery.data ?? [];
   const savingLesson = createLesson.isPending || updateLesson.isPending;
 
@@ -187,11 +209,12 @@ export function CourseDetailPage() {
               {enroll.isPending ? "Enrolling…" : "Enroll in this course"}
             </Button>
           )}
-          {isAdmin && (
+          {isStaff && (
             <>
               <Link to={`/courses/${courseId}/edit`}>
                 <Button variant="secondary">Edit</Button>
               </Link>
+
               <Button
                 variant="danger"
                 onClick={() => setConfirmDeleteCourse(true)}
@@ -212,7 +235,7 @@ export function CourseDetailPage() {
       <section className="detail__section">
         <div className="page-header">
           <h2 className="page-header__title">Lessons</h2>
-          {isAdmin && <Button onClick={openAddLesson}>+ Add lesson</Button>}
+          {isStaff && <Button onClick={openAddLesson}>+ Add lesson</Button>}
         </div>
 
         {lessonsQuery.isLoading && <Spinner center />}
@@ -225,7 +248,7 @@ export function CourseDetailPage() {
             icon="📝"
             title="No lessons yet"
             message={
-              isAdmin
+              isStaff
                 ? "Add the first lesson to this course."
                 : "Check back later."
             }
@@ -234,14 +257,91 @@ export function CourseDetailPage() {
         {lessons.length > 0 && (
           <div className="lesson-list">
             {lessons.map((lesson, index) => (
-              <LessonItem
-                key={lesson.id}
-                lesson={lesson}
-                index={index}
-                isAdmin={isAdmin}
-                onEdit={openEditLesson}
-                onDelete={setLessonToDelete}
-              />
+              <div key={lesson.id}>
+                <LessonItem
+                  lesson={lesson}
+                  index={index}
+                  isAdmin={isStaff}
+                  onEdit={openEditLesson}
+                  onDelete={setLessonToDelete}
+                />
+
+                <div style={{ marginTop: "var(--space-2)" }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleGenerateReview(lesson.id)}
+                    disabled={generateReview.isPending}
+                  >
+                    {generateReview.isPending && reviewLessonId === lesson.id
+                      ? "Generating review…"
+                      : "Start Review"}
+                  </Button>
+                </div>
+
+                {reviewLessonId === lesson.id && generateReview.data && (
+                  <div
+                    style={{
+                      marginTop: "var(--space-4)",
+                      padding: "var(--space-4)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    <h3>Lesson Review</h3>
+
+                    {generateReview.data.concepts.map(
+                      (concept, conceptIndex) => (
+                        <div
+                          key={conceptIndex}
+                          style={{ marginTop: "var(--space-4)" }}
+                        >
+                          <h4>{concept.title}</h4>
+
+                          <p>{concept.explanation}</p>
+
+                          {concept.examples.map((example, exampleIndex) => (
+                            <div
+                              key={exampleIndex}
+                              style={{
+                                marginTop: "var(--space-2)",
+                                padding: "var(--space-3)",
+                                background: "var(--surface-secondary)",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              <strong>{example.type}</strong>
+                              <p>{example.content}</p>
+                            </div>
+                          ))}
+
+                          <div style={{ marginTop: "var(--space-2)" }}>
+                            <strong>Key Takeaway:</strong>
+                            <p>{concept.keyTakeaway}</p>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                    <div style={{ marginTop: "var(--space-4)" }}>
+                      <Button
+                        onClick={() => handleGenerateDiagnosticTest(lesson.id)}
+                        disabled={generateDiagnosticTest.isPending}
+                      >
+                        {generateDiagnosticTest.isPending &&
+                        diagnosticLessonId === lesson.id
+                          ? "Generating diagnostic test…"
+                          : "Start Diagnostic Test →"}
+                      </Button>
+                    </div>
+                    {diagnosticLessonId === lesson.id &&
+                      generateDiagnosticTest.data && (
+                        <DiagnosticTest
+                          test={generateDiagnosticTest.data}
+                          lessonId={lesson.id}
+                        />
+                      )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -256,7 +356,12 @@ export function CourseDetailPage() {
         <LessonForm
           initialValue={
             editingLesson
-              ? { title: editingLesson.title, content: editingLesson.content }
+              ? {
+                  title: editingLesson.title,
+                  content: editingLesson.content ?? "",
+                  meetingUrl: editingLesson.meetingUrl ?? "",
+                  type: editingLesson.type,
+                }
               : undefined
           }
           submitLabel={editingLesson ? "Save changes" : "Add lesson"}

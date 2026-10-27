@@ -1,0 +1,13 @@
+{
+  "navbar": {
+    "courses": "Courses",
+    "myLearning": "My Learning",
+    "admin": "Admin",
+    "login": "Login",
+    "signUp": "Sign up",
+    "logout": "Logout",
+    "english": "English",
+    "persian": "فارسی",
+    "hello": "Hi, {name}"
+  }
+}

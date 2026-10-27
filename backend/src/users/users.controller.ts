@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -63,5 +64,26 @@ export class UsersController {
     // Take the value from the URL parameter called id.
     // everything coming from a URL arrives as text.
     return this.usersService.findById(id);
+  }
+
+  @Get(':userId/submissions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  findUserSubmissions(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Request() req: any,
+  ) {
+    if (req.user.role === Role.ADMIN) {
+      return this.usersService.findUserSubmissions(userId);
+    }
+
+    return this.usersService.findUserSubmissionsForTeacher(req.user.id, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.remove(id);
   }
 }

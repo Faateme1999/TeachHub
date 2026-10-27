@@ -11,12 +11,24 @@ import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { CreateAdminDto } from '../users/dto/create-admin.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { AuthRepository } from './auth.repository';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { createHash, randomBytes } from 'crypto';
+import { EmailService } from '../email/email.service';
+import { ConfigService } from '@nestjs/config';
+import { I18nService } from 'nestjs-i18n';
+import { CreateTeacherDto } from 'src/users/dto/create-teacher.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly authRepository: AuthRepository,
+    private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
+    private readonly i18n: I18nService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -28,7 +40,9 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.emailAlreadyExists'),
+      );
     }
 
     // Hash password
@@ -56,7 +70,7 @@ export class AuthService {
     const { password, ...safeUser } = user;
 
     return {
-      message: 'Registration successful',
+      message: await this.i18n.translate('common.auth.registrationSuccessful'),
       user: safeUser,
     };
   }
@@ -72,7 +86,9 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.emailAlreadyExists'),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
@@ -87,8 +103,36 @@ export class AuthService {
     const { password, ...safeUser } = user;
 
     return {
-      message: 'Admin created',
+      message: await this.i18n.translate('common.auth.adminCreated'),
       user: safeUser,
+    };
+  }
+
+  async createTeacher(createTeacherDto: CreateTeacherDto) {
+    const existingUser = await this.usersService.findByEmail(
+      createTeacherDto.email,
+    );
+
+    if (existingUser) {
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.emailAlreadyExists'),
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(createTeacherDto.password, 10);
+
+    const user = await this.usersService.create({
+      name: createTeacherDto.name,
+      email: createTeacherDto.email,
+      password: hashedPassword,
+      role: Role.TEACHER,
+    });
+
+    const { password, ...safeUser } = user;
+
+    return {
+      message: await this.i18n.translate('common.auth.teacherCreated'),
+      safeUser,
     };
   }
 
@@ -97,7 +141,9 @@ export class AuthService {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        await this.i18n.translate('common.auth.invalidCredentials'),
+      );
     }
 
     // 2. Compare passwords
@@ -107,7 +153,9 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        await this.i18n.translate('common.auth.invalidCredentials'),
+      );
     }
 
     // 3. Create JWT payload
@@ -130,9 +178,84 @@ export class AuthService {
     const { password, ...safeUser } = user;
 
     return {
-      message: 'Login successful',
+      message: await this.i18n.translate('common.auth.loginSuccessful'),
       accessToken,
       user: safeUser,
+    };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.usersService.findByEmail(forgotPasswordDto.email);
+
+    if (!user) {
+      return {
+        message: await this.i18n.translate('common.auth.passwordResetRequest'),
+      };
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    //15min
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await this.authRepository.deleteUserPasswordResetTokens(user.id);
+
+    await this.authRepository.createPasswordResetToken({
+      token: tokenHash,
+      userId: user.id,
+      expiresAt,
+    });
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      user.name,
+      resetLink,
+    );
+
+    return {
+      message: await this.i18n.translate('common.auth.passwordResetRequest'),
+    };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    // Create a SHA-256 hash
+    const tokenHash = createHash('sha256')
+      // Add the user's reset token to the hash
+      .update(resetPasswordDto.token)
+      // Convert the final hash to a hexadecimal string
+      .digest('hex');
+
+    const resetToken =
+      await this.authRepository.findPasswordResetToken(tokenHash);
+    if (!resetToken) {
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.invalidOrExpiredResetToken'),
+      );
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      await this.authRepository.deletePasswordResetToken(resetToken.id);
+      throw new BadRequestException(
+        await this.i18n.translate('common.auth.invalidOrExpiredResetToken'),
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 10);
+
+    await this.authRepository.updateUserPassword(
+      resetToken.userId,
+      hashedPassword,
+    );
+
+    await this.authRepository.deletePasswordResetToken(resetToken.id);
+
+    return {
+      message: await this.i18n.translate('common.auth.passwordResetSuccessful'),
     };
   }
 }

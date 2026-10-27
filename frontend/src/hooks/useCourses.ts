@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/apiClient";
 import { queryKeys } from "../lib/queryKeys";
-import type { Course, CourseInput, PaginatedCourses } from "../types/api";
+import type { Course, CourseInput, PaginatedCourses, TeacherCourse } from "../types/api";
 
 // This file wraps the "courses" API calls in TanStack Query hooks.
 // - useQuery  = read data (with caching, loading & error states for free)
@@ -108,6 +108,20 @@ export function useUnenroll() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.me.courses,
       });
+    },
+  });
+}
+
+// GET /courses/my-courses — courses created by the logged-in admin/teacher.
+export function useMyCourses() {
+  return useQuery({
+    queryKey: [...queryKeys.courses.all, "my-courses"],
+    queryFn: async () => {
+      const { data } = await apiClient.get<TeacherCourse[]>(
+        "/courses/my-courses",
+      );
+
+      return data;
     },
   });
 }

@@ -1,0 +1,385 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { MissionsRepository } from './missions.repository';
+import { AiService } from '../ai/ai.service';
+import { LessonsService } from 'src/lessons/lessons.service';
+import { SubmitTestDto } from './dto/submit-test.dto';
+import { FindWeaknessesOutputDto } from './dto/find-weaknesses-output.dto';
+import { TestType } from '@prisma/client';
+import { GenerateReassessmentTestInputDto } from 'src/ai/dto/missions/reassessment-test/reassessment-test-input-dto';
+
+@Injectable()
+export class MissionsService {
+  constructor(
+    private readonly missionsRepository: MissionsRepository,
+    private readonly lessonsService: LessonsService,
+    private readonly aiService: AiService,
+  ) {}
+
+  async generateReview(lessonId: number) {
+    const lesson =
+      await this.lessonsService.findLessonWithOutcomesOrThrow(lessonId);
+
+    const existingReview = await this.missionsRepository.findReview(lessonId);
+
+    if (existingReview) {
+      return existingReview.content;
+    }
+
+    const review = await this.aiService.generateLessonReview({
+      lessonTitle: lesson.title,
+      lessonContent: lesson.content ?? '',
+      learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
+    });
+
+    await this.missionsRepository.saveReview(lessonId, review);
+    return review;
+  }
+
+  async generateTest(lessonId: number) {
+    const lesson =
+      await this.lessonsService.findLessonWithOutcomesOrThrow(lessonId);
+
+    const existingTest = await this.missionsRepository.findTest(
+      lessonId,
+      TestType.DIAGNOSTIC,
+      null,
+    );
+
+    if (existingTest) {
+      return existingTest;
+    }
+
+    const test = await this.aiService.generateDiagnosticTest({
+      learningOutcomes: lesson.outcomes,
+    });
+
+    const savedTest = await this.missionsRepository.saveTest(
+      lessonId,
+      test,
+      TestType.DIAGNOSTIC,
+      null,
+    );
+
+    return savedTest;
+  }
+
+  async submitTest(userId: number, testId: number, dto: SubmitTestDto) {
+    const test = await this.missionsRepository.findTestForSubmission(testId);
+    if (!test) {
+      throw new NotFoundException('test not found');
+    }
+
+    if (
+      test.testType === TestType.REASSESSMENT &&
+      test.createdForUserId !== userId
+    ) {
+      throw new BadRequestException(
+        'This reassessment test does not belong to you',
+      );
+    }
+
+    const existingAttempt = await this.missionsRepository.findAttempt(
+      userId,
+      testId,
+    );
+
+    if (existingAttempt) {
+      throw new BadRequestException('You have already submitted this test');
+    }
+
+    const submittedAnswers = dto.answers.map((answer) => {
+      const question = test.questions.find((q) => q.id === answer.questionId);
+
+      if (!question) {
+        throw new BadRequestException(
+          `Question ${answer.questionId} does not belong to this test`,
+        );
+      }
+
+      const correctOptionIds = question.options
+        .filter((option) => option.isCorrect)
+        .map((option) => option.id)
+        .sort((a, b) => a - b);
+
+      const selectedOptionIds = [...answer.selectedOptionIds].sort(
+        (a, b) => a - b,
+      );
+
+      const questionOptionIds = question.options.map((option) => option.id);
+
+      const hasInvalidOption = selectedOptionIds.some(
+        (optionId) => !questionOptionIds.includes(optionId),
+      );
+
+      if (hasInvalidOption) {
+        throw new BadRequestException(
+          `Invalid option selected for question ${question.id}`,
+        );
+      }
+
+      const isCorrect =
+        selectedOptionIds.length == correctOptionIds.length &&
+        selectedOptionIds.every(
+          (optionId, index) => optionId === correctOptionIds[index],
+        );
+
+      return {
+        questionId: question.id,
+        selectedOptionIds: answer.selectedOptionIds,
+        isCorrect,
+      };
+    });
+
+    const correctAnswers = submittedAnswers.filter(
+      (answer) => answer.isCorrect,
+    ).length;
+
+    const score = (correctAnswers / test.questions.length) * 100;
+
+    const mistakes = submittedAnswers
+      .filter((answer) => !answer.isCorrect)
+      .map((answer) => {
+        const question = test.questions.find((q) => q.id === answer.questionId);
+
+        if (!question) {
+          throw new BadRequestException('Question not found');
+        }
+
+        return {
+          questionId: question.id,
+          courseId: test.lesson.courseId,
+          lessonId: test.lessonId,
+          outcomeId: question.outcomeId,
+          topic: question.topic,
+        };
+      });
+
+    return this.missionsRepository.saveTestAttemptWithMistakes(
+      userId,
+      testId,
+      submittedAnswers,
+      score,
+      mistakes,
+    );
+  }
+
+  async findWeaknesses(userId: number, testId: number) {
+    const attempt = await this.missionsRepository.findAttempt(userId, testId);
+
+    if (!attempt) {
+      throw new NotFoundException('test attempt not found');
+    }
+
+    const wrongAnswers = attempt.answers.filter((answer) => !answer.isCorrect);
+
+    const weaknesses: {
+      outcomeId: number;
+      learningOutcome: string;
+      topics: {
+        topic: string;
+        answers: typeof wrongAnswers;
+      }[];
+    }[] = [];
+
+    for (const answer of wrongAnswers) {
+      const outcomeId = answer.question.outcomeId;
+      const learningOutcome = answer.question.outcome.text;
+      const topic = answer.question.topic;
+
+      let outcome = weaknesses.find((item) => item.outcomeId === outcomeId);
+      if (!outcome) {
+        outcome = {
+          outcomeId,
+          learningOutcome,
+          topics: [],
+        };
+
+        weaknesses.push(outcome);
+      }
+
+      let topicGroup = outcome.topics.find((item) => item.topic === topic);
+      if (!topicGroup) {
+        topicGroup = {
+          topic,
+          answers: [],
+        };
+        outcome.topics.push(topicGroup);
+      }
+      topicGroup.answers.push(answer);
+    }
+
+    const aiRemediations: FindWeaknessesOutputDto[] = [];
+
+    for (const outcome of weaknesses) {
+      const outcomeRemediations: FindWeaknessesOutputDto['remediations'] = [];
+
+      for (const topic of outcome.topics) {
+        const remediations = await this.aiService.generateWeaknessRemediation({
+          learningOutcome: outcome.learningOutcome,
+          topic: topic.topic,
+          questions: topic.answers.map((answer) => ({
+            questionId: answer.questionId,
+            question: answer.question.text,
+            selectedAnswers: answer.selectedOptions.map((selectedOption) => {
+              const option = answer.question.options.find(
+                (option) => option.id === selectedOption.optionId,
+              );
+              return option?.text ?? '';
+            }),
+            correctAnswers: answer.question.options
+              .filter((option) => option.isCorrect)
+              .map((option) => option.text),
+          })),
+        });
+
+        outcomeRemediations.push({
+          explanations: remediations.explanations.map((explanation) => {
+            const answer = topic.answers.find(
+              (answer) => answer.questionId === explanation.questionId,
+            );
+
+            return {
+              questionId: explanation.questionId,
+              question: answer?.question.text ?? '',
+              selectedAnswers:
+                answer?.selectedOptions.map((selectedOption) => {
+                  const option = answer.question.options.find(
+                    (option) => option.id === selectedOption.optionId,
+                  );
+
+                  return option?.text ?? '';
+                }) ?? [],
+              correctAnswers:
+                answer?.question.options
+                  .filter((option) => option.isCorrect)
+                  .map((option) => option.text) ?? [],
+              explanation: explanation.explanation,
+            };
+          }),
+
+          teaching: remediations.teaching,
+        });
+      }
+      aiRemediations.push({
+        outcomeId: outcome.outcomeId,
+        learningOutcome: outcome.learningOutcome,
+        remediations: outcomeRemediations,
+      });
+    }
+    return aiRemediations;
+  }
+
+  async generatePracticalAssignment(userId: number, lessonId: number) {
+    const lesson = await this.missionsRepository.findLessonAndMistakes(
+      userId,
+      lessonId,
+    );
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const input = {
+      lessonTitle: lesson.title,
+      lessonContent: lesson.content ?? '',
+      learningOutcomes: lesson.outcomes.map((outcome) => outcome.text),
+      mistakes: lesson.mistakes.map((mistake) => {
+        const answer = mistake.question.answers.find(
+          (answer) => answer.attempt.testId === mistake.testId,
+        );
+        return {
+          learningOutcome: mistake.outcome.text,
+          topic: mistake.topic,
+          question: mistake.question.text,
+          selectedAnswers:
+            answer?.selectedOptions.map((item) => item.option.text) ?? [],
+          correctAnswers: mistake.question.options
+            .filter((item) => item.isCorrect)
+            .map((option) => option.text),
+        };
+      }),
+    };
+
+    const assignment = await this.aiService.generatePracticalAssignment(input);
+
+    return this.missionsRepository.savePracticalAssignment(
+      userId,
+      lessonId,
+      assignment,
+    );
+  }
+
+  async generateReassessmentTest(userId: number, lessonId: number) {
+    const lesson = await this.missionsRepository.findLessonAndMistakes(
+      userId,
+      lessonId,
+    );
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const existingTest = await this.missionsRepository.findTest(
+      lessonId,
+      TestType.REASSESSMENT,
+      userId,
+    );
+
+    if (existingTest) {
+      const existingAttempt = await this.missionsRepository.findAttempt(
+        userId,
+        existingTest.id,
+      );
+
+      if (existingAttempt) {
+        throw new BadRequestException(
+          'You have already completed the reassessment test',
+        );
+      }
+
+      return existingTest;
+    }
+
+    const input: GenerateReassessmentTestInputDto = {
+      lessonTitle: lesson.title,
+      lessonContent: lesson.content ?? '',
+
+      learningOutcomes: lesson.outcomes.map((outcome) => ({
+        id: outcome.id,
+        text: outcome.text,
+      })),
+
+      mistakes: lesson.mistakes.map((mistake) => {
+        const answer = mistake.question.answers.find(
+          (answer) => answer.attempt.testId === mistake.testId,
+        );
+
+        return {
+          learningOutcome: mistake.outcome.text,
+          topic: mistake.topic,
+          question: mistake.question.text,
+          selectedAnswers:
+            answer?.selectedOptions.map((selected) => selected.option.text) ??
+            [],
+          correctAnswers: mistake.question.options
+            .filter((option) => option.isCorrect)
+            .map((option) => option.text),
+        };
+      }),
+    };
+
+    const reassessmentTest =
+      await this.aiService.generateReassessmentTest(input);
+
+    return this.missionsRepository.saveTest(
+      lessonId,
+      reassessmentTest,
+      TestType.REASSESSMENT,
+      userId,
+    );
+  }
+}

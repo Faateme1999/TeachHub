@@ -7,7 +7,7 @@ import { UpdateOutcomeDto } from './dto/update-outcome.dto';
 export class OutcomesService {
   constructor(private readonly outcomesRepository: OutcomesRepository) {}
 
-  create(lessonId: number, dto: CreateOutcomeDto) {
+  async create(lessonId: number, dto: CreateOutcomeDto) {
     return this.outcomesRepository.create(lessonId, dto);
   }
 
@@ -36,9 +36,5 @@ export class OutcomesService {
   async remove(lessonId: number, outcomeId: number) {
     await this.findOutcomeOrThrow(lessonId, outcomeId);
     return this.outcomesRepository.remove(outcomeId);
-  }
-
-  findAllMissionsByOutcomeId(outcomeId: number) {
-    return this.outcomesRepository.findAllMissionsByOutcomeId(outcomeId);
   }
 }

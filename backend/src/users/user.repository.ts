@@ -67,4 +67,87 @@ export class UsersRepository {
       },
     });
   }
+
+  async findUserSubmissions(userId: number) {
+    return this.prisma.submission.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        assignmentId: true,
+        answerText: true,
+        fileName: true,
+        assignment: {
+          select: {
+            id: true,
+            title: true,
+            source: true,
+            lesson: {
+              select: {
+                id: true,
+                title: true,
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findUserSubmissionsForTeacher(teacherId: number, studentId: number) {
+    return this.prisma.submission.findMany({
+      where: {
+        userId: studentId,
+        assignment: {
+          lesson: {
+            course: {
+              createdById: teacherId,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        userId: true,
+        assignmentId: true,
+        answerText: true,
+        fileName: true,
+        assignment: {
+          select: {
+            id: true,
+            title: true,
+            source: true,
+            lesson: {
+              select: {
+                id: true,
+                title: true,
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async remove(id: number) {
+    return this.prisma.user.delete({
+      where: {
+        id,
+      },
+    });
+  }
 }

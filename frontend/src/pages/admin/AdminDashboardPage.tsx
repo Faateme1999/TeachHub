@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { Card } from '../../components/ui/Card'
+import { Link } from "react-router-dom";
+import { Card } from "../../components/ui/Card";
 
 // The admin landing page. Reached at /admin (inside <AdminLayout>, behind
 // <AdminRoute>). Keep it simple — a welcome + quick links to the admin tasks.
@@ -15,29 +15,52 @@ export function AdminDashboardPage() {
         Manage the platform's content and admins.
       </p>
 
-      <div className="course-grid" style={{ marginTop: 'var(--space-4)' }}>
+      <div className="course-grid" style={{ marginTop: "var(--space-4)" }}>
         <Card>
           <h2 className="page-header__title">Courses</h2>
           <p>Create, edit and delete courses and their lessons.</p>
-          <Link to="/admin/courses" className="navbar__link" style={{ paddingLeft: 0 }}>
+          <Link
+            to="/admin/courses"
+            className="navbar__link"
+            style={{ paddingLeft: 0 }}
+          >
             Manage courses →
           </Link>
         </Card>
         <Card>
           <h2 className="page-header__title">Users</h2>
           <p>See everyone registered on the platform.</p>
-          <Link to="/admin/users" className="navbar__link" style={{ paddingLeft: 0 }}>
+          <Link
+            to="/admin/users"
+            className="navbar__link"
+            style={{ paddingLeft: 0 }}
+          >
             Manage users →
+          </Link>
+        </Card>
+        <Card>
+          <h2 className="page-header__title">Teachers</h2>
+          <p>Create a teacher account.</p>
+          <Link
+            to="/admin/teachers/new"
+            className="navbar__link"
+            style={{ paddingLeft: 0 }}
+          >
+            Create teacher →
           </Link>
         </Card>
         <Card>
           <h2 className="page-header__title">Admins</h2>
           <p>Create another admin account.</p>
-          <Link to="/admin/admins/new" className="navbar__link" style={{ paddingLeft: 0 }}>
+          <Link
+            to="/admin/admins/new"
+            className="navbar__link"
+            style={{ paddingLeft: 0 }}
+          >
             Create admin →
           </Link>
         </Card>
       </div>
     </div>
-  )
+  );
 }

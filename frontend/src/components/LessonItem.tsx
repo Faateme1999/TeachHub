@@ -5,16 +5,18 @@ import {
   useUpdateOutcome,
   useDeleteOutcome,
 } from "../hooks/useOutcomes";
-import { getApiErrorMessage } from "../lib/apiClient";
+import { apiClient, getApiErrorMessage } from "../lib/apiClient";
 import { useToast } from "./ui/toast-context";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { Spinner } from "./ui/Spinner";
 import { ErrorState } from "./ui/States";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
-import type { Lesson, Outcome } from "../types/api";
-import { useMissionsByOutcome } from "../hooks/useMissions";
+import type { AssignmentInput, Lesson, Outcome } from "../types/api";
 import { Link } from "react-router-dom";
+import { useCreateAssignment } from "../hooks/useAssignments";
+import { AssignmentForm } from "./AssignmentForm";
+import { Modal } from "./ui/Modal";
 
 interface LessonItemProps {
   lesson: Lesson;
@@ -42,11 +44,10 @@ export function LessonItem({
   const [editingOutcome, setEditingOutcome] = useState<Outcome | null>(null);
   const [editOutcomeText, setEditOutcomeText] = useState("");
   const [outcomeToDelete, setOutcomeToDelete] = useState<Outcome | null>(null);
-  const [selectedOutcomeId, setSelectedOutcomeId] = useState<number | null>(
-    null,
-  );
-  const missionsQuery = useMissionsByOutcome(selectedOutcomeId ?? 0);
-  const missions = missionsQuery.data ?? [];
+
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const [assignmentError, setAssignmentError] = useState<string | undefined>();
+  const createAssignment = useCreateAssignment(lesson.id);
 
   function handleCreateOutcome() {
     const text = newOutcomeText.trim();
@@ -128,14 +129,105 @@ export function LessonItem({
 
   const outcomes = outcomesQuery.data ?? [];
 
+  function openAddAssignment() {
+    setAssignmentError(undefined);
+    setAssignmentModalOpen(true);
+  }
+
+  function handleAssignmentSubmit(values: AssignmentInput) {
+    createAssignment.mutate(values, {
+      onSuccess: () => {
+        setAssignmentModalOpen(false);
+        setAssignmentError(undefined);
+        showToast("Assignment added");
+      },
+      onError: (error) => {
+        setAssignmentError(
+          getApiErrorMessage(error, "Could not add assignment"),
+        );
+      },
+    });
+  }
+
   return (
     <Card className="lesson-item">
       <div className="lesson-item__body">
-        <p className="lesson-item__title">
-          {index + 1}. {lesson.title}
-        </p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <p className="lesson-item__title">
+            {index + 1}. {lesson.title}
+          </p>
 
-        <p className="lesson-item__content">{lesson.content}</p>
+          <span
+            style={{
+              fontSize: "12px",
+              padding: "3px 8px",
+              borderRadius: "999px",
+              border: "1px solid #ccc",
+            }}
+          >
+            {lesson.type === "RECORDED" ? "Recorded" : "Live"}
+          </span>
+        </div>
+
+        {lesson.content && (
+          <p className="lesson-item__content">{lesson.content}</p>
+        )}
+
+        {lesson.hasVideo && (
+          <video
+            controls
+            style={{
+              width: "100%",
+              maxWidth: "800px",
+              marginTop: "12px",
+              borderRadius: "12px",
+            }}
+            src={`${apiClient.defaults.baseURL}/lessons/${lesson.id}/video`}
+          >
+            Your browser does not support the video tag.
+          </video>
+        )}
+
+        {lesson.type === "LIVE" && lesson.meetingUrl && (
+          <p className="lesson-item__content">
+            <a
+              href={lesson.meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔴 Join live lesson
+            </a>
+          </p>
+        )}
+
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+          }}
+        >
+          <Link
+            to={`/courses/${lesson.courseId}/lessons/${lesson.id}/assignments`}
+          >
+            <Button variant="secondary" size="sm">
+              Assignments
+            </Button>
+          </Link>
+
+          {isAdmin && (
+            <Button size="sm" onClick={openAddAssignment}>
+              + Add assignment
+            </Button>
+          )}
+        </div>
 
         <div style={{ marginTop: "var(--space-3)" }}>
           <h3>Learning outcomes</h3>
@@ -184,18 +276,7 @@ export function LessonItem({
                     </div>
                   ) : (
                     <div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedOutcomeId(
-                            selectedOutcomeId === outcome.id
-                              ? null
-                              : outcome.id,
-                          )
-                        }
-                      >
-                        {outcome.text}
-                      </button>
+                      <span>{outcome.text}</span>
 
                       {isAdmin && (
                         <>
@@ -221,67 +302,34 @@ export function LessonItem({
                       )}
                     </div>
                   )}
-                  {selectedOutcomeId === outcome.id && (
-                    <div style={{ marginLeft: "24px", marginTop: "8px" }}>
-                      {missionsQuery.isLoading && <Spinner />}
-
-                      {missionsQuery.isError && (
-                        <ErrorState message="Could not load missions." />
-                      )}
-
-                      {!missionsQuery.isLoading && missions.length === 0 && (
-                        <p>No missions yet.</p>
-                      )}
-
-                      {missions.length > 0 && (
-                        <ul>
-                          {missions.map((mission) => (
-                            <li key={mission.id}>
-                              <Link to={`/missions/${mission.id}/questions`}>
-                                {mission.order}. {mission.title}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
                 </li>
               ))}
             </ul>
           )}
 
-          {/* {isAdmin && (
-            <div style={{ marginTop: "var(--space-2)" }}>
-              <input
-                value={newOutcomeText}
-                onChange={(event) => setNewOutcomeText(event.target.value)}
-                placeholder="Add a learning outcome"
-              />
-
-              <Button
-                size="sm"
-                onClick={handleCreateOutcome}
-                disabled={createOutcome.isPending}
-              >
-                {createOutcome.isPending ? "Adding…" : "+ Add outcome"}
-              </Button>
-            </div>
-          )} */}
           {isAdmin && (
             <div
               style={{
                 marginTop: "20px",
                 padding: "16px",
-                border: "1px solid #ccc",
+                borderRadius: "12px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
               }}
             >
-              <h3>Learning outcomes</h3>
-
               <input
                 value={newOutcomeText}
                 onChange={(event) => setNewOutcomeText(event.target.value)}
-                placeholder="Add a learning outcome"
+                placeholder="Add a learning outcome..."
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #cbd5e1",
+                }}
               />
 
               <Button
@@ -289,7 +337,7 @@ export function LessonItem({
                 onClick={handleCreateOutcome}
                 disabled={createOutcome.isPending}
               >
-                {createOutcome.isPending ? "Adding…" : "+ Add outcome"}
+                {createOutcome.isPending ? "Adding…" : "+ Add learning outcome"}
               </Button>
             </div>
           )}
@@ -316,6 +364,24 @@ export function LessonItem({
         onConfirm={handleDeleteOutcome}
         onCancel={() => setOutcomeToDelete(null)}
       />
+
+      <Modal
+        open={assignmentModalOpen}
+        title="Add assignment"
+        onClose={() => {
+          if (!createAssignment.isPending) {
+            setAssignmentModalOpen(false);
+          }
+        }}
+      >
+        <AssignmentForm
+          submitLabel="Add assignment"
+          submitting={createAssignment.isPending}
+          serverError={assignmentError}
+          onSubmit={handleAssignmentSubmit}
+          onCancel={() => setAssignmentModalOpen(false)}
+        />
+      </Modal>
     </Card>
   );
 }

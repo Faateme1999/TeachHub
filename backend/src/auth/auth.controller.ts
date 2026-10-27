@@ -7,6 +7,9 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { CreateTeacherDto } from 'src/users/dto/create-teacher.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -32,5 +35,22 @@ export class AuthController {
   @Post('admins')
   createAdmin(@Body() dto: CreateAdminDto) {
     return this.authService.createAdmin(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('teachers')
+  createTeacher(@Body() dto: CreateTeacherDto) {
+    return this.authService.createTeacher(dto);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 }

@@ -1,0 +1,13 @@
+{
+  "navbar": {
+    "courses": "دوره‌ها",
+    "myLearning": "یادگیری من",
+    "admin": "مدیریت",
+    "login": "ورود",
+    "signUp": "ثبت‌نام",
+    "logout": "خروج",
+    "english": "English",
+    "persian": "فارسی",
+    "hello": "سلام، {name}"
+  }
+}

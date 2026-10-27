@@ -1,3 +1,5 @@
+import { I18nService } from 'nestjs-i18n';
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserData } from './types/create-user.type';
 import { EnrollmentsService } from 'src/enrollments/enrollments.service';
@@ -9,6 +11,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly enrollmentsService: EnrollmentsService,
+    private readonly i18n: I18nService,
   ) {}
 
   async create(data: CreateUserData) {
@@ -23,7 +26,11 @@ export class UsersService {
     const user = await this.usersRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundException(`User ${id} not found`);
+      throw new NotFoundException(
+        await this.i18n.translate('common.user.notFound', {
+          args: { id },
+        }),
+      );
     }
 
     return user;
@@ -49,5 +56,20 @@ export class UsersService {
     await this.findById(id);
 
     return this.usersRepository.updateRole(id, role);
+  }
+
+  async findUserSubmissions(userId: number) {
+    return this.usersRepository.findUserSubmissions(userId);
+  }
+
+  async findUserSubmissionsForTeacher(teacherId: number, studentId: number) {
+    return this.usersRepository.findUserSubmissionsForTeacher(
+      teacherId,
+      studentId,
+    );
+  }
+
+  async remove(id: number) {
+    return this.usersRepository.remove(id);
   }
 }

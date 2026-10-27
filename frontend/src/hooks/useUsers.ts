@@ -4,8 +4,10 @@ import { queryKeys } from "../lib/queryKeys";
 import type {
   Course,
   CreateAdminInput,
+  CreateTeacherInput,
   RegisterResponse,
   User,
+  UserSubmission,
 } from "../types/api";
 
 // Hooks for reading users and their enrolled courses.
@@ -127,3 +129,39 @@ export function useCreateAdmin() {
     },
   });
 }
+
+export function useCreateTeacher() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateTeacherInput) => {
+      const { data } = await apiClient.post<RegisterResponse>(
+        "/auth/teachers",
+        input,
+      );
+
+      return data;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.all,
+      });
+    },
+  });
+}
+
+export function useUserSubmissions(id: number) {
+  return useQuery({
+    queryKey: queryKeys.users.submissions(id),
+    queryFn: async () => {
+      const { data } = await apiClient.get<UserSubmission[]>(
+        `/users/${id}/submissions`,
+      );
+      return data;
+    },
+    enabled: Number.isFinite(id),
+  });
+}
+
+

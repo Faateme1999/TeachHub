@@ -9,7 +9,7 @@
 // NOTE: this is a string-union type, NOT a TS `enum` — this project has
 // `erasableSyntaxOnly` on, which forbids enums. Compare with string literals:
 // `user.role === 'ADMIN'`.
-export type Role = "STUDENT" | "ADMIN";
+export type Role = "STUDENT" | "TEACHER" | "ADMIN";
 
 export interface User {
   id: number;
@@ -30,12 +30,14 @@ export interface Course {
   lessons?: Lesson[];
 }
 
-export interface Lesson {
-  id: number;
-  title: string;
-  content: string;
-  courseId: number;
-  createdAt: string;
+export interface TeacherCourse extends Course {
+  enrollments: {
+    user: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  }[];
 }
 
 // The backend returns this from POST /auth/login.
@@ -58,10 +60,26 @@ export interface CourseInput {
   price: number;
 }
 
+export type LessonType = "RECORDED" | "LIVE";
+
+export interface Lesson {
+  id: number;
+  title: string;
+  content: string | null;
+  hasVideo: boolean;
+  meetingUrl: string | null;
+  type: LessonType;
+  courseId: number;
+  createdAt: string;
+}
+
 // What we send when creating/updating a lesson.
 export interface LessonInput {
   title: string;
-  content: string;
+  content?: string;
+  meetingUrl?: string;
+  type: LessonType;
+  video?: File;
 }
 
 export interface Outcome {
@@ -97,9 +115,74 @@ export interface Option {
   order: number;
 }
 
+export interface SubmitMissionResponse {
+  score: number;
+  passed: boolean;
+}
+
+export interface Assignment {
+  id: number;
+  title: string;
+  description: string | null;
+  deadline: string;
+  lessonId: number;
+  createdAt: string;
+
+  submissions: {
+    id: number;
+    fileName: string;
+    correctedFileName: string | null;
+    feedback: string | null;
+  }[];
+}
+
+export interface AssignmentInput {
+  title: string;
+  description?: string;
+  deadline: string;
+}
+
+export interface Submission {
+  id: number;
+  assignmentId: number;
+  userId: number;
+  fileName: string;
+  fileData: unknown;
+}
+
+export interface UserSubmission {
+  id: number;
+  userId: number;
+  assignmentId: number;
+  fileName: string | null;
+  answerText: string | null;
+
+  assignment: {
+    id: number;
+    title: string;
+    source: "AI" | "TEACHER";
+
+    lesson: {
+      id: number;
+      title: string;
+
+      course: {
+        id: number;
+        title: string;
+      };
+    };
+  };
+}
+
 // What we send to POST /auth/admins to create another admin. Same fields as
 // sign-up — the role is decided by the backend (always ADMIN), never sent here.
 export interface CreateAdminInput {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface CreateTeacherInput {
   name: string;
   email: string;
   password: string;
@@ -110,4 +193,135 @@ export interface PaginatedCourses {
   page: number;
   totalPages: number;
   total: number;
+}
+
+export type ReviewExampleType = "code" | "analogy" | "real_world";
+
+export interface ReviewExample {
+  type: ReviewExampleType;
+  content: string;
+}
+
+export interface ReviewConcept {
+  title: string;
+  explanation: string;
+  examples: ReviewExample[];
+  keyTakeaway: string;
+}
+
+export interface LessonReview {
+  concepts: ReviewConcept[];
+}
+
+export type TestQuestionType = "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+
+export interface TestOption {
+  id: number;
+  text: string;
+  isCorrect?: boolean;
+  order: number;
+}
+
+export interface TestQuestion {
+  id: number;
+  text: string;
+  type: TestQuestionType;
+  order: number;
+  topic: string;
+  outcomeId: number;
+  options: TestOption[];
+}
+
+export interface DiagnosticTest {
+  id: number;
+  title: string;
+  type: "DIAGNOSTIC";
+  order: number;
+  lessonId: number;
+  questions: TestQuestion[];
+}
+
+export interface SubmitDiagnosticAnswer {
+  questionId: number;
+  selectedOptionIds: number[];
+}
+
+export interface SubmitDiagnosticTestResponse {
+  id: number;
+  userId: number;
+  testId: number;
+  attemptNumber: number;
+  score: number;
+  submittedAt: string;
+}
+
+export interface DiagnosticWeaknessExplanation {
+  questionId: number;
+  question: string;
+  selectedAnswers: string[];
+  correctAnswers: string[];
+  explanation: string;
+}
+
+export interface DiagnosticWeaknessTeaching {
+  explanation: string;
+  example: string;
+  takeaway: string;
+}
+
+export interface DiagnosticWeaknessRemediation {
+  explanations: DiagnosticWeaknessExplanation[];
+  teaching: DiagnosticWeaknessTeaching;
+}
+
+export interface DiagnosticWeakness {
+  outcomeId: number;
+  learningOutcome: string;
+  remediations: DiagnosticWeaknessRemediation[];
+}
+
+export interface PracticalAssignmentContent {
+  objective: string;
+  description: string;
+  instructions: string[];
+  expectedOutput: string;
+  evaluationCriteria: string[];
+  hints: string[];
+}
+
+export interface GeneratedPracticalAssignment {
+  id: number;
+  title: string;
+  description: string | null;
+  lessonId: number;
+  createdAt: string;
+}
+
+export interface ReassessmentOption {
+  id: number;
+  text: string;
+  order: number;
+}
+
+export interface ReassessmentQuestion {
+  id: number;
+  text: string;
+  type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
+  order: number;
+  topic: string;
+  outcomeId: number;
+  options: ReassessmentOption[];
+}
+
+export interface ReassessmentTest {
+  id: number;
+  title: string;
+  testType: "REASSESSMENT";
+  lessonId: number;
+  questions: ReassessmentQuestion[];
+}
+
+export interface ReassessmentAnswer {
+  questionId: number;
+  selectedOptionIds: number[];
 }
